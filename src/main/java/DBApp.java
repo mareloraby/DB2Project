@@ -4,7 +4,7 @@ import java.util.Iterator;
 public class DBApp implements DBAppInterface{
     @Override
     public void init() {
-
+//Hi rawan
     }
 
     @Override
