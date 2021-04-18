@@ -4,7 +4,7 @@ import java.util.Iterator;
 
 public interface DBAppInterface {
 
-    void init();
+    void init() throws IOException;
 
     void createTable(String tableName, String clusteringKey, Hashtable<String,String> colNameType, Hashtable<String,String> colNameMin, Hashtable<String,String> colNameMax) throws DBAppException, IOException;
 

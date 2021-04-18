@@ -5,14 +5,15 @@ import java.util.Hashtable;
 import java.util.Iterator;
 
 public class DBApp implements DBAppInterface{
+
     @Override
-    public void init() {
+    public void init() throws IOException {
 //Hi rawan // Hi Maryam, hru? // hi mariam // Hi Hadeer :)
     }
 
     @Override
     public void createTable(String tableName, String clusteringKey, Hashtable<String, String> colNameType, Hashtable<String, String> colNameMin, Hashtable<String, String> colNameMax) throws DBAppException, IOException {
-        FileWriter csvWriter = new FileWriter("metadata.csv");
+        FileWriter csvWriter = new FileWriter("metadata.csv", true);
 
 
         Enumeration<String> keys = colNameType.keys();
@@ -45,15 +46,10 @@ public class DBApp implements DBAppInterface{
             String max = keysmax.nextElement();
             String maxvalue = colNameMax.get(max);
             csvWriter.append(maxvalue);
-            csvWriter.append("/n");
+            csvWriter.append("\n");
 
         }
-
-
-    }
-
-    @Override
-    public void createIndex(String tableName, String[] columnNames) throws DBAppException {
+        csvWriter.close();
 
     }
 
@@ -72,6 +68,10 @@ public class DBApp implements DBAppInterface{
 
     }
 
+    @Override
+    public void createIndex(String tableName, String[] columnNames) throws DBAppException {
+
+    }
     @Override
     public Iterator selectFromTable(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
         return null;

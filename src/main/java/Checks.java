@@ -2,7 +2,12 @@ import java.io.IOException;
 import java.util.Hashtable;
 
 public class Checks{
-    public static void main(String[] args) throws DBAppException, IOException {
+    public static void main(String[] args) throws DBAppException {
+/*expections:
+clusteringKey not null
+table name doesn't exist
+all col names and types are entered //each colname has a type as well as max and min values
+ */
         String strTableName = "Student";
         DBApp dbApp = new DBApp( );
         Hashtable htblColNameType = new Hashtable( );
@@ -17,8 +22,11 @@ public class Checks{
         max.put("id","10000");
         max.put("name","ZZZZZZZZZZZ");
         max.put("gpa","1000000");
-        dbApp.createTable( strTableName, "id", htblColNameType , min , max );
-
+        try {
+            dbApp.createTable( strTableName, "id", htblColNameType , min , max );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
