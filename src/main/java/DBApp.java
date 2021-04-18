@@ -1,3 +1,6 @@
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 
@@ -8,7 +11,44 @@ public class DBApp implements DBAppInterface{
     }
 
     @Override
-    public void createTable(String tableName, String clusteringKey, Hashtable<String, String> colNameType, Hashtable<String, String> colNameMin, Hashtable<String, String> colNameMax) throws DBAppException {
+    public void createTable(String tableName, String clusteringKey, Hashtable<String, String> colNameType, Hashtable<String, String> colNameMin, Hashtable<String, String> colNameMax) throws DBAppException, IOException {
+        FileWriter csvWriter = new FileWriter("metadata.csv");
+
+
+        Enumeration<String> keys = colNameType.keys();
+        Enumeration<String> keysmin = colNameMin.keys();
+        Enumeration<String> keysmax = colNameMax.keys();
+        while( keys.hasMoreElements() )
+        {
+            //csvWriter.append()
+            csvWriter.append(tableName);
+            csvWriter.append(",");
+            String colname = keys.nextElement() ;
+            String coltype = colNameType.get(colname);
+            csvWriter.append(colname);
+            csvWriter.append(",");
+            csvWriter.append(coltype);
+            csvWriter.append(",");
+               if(clusteringKey.equals(colname))
+                  csvWriter.append("True");
+               else
+                   csvWriter.append("False");
+            csvWriter.append(",");
+            csvWriter.append("False");
+            csvWriter.append(",");
+
+            String min = keysmin.nextElement();
+            String minvalue = colNameMin.get(min);
+            csvWriter.append(minvalue);
+            csvWriter.append(",");
+
+            String max = keysmax.nextElement();
+            String maxvalue = colNameMax.get(max);
+            csvWriter.append(maxvalue);
+            csvWriter.append("/n");
+
+        }
+
 
     }
 
@@ -36,4 +76,5 @@ public class DBApp implements DBAppInterface{
     public Iterator selectFromTable(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
         return null;
     }
+
 }
