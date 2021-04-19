@@ -6,7 +6,7 @@ Issues to discuss:
 -Why are the column names inserted in metadata.csv bel3aks?
 -hal 3adi the metadata.csv in resources folder doesn't get updated? *thinking emoji*
 
-TODO: Create pages and do insertToTable method?
+TO DO: Create pages and do insertToTable method?
 
 */
 
