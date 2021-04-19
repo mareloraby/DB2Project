@@ -1,5 +1,6 @@
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -14,6 +15,22 @@ public class DBApp implements DBAppInterface{
     @Override
     public void createTable(String tableName, String clusteringKey, Hashtable<String, String> colNameType, Hashtable<String, String> colNameMin, Hashtable<String, String> colNameMax) throws DBAppException, IOException {
         FileWriter csvWriter = new FileWriter("metadata.csv", true);
+        ArrayList<String> AllTablesNames = new ArrayList<>();
+        // Exceptions
+
+        // The clusteringKey is not null.
+        if(clusteringKey.equals(null))
+            throw new DBAppException("The clustering key shouldn't be equal null.");
+
+        //The table name is not null.
+        if(tableName.equals(null))
+            throw new DBAppException("The Table name shouldn't be equal null.");
+        AllTablesNames.add(tableName);
+
+        //The table name already exists.
+        for(int i=0; i<AllTablesNames.size(); i++)
+            if(tableName.equals(AllTablesNames.get(i)))
+                throw new DBAppException("The table name already exists.");
 
 
         Enumeration<String> keys = colNameType.keys();
@@ -26,6 +43,14 @@ public class DBApp implements DBAppInterface{
             csvWriter.append(",");
             String colname = keys.nextElement() ;
             String coltype = colNameType.get(colname);
+
+            // Exception
+            // all col names and types are entered
+            if (colname.equals(null))
+                throw new DBAppException("The column name should not be equal null.");
+            if (coltype.equals(null))
+                throw new DBAppException("The column type should not be equal null.");
+
             csvWriter.append(colname);
             csvWriter.append(",");
             csvWriter.append(coltype);
@@ -40,11 +65,23 @@ public class DBApp implements DBAppInterface{
 
             String min = keysmin.nextElement();
             String minvalue = colNameMin.get(min);
+
+            // Exception
+            //each colname has a type as well as max and min values
+            if (minvalue.equals(null))
+                throw new DBAppException("The column minimum value should not be equal null.");
+
             csvWriter.append(minvalue);
             csvWriter.append(",");
 
             String max = keysmax.nextElement();
             String maxvalue = colNameMax.get(max);
+
+            // Exception
+            //each colname has a type as well as max and min values
+            if (maxvalue.equals(null))
+                throw new DBAppException("The column maximum value should not be equal null.");
+
             csvWriter.append(maxvalue);
             csvWriter.append("\n");
 
