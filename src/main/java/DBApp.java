@@ -13,7 +13,7 @@ public class DBApp implements DBAppInterface{
 
     @Override
     public void createTable(String tableName, String clusteringKey, Hashtable<String, String> colNameType, Hashtable<String, String> colNameMin, Hashtable<String, String> colNameMax) throws DBAppException, IOException {
-        FileWriter csvWriter = new FileWriter("metadata.csv", true);
+        FileWriter csvWriter = new FileWriter("src/main/resources/metadata.csv", true);
         ArrayList<String> AllTablesNames = new ArrayList<>(); // To keep track of all tables created
         // Exceptions
 

@@ -5,7 +5,7 @@ import java.util.Hashtable;
 Issues to discuss:
 -Why are the column names inserted in metadata.csv bel3aks?
 -hal 3adi the metadata.csv in resources folder doesn't get updated? *thinking emoji*
--shouldn't min value for string be "a"?
+
 
 TO DO: Create pages and do insertToTable method?
 
@@ -22,7 +22,7 @@ all col names and types are entered //each colname has a type as well as max and
  */
 
         //Check creating table
-        String strTableName = "Student";
+        String strTableName = "Student2";
         DBApp dbApp = new DBApp( );
         Hashtable htblColNameType = new Hashtable( );
         htblColNameType.put("id", "java.lang.Integer");
