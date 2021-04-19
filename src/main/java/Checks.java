@@ -5,6 +5,7 @@ import java.util.Hashtable;
 Issues to discuss:
 -Why are the column names inserted in metadata.csv bel3aks?
 -hal 3adi the metadata.csv in resources folder doesn't get updated? *thinking emoji*
+-shouldn't min value for string be "a"?
 
 TO DO: Create pages and do insertToTable method?
 
