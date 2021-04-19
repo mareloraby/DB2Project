@@ -9,21 +9,20 @@ public class DBApp implements DBAppInterface{
 
     @Override
     public void init() throws IOException {
-//Hi rawan // Hi Maryam, hru? // hi mariam // Hi Hadeer :)
     }
 
     @Override
     public void createTable(String tableName, String clusteringKey, Hashtable<String, String> colNameType, Hashtable<String, String> colNameMin, Hashtable<String, String> colNameMax) throws DBAppException, IOException {
         FileWriter csvWriter = new FileWriter("metadata.csv", true);
-        ArrayList<String> AllTablesNames = new ArrayList<>();
+        ArrayList<String> AllTablesNames = new ArrayList<>(); // To keep track of all tables created
         // Exceptions
 
         // The clusteringKey is not null.
-        if(clusteringKey.equals(null))
+        if(clusteringKey.equals(null) || clusteringKey.equals("") )
             throw new DBAppException("The clustering key shouldn't be equal null.");
 
         //The table name is not null.
-        if(tableName.equals(null))
+        if(tableName.equals(null) || tableName.equals("") )
             throw new DBAppException("The Table name shouldn't be equal null.");
         AllTablesNames.add(tableName);
 
@@ -61,7 +60,7 @@ public class DBApp implements DBAppInterface{
                else
                    csvWriter.append("False");
             csvWriter.append(",");
-            csvWriter.append("False");
+            csvWriter.append("False"); //indexed
             csvWriter.append(",");
 
             String min = keysmin.nextElement();
@@ -69,7 +68,7 @@ public class DBApp implements DBAppInterface{
 
             // Exception
             //each colname has a type as well as max and min values
-            if (minvalue.equals(null))
+            if (minvalue.equals(null) || minvalue.equals(""))
                 throw new DBAppException("The column minimum value should not be equal null.");
 
             csvWriter.append(minvalue);
@@ -80,7 +79,7 @@ public class DBApp implements DBAppInterface{
 
             // Exception
             //each colname has a type as well as max and min values
-            if (maxvalue.equals(null))
+            if (maxvalue.equals(null) || maxvalue.equals(""))
                 throw new DBAppException("The column maximum value should not be equal null.");
 
             csvWriter.append(maxvalue);
