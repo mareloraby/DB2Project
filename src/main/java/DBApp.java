@@ -24,14 +24,16 @@ public class DBApp implements DBAppInterface{
         //The table name is not null.
         if(tableName.equals(null) || tableName.equals("") )
             throw new DBAppException("The Table name shouldn't be equal null.");
-        AllTablesNames.add(tableName);
+
+
 
         //The table name already exists.
 
-        for(int i=0; i<AllTablesNames.size(); i++)
-            if(tableName.equals(AllTablesNames.get(i)))
-                throw new DBAppException("The table name already exists.");
+        for(int i=0; i<AllTablesNames.size(); i++){
+            if(tableName.equals(AllTablesNames.get(i))){
+                throw new DBAppException("The table name already exists.");}}
 
+        AllTablesNames.add(tableName);
 
         Enumeration<String> keys = colNameType.keys();
         Enumeration<String> keysmin = colNameMin.keys();

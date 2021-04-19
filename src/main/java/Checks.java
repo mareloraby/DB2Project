@@ -22,7 +22,7 @@ all col names and types are entered //each colname has a type as well as max and
  */
 
         //Check creating table
-        String strTableName = "Student2";
+        String strTableName = "Student217";
         DBApp dbApp = new DBApp( );
         Hashtable htblColNameType = new Hashtable( );
         htblColNameType.put("id", "java.lang.Integer");
