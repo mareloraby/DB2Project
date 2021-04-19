@@ -94,7 +94,18 @@ public class DBApp implements DBAppInterface{
 
     @Override
     public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException {
+// do we insert the rows as a hashtable or an arraylist?
 
+        /*
+        - check whether there is an existing table with the same name.
+        - check the data types of each column name in the hashtable(compare them with
+        the corresponding table's column types in the metadata.csv file).
+        - access table class.
+        - access the pages arraylist of the table and check if there is space.
+        - if no page, create a new page.
+        - binary search for a suitable position to insert a page. <--
+        - insert :)
+         */
     }
 
     @Override
@@ -116,4 +127,13 @@ public class DBApp implements DBAppInterface{
         return null;
     }
 
+    public static void main(String[] args) throws DBAppException {
+        Hashtable htblColNameValue = new Hashtable( );
+        String strTableName= "Yes";
+        DBApp dbApp= new DBApp();
+        htblColNameValue.put("id", new Integer( 453455 ));
+        htblColNameValue.put("name", new String("Ahmed Noor" ) );
+        htblColNameValue.put("gpa", new Double( 0.95 ) );
+        dbApp.insertIntoTable(strTableName , htblColNameValue );
+    }
 }
