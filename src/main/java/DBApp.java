@@ -28,6 +28,7 @@ public class DBApp implements DBAppInterface{
         AllTablesNames.add(tableName);
 
         //The table name already exists.
+
         for(int i=0; i<AllTablesNames.size(); i++)
             if(tableName.equals(AllTablesNames.get(i)))
                 throw new DBAppException("The table name already exists.");
