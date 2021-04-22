@@ -1,14 +1,16 @@
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class DBApp implements DBAppInterface{
 
+    private HashSet<String> dataTypes;
+
+
     @Override
     public void init() throws IOException {
+
     }
 
     @Override
@@ -16,6 +18,15 @@ public class DBApp implements DBAppInterface{
         FileWriter csvWriter = new FileWriter("src/main/resources/metadata.csv", true);
         ArrayList<String> AllTablesNames = new ArrayList<>(); // To keep track of all tables created
         // Exceptions
+
+
+
+
+        //
+        String invalidCol = checkColumnTypes(colNameType);
+        if(invalidCol != null)
+            throw new DBAppException("Invalid column type: "+invalidCol +".");
+
 
         // The clusteringKey is not null.
         if(clusteringKey.equals(null) || clusteringKey.equals("") )
@@ -127,13 +138,35 @@ public class DBApp implements DBAppInterface{
         return null;
     }
 
+
+
+    private String checkColumnTypes(Hashtable<String, String> colNameType) //check if user entered correct type while creating table
+    {
+
+        dataTypes = new HashSet<String>();
+
+        dataTypes.add("java.lang.Integer");
+        dataTypes.add("java.lang.String");
+        dataTypes.add("java.lang.Date");
+        dataTypes.add("java.lang.double");
+
+        for(Entry<String, String> entry: colNameType.entrySet())
+            if(!dataTypes.contains(entry.getValue()))
+                return entry.getKey();
+        return null;
+    }
+
     public static void main(String[] args) throws DBAppException {
         Hashtable htblColNameValue = new Hashtable( );
         String strTableName= "Yes";
         DBApp dbApp= new DBApp();
-        htblColNameValue.put("id", new Integer( 453455 ));
+  //      htblColNameValue.put("id", new Integer( 453455 ));
+        htblColNameValue.put("id", Integer.valueOf( 453455 )); // fixed the "dashed" Integer elkan 3amlha 3shan kan metal3 error
+
         htblColNameValue.put("name", new String("Ahmed Noor" ) );
-        htblColNameValue.put("gpa", new Double( 0.95 ) );
+//        htblColNameValue.put("gpa", new Double( 0.95 ) );
+        htblColNameValue.put("gpa", Double.valueOf( 0.95 ) );
+
         dbApp.insertIntoTable(strTableName , htblColNameValue );
     }
 }

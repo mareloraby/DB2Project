@@ -10,3 +10,6 @@ Student217,id,java.lang.Integer,True,False,0,10000
 Student217,gpa,java.lang.double,False,False,0,1000000
 Student217,name,java.lang.String,False,False,A,ZZZZZZZZZZZ
 Student217,id,java.lang.Integer,True,False,0,10000
+Student3,gpa,java.lang.double,False,False,0,1000000
+Student3,name,java.lang.String,False,False,A,ZZZZZZZZZZZ
+Student3,id,java.lang.Integer,True,False,0,10000
