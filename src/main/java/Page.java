@@ -3,22 +3,21 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 public class Page implements java.io.Serializable  {
-    private Vector<Hashtable> rows;
-    private int min_Pk_Value;
-    private int max_Pk_Value;
+    private Vector<Vector> rows;
+    private Object min_Pk_Value;
+    private Object max_Pk_Value;
     private int numOfRows;
-
-//    public Vector<Hashtable> page;
-//    public Hashtable row;
+    private int maxRows;
 
     public Page(){
-        min_Pk_Value=0;
-        max_Pk_Value=0;
-        rows = new Vector<Hashtable>();
-//this.page.add(this.row);
+        maxRows=200;
+        rows = new Vector<Vector>();
     }
 
-    public void addRow(Hashtable s){
+    public void addRow(Vector s) throws DBAppException {
+       if(numOfRows==maxRows) {
+           throw new DBAppException("The page is full!");
+       }
         numOfRows++; rows.add(s);
     }
     public static void main(String[] args) {

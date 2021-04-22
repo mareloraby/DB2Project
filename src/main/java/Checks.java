@@ -12,7 +12,7 @@ TODO: Create pages and do insertToTable method?
 public class Checks{
     public static void main(String[] args) throws DBAppException {
         //Check creating table
-        String strTableName = "Student3";
+        String strTableName = "Student6";
         DBApp dbApp = new DBApp();
         Hashtable htblColNameType = new Hashtable( );
         htblColNameType.put("id", "java.lang.Integer");

@@ -1,5 +1,4 @@
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -13,14 +12,22 @@ public class DBApp implements DBAppInterface{
 
     }
 
+    public ArrayList<String> getTableNames() throws IOException {
+        String row;
+        ArrayList<String> names= new ArrayList<>();
+        BufferedReader csvReader = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+        while ((row = csvReader.readLine()) != null) {
+            String[] data = row.split(",");
+            names.add(data[0]);
+        }
+        csvReader.close();
+        return names;
+    }
     @Override
     public void createTable(String tableName, String clusteringKey, Hashtable<String, String> colNameType, Hashtable<String, String> colNameMin, Hashtable<String, String> colNameMax) throws DBAppException, IOException {
         FileWriter csvWriter = new FileWriter("src/main/resources/metadata.csv", true);
-        ArrayList<String> AllTablesNames = new ArrayList<>(); // To keep track of all tables created
+        ArrayList<String> AllTablesNames = getTableNames(); // To keep track of all tables created
         // Exceptions
-
-
-
 
         //
         String invalidCol = checkColumnTypes(colNameType);
@@ -104,8 +111,27 @@ public class DBApp implements DBAppInterface{
     }
 
     @Override
-    public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException {
-// do we insert the rows as a hashtable or an arraylist?
+    public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException, IOException {
+        // String[] columnNames= get this from csv file
+        String csvLine;
+        ArrayList<String> colNames = new ArrayList<>();
+        BufferedReader csvReader = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+        //csvReader.readLine();
+        boolean pk_found = false;
+        while ((csvLine = csvReader.readLine()) != null) {
+            String[] data = csvLine.split(",");
+            colNames.add(data[1]);
+            if (data[3] == "True") pk_found = true;
+        }
+        csvReader.close();
+        if (pk_found == false) throw new DBAppException("No Primary Key inserted");
+        // move from values array to values Vector
+        Vector<Object> row = new Vector<Object>();
+        for (int i = 0; i < colNames.size(); i++) {
+            row.add(colNameValue.get(colNames.get(i)));
+        }
+
+        // do we insert the rows as a hashtable or an arraylist?
 
         /*
         - check whether there is an existing table with the same name.
@@ -118,7 +144,6 @@ public class DBApp implements DBAppInterface{
         - insert :)
          */
     }
-
     @Override
     public void updateTable(String tableName, String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
 
@@ -156,6 +181,34 @@ public class DBApp implements DBAppInterface{
         return null;
     }
 
+    public static void serialize(Object e, String fileName){
+        try {
+            FileOutputStream fileOut =
+                    new FileOutputStream("src/main/resources/"+fileName+".class");
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(e);
+            out.close();
+            fileOut.close();
+            System.out.printf("Serialized data is saved in "+fileName+".class");
+        } catch (IOException i) {
+            i.printStackTrace();
+        }
+
+    }
+    public static void serialize(Object e, String fileName){
+        try {
+            FileOutputStream fileOut =
+                    new FileOutputStream("src/main/resources/"+fileName+".class");
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(e);
+            out.close();
+            fileOut.close();
+            System.out.printf("Serialized data is saved in "+fileName+".class");
+        } catch (IOException i) {
+            i.printStackTrace();
+        }
+
+    }
     public static void main(String[] args) throws DBAppException {
         Hashtable htblColNameValue = new Hashtable( );
         String strTableName= "Yes";
@@ -167,6 +220,10 @@ public class DBApp implements DBAppInterface{
 //        htblColNameValue.put("gpa", new Double( 0.95 ) );
         htblColNameValue.put("gpa", Double.valueOf( 0.95 ) );
 
-        dbApp.insertIntoTable(strTableName , htblColNameValue );
+
+
+     //   dbApp.insertIntoTable(strTableName , htblColNameValue );
     }
+
+
 }
