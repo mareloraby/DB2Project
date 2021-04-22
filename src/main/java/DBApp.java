@@ -10,6 +10,7 @@ public class DBApp implements DBAppInterface{
     @Override
     public void init() throws IOException {
 
+
     }
 
     public ArrayList<String> getTableNames() throws IOException {
@@ -29,18 +30,18 @@ public class DBApp implements DBAppInterface{
         ArrayList<String> AllTablesNames = getTableNames(); // To keep track of all tables created
         // Exceptions
 
-        //
+        //Check Validity of column types
         String invalidCol = checkColumnTypes(colNameType);
         if(invalidCol != null)
             throw new DBAppException("Invalid column type: "+invalidCol +".");
 
 
         // The clusteringKey is not null.
-        if(clusteringKey.equals(null) || clusteringKey.equals("") )
+        if(clusteringKey == null || clusteringKey.equals("") )
             throw new DBAppException("The clustering key shouldn't be equal null.");
 
         //The table name is not null.
-        if(tableName.equals(null) || tableName.equals("") )
+        if(tableName == null || tableName.equals("") )
             throw new DBAppException("The Table name shouldn't be equal null.");
 
 
@@ -66,9 +67,9 @@ public class DBApp implements DBAppInterface{
 
             // Exception
             // all col names and types are entered
-            if (colname.equals(null))
+            if (colname == null)
                 throw new DBAppException("The column name should not be equal null.");
-            if (coltype.equals(null))
+            if (coltype == null)
                 throw new DBAppException("The column type should not be equal null.");
 
             csvWriter.append(colname);
@@ -88,7 +89,7 @@ public class DBApp implements DBAppInterface{
 
             // Exception
             //each colname has a type as well as max and min values
-            if (minvalue.equals(null) || minvalue.equals(""))
+            if (minvalue == null || minvalue.equals(""))
                 throw new DBAppException("The column minimum value should not be equal null.");
 
             csvWriter.append(minvalue);
@@ -99,7 +100,7 @@ public class DBApp implements DBAppInterface{
 
             // Exception
             //each colname has a type as well as max and min values
-            if (maxvalue.equals(null) || maxvalue.equals(""))
+            if (maxvalue == null || maxvalue.equals(""))
                 throw new DBAppException("The column maximum value should not be equal null.");
 
             csvWriter.append(maxvalue);
@@ -107,6 +108,14 @@ public class DBApp implements DBAppInterface{
 
         }
         csvWriter.close();
+
+
+        /*
+
+        Table table = new Table(strTableName);
+		serialize(table,strTableName);
+
+         */
 
     }
 
@@ -116,22 +125,25 @@ public class DBApp implements DBAppInterface{
         String csvLine;
         ArrayList<String> colNames = new ArrayList<>();
         BufferedReader csvReader = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
-        //csvReader.readLine();
+
         boolean pk_found = false;
         while ((csvLine = csvReader.readLine()) != null) {
             String[] data = csvLine.split(",");
             colNames.add(data[1]);
-            if (data[3] == "True") pk_found = true;
+            if (data[3].equals("True") || data[3].equals("true")) pk_found = true;
         }
         csvReader.close();
-        if (pk_found == false) throw new DBAppException("No Primary Key inserted");
+        if (!pk_found) throw new DBAppException("No Primary Key inserted");
         // move from values array to values Vector
         Vector<Object> row = new Vector<Object>();
         for (int i = 0; i < colNames.size(); i++) {
             row.add(colNameValue.get(colNames.get(i)));
         }
 
-        // do we insert the rows as a hashtable or an arraylist?
+
+
+
+
 
         /*
         - check whether there is an existing table with the same name.
@@ -195,20 +207,21 @@ public class DBApp implements DBAppInterface{
         }
 
     }
-    public static void deserialize(Object e, String fileName){
+    public static Object deserialize(String fileName){
         try {
             FileInputStream fileIn = new FileInputStream("src/main/resources/"+fileName+".class");
             ObjectInputStream in = new ObjectInputStream(fileIn);
-            e = (Page) in.readObject();
+            Object e = in.readObject();
             in.close();
             fileIn.close();
+            return e;
         } catch (IOException i) {
             i.printStackTrace();
-            return;
+            return null;
         } catch (ClassNotFoundException c) {
             System.out.println("not found");
             c.printStackTrace();
-            return;
+            return null;
         }
 
 
@@ -223,8 +236,6 @@ public class DBApp implements DBAppInterface{
         htblColNameValue.put("name", new String("Ahmed Noor" ) );
 //        htblColNameValue.put("gpa", new Double( 0.95 ) );
         htblColNameValue.put("gpa", Double.valueOf( 0.95 ) );
-
-
 
      //   dbApp.insertIntoTable(strTableName , htblColNameValue );
     }
