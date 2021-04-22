@@ -197,16 +197,20 @@ public class DBApp implements DBAppInterface{
     }
     public static void deserialize(Object e, String fileName){
         try {
-            FileOutputStream fileOut =
-                    new FileOutputStream("src/main/resources/"+fileName+".class");
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-            out.writeObject(e);
-            out.close();
-            fileOut.close();
-            System.out.printf("Serialized data is saved in "+fileName+".class");
+            FileInputStream fileIn = new FileInputStream("src/main/resources/"+fileName+".class");
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            e = (Page) in.readObject();
+            in.close();
+            fileIn.close();
         } catch (IOException i) {
             i.printStackTrace();
+            return;
+        } catch (ClassNotFoundException c) {
+            System.out.println("not found");
+            c.printStackTrace();
+            return;
         }
+
 
     }
     public static void main(String[] args) throws DBAppException {
