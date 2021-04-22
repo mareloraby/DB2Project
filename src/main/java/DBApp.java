@@ -95,6 +95,7 @@ public class DBApp implements DBAppInterface{
     @Override
     public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException {
 // do we insert the rows as a hashtable or an arraylist?
+
         /*
         - check whether there is an existing table with the same name.
         - check the data types of each column name in the hashtable(compare them with
