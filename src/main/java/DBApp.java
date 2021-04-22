@@ -195,7 +195,7 @@ public class DBApp implements DBAppInterface{
         }
 
     }
-    public static void serialize(Object e, String fileName){
+    public static void deserialize(Object e, String fileName){
         try {
             FileOutputStream fileOut =
                     new FileOutputStream("src/main/resources/"+fileName+".class");
