@@ -106,7 +106,10 @@ public class DBApp implements DBAppInterface{
             csvWriter.append(maxvalue);
             csvWriter.append("\n");
 
+
         }
+        Table t= new Table(tableName);
+        serialize(t,tableName);
         csvWriter.close();
 
 
@@ -115,20 +118,31 @@ public class DBApp implements DBAppInterface{
 
     @Override
     public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException, IOException {
+        ArrayList<String> AllTablesNames = getTableNames();
+        if(!AllTablesNames.contains(tableName))
+            throw new DBAppException("The table does not exist.");
 
         // String[] columnNames= get this from csv file
         String csvLine;
         ArrayList<String> colNames = new ArrayList<>();
         BufferedReader csvReader = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
 
-        boolean pk_found = false;
+        int pk_found = -1;
+        boolean found= false;
+        int index=0;
         while ((csvLine = csvReader.readLine()) != null) {
             String[] data = csvLine.split(",");
+            if(data[0]==tableName)
+            { found= true;
             colNames.add(data[1]);
-            if (data[3].equals("True") || data[3].equals("true")) pk_found = true;
+            if (data[3].equals("True") || data[3].equals("true")) pk_found = index;
+            index++;
+            }
+            else if(data[0]!=tableName && found==true)
+                break;
         }
         csvReader.close();
-        if (!pk_found) throw new DBAppException("No Primary Key inserted");
+        if (pk_found==-1) throw new DBAppException("No Primary Key inserted");
         // move from values array to values Vector
         Vector<Object> row = new Vector<Object>();
         for (int i = 0; i < colNames.size(); i++) {
@@ -232,7 +246,7 @@ public class DBApp implements DBAppInterface{
 
 
 
-    public static void main(String[] args) throws DBAppException {
+    public static void main(String[] args) throws DBAppException, IOException {
         Hashtable htblColNameValue = new Hashtable();
         String strTableName = "Yes";
         DBApp dbApp = new DBApp();
@@ -256,6 +270,22 @@ public class DBApp implements DBAppInterface{
         }
 
         System.out.println(MaximumRowsCountinPage + "");
+        Hashtable htblColNameType = new Hashtable( );
+        htblColNameType.put("id", "java.lang.Integer");
+        htblColNameType.put("name", "java.lang.String");
+        htblColNameType.put("gpa", "java.lang.double");
+        Hashtable min = new Hashtable();
+        min.put("id","0");
+        min.put("name","A");
+        min.put("gpa","0");
+        Hashtable max = new Hashtable();
+        max.put("id","10000");
+        max.put("name","ZZZZZZZZZZZ");
+        max.put("gpa","1000000");
+     //   dbApp.createTable("T1","id", htblColNameType , min , max );
+        Table t= (Table) deserialize("T1");
+        System.out.println(t.getCount());
+//        insertIntoTable(t.getTableName(), )
 
     }
 

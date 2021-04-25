@@ -3,8 +3,14 @@ import java.util.*;
 public class Trial {
 	
 	
-	public static void sortI (Vector<Vector> v, Vector<Object> pks)
+	public static void sortI (Vector<Vector> v, int index )
 	{
+		Vector<Object> pks= new Vector<>();
+		for(int i=0; i<v.size();i++){
+			Vector row= v.get(i);
+			pks.add(row.get(index));
+	}
+
 		for(int i=1; i<pks.size(); i++)
 		{
 			// da in case pks.size()= v.size() => insertion sort
@@ -238,7 +244,7 @@ public class Trial {
 		System.out.println();
 		//vToString(pks);
 		System.out.println();
-		sortI(v,pks);
+//		sortI(v,pks);
 		toStringV(v);
 		
 		
