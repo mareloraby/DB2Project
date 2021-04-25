@@ -4,6 +4,8 @@ import java.util.Map.Entry;
 
 public class DBApp implements DBAppInterface{
 
+    static int MaximumRowsCountinPage;
+    static int MaximumKeysCountinIndexBucket;
 
     @Override
     public void init() throws IOException {
@@ -113,6 +115,10 @@ public class DBApp implements DBAppInterface{
 
     @Override
     public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException, IOException {
+
+
+
+
         // String[] columnNames= get this from csv file
         String csvLine;
         ArrayList<String> colNames = new ArrayList<>();
@@ -220,59 +226,39 @@ public class DBApp implements DBAppInterface{
     }
 
 
-    public String getPropValues() throws IOException {
-
-        InputStream inputStream = null;
-         int MaximumRowsCountinPage;
-         int MaximumKeysCountinIndexBucket;
-        String result = "";
-        try {
-            Properties prop = new Properties();
-            String propFileName = "DBApp.config";
-
-            inputStream = getClass().getClassLoader().getResourceAsStream(propFileName);
-
-            if (inputStream != null) {
-                prop.load(inputStream);
-            } else {
-                throw new FileNotFoundException("property file '" + propFileName + "' not found in the classpath");
-            }
-
-            // get the property value and print it out
-            MaximumRowsCountinPage = Integer.parseInt(prop.getProperty("MaximumRowsCountinPage"));
-            MaximumKeysCountinIndexBucket = Integer.parseInt(prop.getProperty("MaximumKeysCountinIndexBucket"));
-
-            result = "MaximumRowsCountinPage = " + MaximumRowsCountinPage + ", " + "MaximumKeysCountinIndexBucket = " + MaximumKeysCountinIndexBucket + ".";
-        } catch (Exception e) {
-            System.out.println("Exception: " + e);
-        } finally {
-            inputStream.close();
-        }
-        return result;
-
+    public int getPropValues(String string) throws IOException {
+        Properties prop = new Properties();
+        FileInputStream inputStream = new FileInputStream("src/main/resources/DBApp.config");
+        prop.load(inputStream);
+        return Integer.parseInt(prop.getProperty(string));
     }
 
 
 
     public static void main(String[] args) throws DBAppException {
-        Hashtable htblColNameValue = new Hashtable( );
-        String strTableName= "Yes";
-        DBApp dbApp= new DBApp();
-  //      htblColNameValue.put("id", new Integer( 453455 ));
-        htblColNameValue.put("id", Integer.valueOf( 453455 )); // fixed the "dashed" Integer elkan 3amlha 3shan kan metal3 error
+        Hashtable htblColNameValue = new Hashtable();
+        String strTableName = "Yes";
+        DBApp dbApp = new DBApp();
+        //      htblColNameValue.put("id", new Integer( 453455 ));
+        htblColNameValue.put("id", Integer.valueOf(453455)); // fixed the "dashed" Integer elkan 3amlha 3shan kan metal3 error
 
-        htblColNameValue.put("name", new String("Ahmed Noor" ) );
+        htblColNameValue.put("name", new String("Ahmed Noor"));
 //        htblColNameValue.put("gpa", new Double( 0.95 ) );
-        htblColNameValue.put("gpa", Double.valueOf( 0.95 ) );
+        htblColNameValue.put("gpa", Double.valueOf(0.95));
 
-     //   dbApp.insertIntoTable(strTableName , htblColNameValue );
+        //   dbApp.insertIntoTable(strTableName , htblColNameValue );
 
 
-//        try {
-//            System.out.print(dbApp.getPropValues());
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+
+        try {
+            MaximumRowsCountinPage = dbApp.getPropValues("MaximumRowsCountinPage");
+            MaximumKeysCountinIndexBucket = dbApp.getPropValues("MaximumKeysCountinIndexBucket");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println(MaximumRowsCountinPage + "");
 
     }
 
