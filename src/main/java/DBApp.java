@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
 
-public class DBApp implements DBAppInterface{
+public class DBApp implements DBAppInterface {
 
     static int MaximumRowsCountinPage;
     static int MaximumKeysCountinIndexBucket;
@@ -15,7 +15,7 @@ public class DBApp implements DBAppInterface{
 
     public ArrayList<String> getTableNames() throws IOException {
         String row;
-        ArrayList<String> names= new ArrayList<>();
+        ArrayList<String> names = new ArrayList<>();
         BufferedReader csvReader = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
         while ((row = csvReader.readLine()) != null) {
             String[] data = row.split(",");
@@ -24,6 +24,7 @@ public class DBApp implements DBAppInterface{
         csvReader.close();
         return names;
     }
+
     @Override
     public void createTable(String tableName, String clusteringKey, Hashtable<String, String> colNameType, Hashtable<String, String> colNameMin, Hashtable<String, String> colNameMax) throws DBAppException, IOException {
         FileWriter csvWriter = new FileWriter("src/main/resources/metadata.csv", true);
@@ -32,37 +33,34 @@ public class DBApp implements DBAppInterface{
 
         //Check Validity of column types
         String invalidCol = checkColumnTypes(colNameType);
-        if(invalidCol != null)
-            throw new DBAppException("Invalid column type: "+invalidCol +".");
-
+        if (invalidCol != null)
+            throw new DBAppException("Invalid column type: " + invalidCol + ".");
 
         // The clusteringKey is not null.
-        if(clusteringKey == null || clusteringKey.equals("") )
+        if (clusteringKey == null || clusteringKey.equals(""))
             throw new DBAppException("The clustering key shouldn't be equal null.");
 
         //The table name is not null.
-        if(tableName == null || tableName.equals("") )
+        if (tableName == null || tableName.equals(""))
             throw new DBAppException("The Table name shouldn't be equal null.");
 
-
-
         //The table name already exists.
-
-        for(int i=0; i<AllTablesNames.size(); i++){
-            if(tableName.equals(AllTablesNames.get(i))){
-                throw new DBAppException("The table name already exists.");}}
+        for (int i = 0; i < AllTablesNames.size(); i++) {
+            if (tableName.equals(AllTablesNames.get(i))) {
+                throw new DBAppException("The table name already exists.");
+            }
+        }
 
         AllTablesNames.add(tableName);
 
         Enumeration<String> keys = colNameType.keys();
         Enumeration<String> keysmin = colNameMin.keys();
         Enumeration<String> keysmax = colNameMax.keys();
-        while( keys.hasMoreElements() )
-        {
+        while (keys.hasMoreElements()) {
             //csvWriter.append()
             csvWriter.append(tableName);
             csvWriter.append(",");
-            String colname = keys.nextElement() ;
+            String colname = keys.nextElement();
             String coltype = colNameType.get(colname);
 
             // Exception
@@ -76,10 +74,10 @@ public class DBApp implements DBAppInterface{
             csvWriter.append(",");
             csvWriter.append(coltype);
             csvWriter.append(",");
-               if(clusteringKey.equals(colname))
-                  csvWriter.append("True");
-               else
-                   csvWriter.append("False");
+            if (clusteringKey.equals(colname))
+                csvWriter.append("True");
+            else
+                csvWriter.append("False");
             csvWriter.append(",");
             csvWriter.append("False"); //indexed
             csvWriter.append(",");
@@ -108,51 +106,65 @@ public class DBApp implements DBAppInterface{
 
 
         }
-        Table t= new Table(tableName);
-        serialize(t,tableName);
+        Table t = new Table(tableName);
+        serialize(t, tableName);
         csvWriter.close();
-
 
 
     }
 
+    // check whether types are valid
     @Override
     public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException, IOException {
         ArrayList<String> AllTablesNames = getTableNames();
-        if(!AllTablesNames.contains(tableName))
+        if (!AllTablesNames.contains(tableName))
             throw new DBAppException("The table does not exist.");
 
         // String[] columnNames= get this from csv file
         String csvLine;
         ArrayList<String> colNames = new ArrayList<>();
+        ArrayList<ArrayList<Object>> min_max = new ArrayList<>();
+        ArrayList<String> colTypes = new ArrayList<>();
         BufferedReader csvReader = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
 
         int pk_found = -1;
-        boolean found= false;
-        int index=0;
+        boolean found = false;
+        int index = 0;
         while ((csvLine = csvReader.readLine()) != null) {
             String[] data = csvLine.split(",");
-            if(data[0]==tableName)
-            { found= true;
-            colNames.add(data[1]);
-            if (data[3].equals("True") || data[3].equals("true")) pk_found = index;
-            index++;
-            }
-            else if(data[0]!=tableName && found==true)
+            if (data[0] == tableName) {
+                found = true;
+                ArrayList<Object> MinMax = new ArrayList<>();
+                colTypes.add(data[2]);
+                MinMax.add(data[5]);
+                MinMax.add(data[6]);
+                min_max.add(MinMax);
+                colNames.add(data[1]);
+                if (data[3].equals("True") || data[3].equals("true")) pk_found = index;
+                index++;
+            } else if (data[0] != tableName && found == true)
                 break;
         }
         csvReader.close();
-        if (pk_found==-1) throw new DBAppException("No Primary Key inserted");
+
+        if (pk_found == -1) throw new DBAppException("No Primary Key inserted");
+
         // move from values array to values Vector
         Vector<Object> row = new Vector<Object>();
         for (int i = 0; i < colNames.size(); i++) {
+            Object value = colNameValue.get(colNames.get(i));
+            if (Trial.compare(value, min_max.get(i).get(0)) == -1 && Trial.compare(value, min_max.get(i).get(1)) == 1)
+                throw new DBAppException("The inserted value is not within the min and max value range. ");
+
+            if (colTypes.get(i) != colNameValue.get(colNames.get(i)).getClass().getName())
+                throw new DBAppException("The inserted value is not of the right time. ");
+
             row.add(colNameValue.get(colNames.get(i)));
         }
 
-
-
-
-
+        Table t = (Table) DBApp.deserialize(tableName);
+        t.insertIntoPage(row, pk_found);
+        serialize(t, tableName);
 
         /*
         - check whether there is an existing table with the same name.
@@ -165,6 +177,7 @@ public class DBApp implements DBAppInterface{
         - insert :)
          */
     }
+
     @Override
     public void updateTable(String tableName, String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
 
@@ -179,46 +192,46 @@ public class DBApp implements DBAppInterface{
     public void createIndex(String tableName, String[] columnNames) throws DBAppException {
 
     }
+
     @Override
     public Iterator selectFromTable(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
         return null;
     }
 
 
-
     private String checkColumnTypes(Hashtable<String, String> colNameType) //check if user entered correct type while creating table
     {
 
         HashSet<String> dataTypes = new HashSet<String>();
-
         dataTypes.add("java.lang.Integer");
         dataTypes.add("java.lang.String");
         dataTypes.add("java.lang.Date");
         dataTypes.add("java.lang.double");
 
-        for(Entry<String, String> entry: colNameType.entrySet())
-            if(!dataTypes.contains(entry.getValue()))
+        for (Entry<String, String> entry : colNameType.entrySet())
+            if (!dataTypes.contains(entry.getValue()))
                 return entry.getKey();
         return null;
     }
 
-    public static void serialize(Object e, String fileName){
+    public static void serialize(Object e, String fileName) {
         try {
             FileOutputStream fileOut =
-                    new FileOutputStream("src/main/resources/"+fileName+".class");
+                    new FileOutputStream("src/main/resources/" + fileName + ".class");
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(e);
             out.close();
             fileOut.close();
-            System.out.printf("Serialized data is saved in "+fileName+".class");
+            System.out.printf("Serialized data is saved in " + fileName + ".class");
         } catch (IOException i) {
             i.printStackTrace();
         }
 
     }
-    public static Object deserialize(String fileName){
+
+    public static Object deserialize(String fileName) {
         try {
-            FileInputStream fileIn = new FileInputStream("src/main/resources/"+fileName+".class");
+            FileInputStream fileIn = new FileInputStream("src/main/resources/" + fileName + ".class");
             ObjectInputStream in = new ObjectInputStream(fileIn);
             Object e = in.readObject();
             in.close();
@@ -245,7 +258,6 @@ public class DBApp implements DBAppInterface{
     }
 
 
-
     public static void main(String[] args) throws DBAppException, IOException {
         Hashtable htblColNameValue = new Hashtable();
         String strTableName = "Yes";
@@ -260,7 +272,6 @@ public class DBApp implements DBAppInterface{
         //   dbApp.insertIntoTable(strTableName , htblColNameValue );
 
 
-
         try {
             MaximumRowsCountinPage = dbApp.getPropValues("MaximumRowsCountinPage");
             MaximumKeysCountinIndexBucket = dbApp.getPropValues("MaximumKeysCountinIndexBucket");
@@ -270,20 +281,20 @@ public class DBApp implements DBAppInterface{
         }
 
         System.out.println(MaximumRowsCountinPage + "");
-        Hashtable htblColNameType = new Hashtable( );
+        Hashtable htblColNameType = new Hashtable();
         htblColNameType.put("id", "java.lang.Integer");
         htblColNameType.put("name", "java.lang.String");
         htblColNameType.put("gpa", "java.lang.double");
         Hashtable min = new Hashtable();
-        min.put("id","0");
-        min.put("name","A");
-        min.put("gpa","0");
+        min.put("id", "0");
+        min.put("name", "A");
+        min.put("gpa", "0");
         Hashtable max = new Hashtable();
-        max.put("id","10000");
-        max.put("name","ZZZZZZZZZZZ");
-        max.put("gpa","1000000");
-     //   dbApp.createTable("T1","id", htblColNameType , min , max );
-        Table t= (Table) deserialize("T1");
+        max.put("id", "10000");
+        max.put("name", "ZZZZZZZZZZZ");
+        max.put("gpa", "1000000");
+        //   dbApp.createTable("T1","id", htblColNameType , min , max );
+        Table t = (Table) deserialize("T1");
         System.out.println(t.getCount());
 //        insertIntoTable(t.getTableName(), )
 
