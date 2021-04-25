@@ -116,9 +116,6 @@ public class DBApp implements DBAppInterface{
     @Override
     public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException, IOException {
 
-
-
-
         // String[] columnNames= get this from csv file
         String csvLine;
         ArrayList<String> colNames = new ArrayList<>();
