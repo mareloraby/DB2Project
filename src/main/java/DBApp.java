@@ -4,8 +4,6 @@ import java.util.Map.Entry;
 
 public class DBApp implements DBAppInterface{
 
-    private HashSet<String> dataTypes;
-
 
     @Override
     public void init() throws IOException {
@@ -174,7 +172,7 @@ public class DBApp implements DBAppInterface{
     private String checkColumnTypes(Hashtable<String, String> colNameType) //check if user entered correct type while creating table
     {
 
-        dataTypes = new HashSet<String>();
+        HashSet<String> dataTypes = new HashSet<String>();
 
         dataTypes.add("java.lang.Integer");
         dataTypes.add("java.lang.String");
