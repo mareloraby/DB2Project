@@ -110,12 +110,6 @@ public class DBApp implements DBAppInterface{
         csvWriter.close();
 
 
-        /*
-
-        Table table = new Table(strTableName);
-		serialize(table,strTableName);
-
-         */
 
     }
 
@@ -226,6 +220,42 @@ public class DBApp implements DBAppInterface{
 
 
     }
+
+
+    public String getPropValues() throws IOException {
+
+        InputStream inputStream = null;
+         int MaximumRowsCountinPage;
+         int MaximumKeysCountinIndexBucket;
+        String result = "";
+        try {
+            Properties prop = new Properties();
+            String propFileName = "DBApp.config";
+
+            inputStream = getClass().getClassLoader().getResourceAsStream(propFileName);
+
+            if (inputStream != null) {
+                prop.load(inputStream);
+            } else {
+                throw new FileNotFoundException("property file '" + propFileName + "' not found in the classpath");
+            }
+
+            // get the property value and print it out
+            MaximumRowsCountinPage = Integer.parseInt(prop.getProperty("MaximumRowsCountinPage"));
+            MaximumKeysCountinIndexBucket = Integer.parseInt(prop.getProperty("MaximumKeysCountinIndexBucket"));
+
+            result = "MaximumRowsCountinPage = " + MaximumRowsCountinPage + ", " + "MaximumKeysCountinIndexBucket = " + MaximumKeysCountinIndexBucket + ".";
+        } catch (Exception e) {
+            System.out.println("Exception: " + e);
+        } finally {
+            inputStream.close();
+        }
+        return result;
+
+    }
+
+
+
     public static void main(String[] args) throws DBAppException {
         Hashtable htblColNameValue = new Hashtable( );
         String strTableName= "Yes";
@@ -238,6 +268,14 @@ public class DBApp implements DBAppInterface{
         htblColNameValue.put("gpa", Double.valueOf( 0.95 ) );
 
      //   dbApp.insertIntoTable(strTableName , htblColNameValue );
+
+
+//        try {
+//            System.out.print(dbApp.getPropValues());
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
     }
 
 
