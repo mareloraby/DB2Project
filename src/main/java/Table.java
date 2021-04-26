@@ -121,7 +121,7 @@ public class Table implements java.io.Serializable {
                 }
 
             }
-
+//
             // check if this page has an overflow page, if so, insert into the overflow page if this overflow page has space,
             // otherwise create a new overflow page
             if (Page.compare(pk, min) == 1 && Page.compare(max, pk) == 1) {
