@@ -12,6 +12,9 @@ public class Table implements java.io.Serializable {
     transient private Vector<Integer> pagesID; // number of pages-- pages.size() and pages id-- page.get();
     private int maxRows;
 
+    //index: 1,2
+    //names: 1,3
+
     //transient private Vector<Vector<Object>> min_max_count;
     public String getTableName() {
         return tableName;
@@ -30,6 +33,7 @@ public class Table implements java.io.Serializable {
     public int getCount() {
         return count;
     }
+//100-200, 300-400 (both are full and I want to insert 250)
 
     public void insertIntoPage(Vector<Object> v, int index) throws DBAppException {
 
@@ -45,13 +49,8 @@ public class Table implements java.io.Serializable {
         // check whether the table has pages
         // if there is no page, create a new one and insert
         // insert the info related to this page into the pagesInfo Vector
-        if (count == 0){
+        if (count == 0) {
             addPage(v, index);
-            Vector<Object> newPage= new Vector<Object>();
-            newPage.add(1);
-            newPage.add(pk);
-            newPage.add(pk);
-            pagesInfo.add(newPage);
         }
 
 
@@ -96,11 +95,6 @@ public class Table implements java.io.Serializable {
                     // if pk is greater than max, add new page ( no overflow pages for the last page)
                     if (Page.compare(pk, max) == 1) {
                         addPage(v, index);
-                        Vector<Object> newPage= new Vector<Object>();
-                        newPage.add(1);
-                        newPage.add(pk);
-                        newPage.add(pk);
-                        pagesInfo.add(newPage);
                     }
                     // if pk is less than the max in the last page, create a new page
                     // and add the last row in the last page to the new page
@@ -121,14 +115,18 @@ public class Table implements java.io.Serializable {
                 }
 
             }
-///
-            // check if this page has an overflow page, if so, insert into the overflow page if this overflow page has space,
+
+
+            // check if the required page has an overflow page,
+            // if so, insert into the overflow page if this overflow page has space,
             // otherwise create a new overflow page
-            if (Page.compare(pk, min) == 1 && Page.compare(max, pk) == 1) {
+            // if (Page.compare(max, pk) == 1 ) {
+            if (Page.compare(max, pk) == 1) {
                 Page p = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(i));
                 if (countRows == maxRows) {
                     if (p.getOverFlow() != null) {
                         int overflowID = 1;
+                        // check for the first overflow page that has room for a new record
                         while (true) {
                             Page o = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(i) + "." + overflowID);
                             if (o.getNumOfRows() < o.getMaxRows()) {
@@ -137,7 +135,11 @@ public class Table implements java.io.Serializable {
                                 p.setOverFlow(o);
                                 DBApp.serialize(o, tableName + "/" + count + "." + ((overflowID) + ""));
                                 break;
-                            } else {
+                            }
+                            // if the overflow page we are at is full,
+                            // check if there is another overflow page linked to it
+                            // if not, create a new overflow page and insert the new row in it
+                            else {
                                 if (o.getOverFlow() != null)
                                     overflowID++;
                                 else {
@@ -150,7 +152,11 @@ public class Table implements java.io.Serializable {
                             }
                         }
                         break;
-                    } else if ((i + 1) < pagesID.size()) {
+                    }
+                    /* if the main page we wanted to insert the new row in is full and does not have an overflow page,
+                    check the following page. If the following page has room, insert in the following page, otherwise,
+                    create a new overflow page linked to the main page. */
+                    else if ((i + 1) < pagesID.size()) {
                         Vector<Object> page2 = pagesInfo.get(i);
                         int countRows2 = (int) page2.get(0); // <"2,0,10000", >
                         Object min2 = page2.get(1);
@@ -167,7 +173,8 @@ public class Table implements java.io.Serializable {
                             p2.addRow(to_be_shifted, index);
                             p.setRows(p.getRows().remove(p.getNumOfRows() - 1));
                             Vector<Object> updatePage = p.addRow(v, index);
-                            pagesInfo.add(updatePage);
+                            pagesInfo.remove(i);
+                            pagesInfo.add(i, updatePage);
                             p.sortI(index);
                             DBApp.serialize(p2, tableName + "/" + pagesID.get(i + 1));
                             DBApp.serialize(p, tableName + "/" + pagesID.get(i));
@@ -182,9 +189,10 @@ public class Table implements java.io.Serializable {
                         }
                     }
                 } else {
-                    // the pk lies within the range, so we add immediately into the page
+                    // the pk lies within the range and there is room for it, so we add immediately into the page
                     Vector<Object> updatePage = p.addRow(v, index);
-                    pagesInfo.add(updatePage);
+                    pagesInfo.remove(i);
+                    pagesInfo.add(i, updatePage);
                     p.sortI(index);
                     DBApp.serialize(p, tableName + "/" + pagesID.get(i));
                     break;
@@ -193,7 +201,8 @@ public class Table implements java.io.Serializable {
                 // pk greater than the max but there is room in the page.
                 Page p = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(i));
                 Vector<Object> updatePage = p.addRow(v, index);
-                pagesInfo.add(updatePage);
+                pagesInfo.remove(i);
+                pagesInfo.add(i, updatePage);
                 p.sortI(index);
                 DBApp.serialize(p, tableName + "/" + pagesID.get(i));
                 break;
@@ -207,7 +216,52 @@ public class Table implements java.io.Serializable {
         Page p = new Page();
         p.addRow(v, index);
         pagesID.add(count);
+        Vector<Object> newPage = new Vector<Object>();
+        newPage.add(1);
+        newPage.add(v.get(index));
+        newPage.add(v.get(index));
+        pagesInfo.add(newPage);
         DBApp.serialize(p, tableName + "/" + count);
     }
 
+    public int binarySearch(Vector<Vector<Object>> arr, int l, int r, Object x) {
+        if (r >= l) {
+            int mid = l + (r - l) / 2;
+
+            // If the element is present at the
+            // middle itself
+            int arr_mid= (int)(arr.get(mid)).get(2);
+            if (Trial.compare(arr_mid,x)==0)
+                return mid;
+
+            // If element is smaller than mid, then
+            // it can only be present in left subarray
+            if (Trial.compare(arr_mid,x)==1)
+                return binarySearch(arr, l, mid - 1, x);
+
+            // Else the element can only be present
+            // in right subarray
+            return binarySearch(arr, mid + 1, r, x);
+        }
+
+        // We reach here when element is not present
+        // in array
+        return -1;
+    }
+
+    public void deleteFromPage(Vector<Vector> index_value, int pk_found, Object pk_value) {
+
+        if (pk_value != null) {
+           int searchPage= binarySearch(pagesInfo,0, pagesInfo.size(), pk_value);
+           Page p = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(searchPage));
+            // page min w max
+
+            // linear search 3la el pages ---
+
+            // 200
+            // 0-100 , 101-300, 350-400
+            // 100,300,400
+
+        }
+    }
 }
