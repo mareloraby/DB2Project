@@ -51,6 +51,7 @@ public class DBApp implements DBAppInterface {
         }
 
         AllTablesNames.add(tableName);
+        boolean ck_match = false;
 
         Enumeration<String> keys = colNameType.keys();
         Enumeration<String> keysmin = colNameMin.keys();
@@ -74,9 +75,9 @@ public class DBApp implements DBAppInterface {
             csvWriter.append(coltype);
             csvWriter.append(",");
             if (clusteringKey.equals(colname))
-                csvWriter.append("True");
+            {csvWriter.append("True"); ck_match = true;}
             else
-                csvWriter.append("False");
+            {csvWriter.append("False");}
             csvWriter.append(",");
             csvWriter.append("False"); //indexed
             csvWriter.append(",");
@@ -88,6 +89,9 @@ public class DBApp implements DBAppInterface {
             //each colname has a type as well as max and min values
             if (minvalue == null || minvalue.equals(""))
                 throw new DBAppException("The column minimum value should not be equal null.");
+
+            if (!ck_match)
+                throw new DBAppException("Clustering Key entered doesn't match any colName.");
 
             csvWriter.append(minvalue);
             csvWriter.append(",");
@@ -212,20 +216,21 @@ public class DBApp implements DBAppInterface {
             if (data[0] == tableName) {
                 found = true;
                 ArrayList<Object> MinMax = new ArrayList<>();
+                colNames.add(data[1]);
                 colTypes.add(data[2]);
                 MinMax.add(data[5]);
                 MinMax.add(data[6]);
                 min_max.add(MinMax);
-                colNames.add(data[1]);
                 if (data[3].equals("True") || data[3].equals("true")) {
-                    pk_found = index;
-                    pk_colName = data[1];
+                    pk_found = index; //found primary key index
+                    pk_colName = data[1]; // primary key column name
                 }
-                index++;
+                index++; //index of primary key in columns of a table
             } else if (data[0] != tableName && found == true)
                 break;
         }
         csvReader.close();
+
         boolean do_BS = false;
 //        if (pk_found == -1) throw new DBAppException("No Primary Key inserted");
         Object pk_value = colNameValue.get(pk_colName);
@@ -238,13 +243,13 @@ public class DBApp implements DBAppInterface {
 
         for (int i = 0; i < colNames.size(); i++) {
             Object value = colNameValue.get(colNames.get(i));
-            if (value != null) {
+            if (value != null) { //check if value within right range
                 if (Trial.compare(value, min_max.get(i).get(0)) == -1 && Trial.compare(value, min_max.get(i).get(1)) == 1)
-                    throw new DBAppException("The inserted value is not within the min and max value range. ");
+                    throw new DBAppException("Value is not within the min and max value range. ");
                 if (colTypes.get(i) != colNameValue.get(colNames.get(i)).getClass().getName())
-                    throw new DBAppException("The inserted value is not of the right type. ");
+                    throw new DBAppException("Value is not of the right type. ");
                 Vector<Object> v= new Vector<Object>();
-                v.add(i);
+                v.add(i);//??
                 v.add(value);
                 index_value.add(v);
             }
@@ -285,7 +290,7 @@ public class DBApp implements DBAppInterface {
     public static void serialize(Object e, String fileName) {
         try {
             FileOutputStream fileOut =
-                    new FileOutputStream("src/main/resources/" + fileName + ".class");
+                    new FileOutputStream("src/main/resources/data" + fileName + ".class");
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(e);
             out.close();
@@ -299,7 +304,7 @@ public class DBApp implements DBAppInterface {
 
     public static Object deserialize(String fileName) {
         try {
-            FileInputStream fileIn = new FileInputStream("src/main/resources/" + fileName + ".class");
+            FileInputStream fileIn = new FileInputStream("src/main/resources/data" + fileName + ".class");
             ObjectInputStream in = new ObjectInputStream(fileIn);
             Object e = in.readObject();
             in.close();

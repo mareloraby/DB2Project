@@ -1,9 +1,10 @@
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Vector;
 
 public class Table implements java.io.Serializable {
-    //int numOfPages;
+
     private static final long serialVersionUID = 1L;
     private String tableName;
     private int count;
@@ -264,4 +265,28 @@ public class Table implements java.io.Serializable {
 
         }
     }
+
+
+    public int pageSearchSuggestion(Comparable rowKey,int Index_of_Key) throws Exception, FileNotFoundException{
+        int lo =0,hi = pagesID.size()-1,ans=-1;
+        while(lo<=hi)
+        {
+            int mid = (lo+hi)>>1;
+            Integer curr = pagesID.get(mid);
+            Page currentPage = (Page)DBApp.deserialize(curr+"");
+            Vector<Object> startTuple = currentPage.getRows().get(0);
+            Comparable startTupleKey = (Comparable) startTuple.get(Index_of_Key);
+            if(startTupleKey.compareTo(rowKey) < 0)
+            {
+                ans = mid;
+                lo = mid+1;
+            }
+            else
+            {
+                hi = mid-1;
+            }
+        }
+        return ans;
+    }
+
 }
