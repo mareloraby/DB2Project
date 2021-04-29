@@ -7,7 +7,7 @@ public class DBApp implements DBAppInterface {
     static int MaximumKeysCountinIndexBucket;
 
     @Override
-    public void init() throws IOException {
+    public void init()  {
 
     }
 
