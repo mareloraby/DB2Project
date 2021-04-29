@@ -92,6 +92,15 @@ public class Table implements java.io.Serializable {
                     p.sortI(index);
                     DBApp.serialize(p, tableName + "/" + pagesID.get(i));
                     break;
+                    // In case we want to refer back to binary search in the page itself:
+//                    pagesInfo.remove(i);
+//                    // sort in the vector
+//                    p.sortB(pk,v);
+//                    Vector<Object> pInfo= new Vector<Object>();
+//                    pInfo.add(p.getNumOfRows());
+//                    pInfo.add(p.getMin_pk_value());
+//                    pInfo.add(p.getMax_pk_value());
+//                    pagesInfo.add(i, pInfo);
                 } else {
                     // if pk is greater than max, add new page ( no overflow pages for the last page)
                     if (Page.compare(pk, max) == 1) {
@@ -250,13 +259,15 @@ public class Table implements java.io.Serializable {
         return -1;
     }
 
+
+
     public void deleteFromPage(Vector<Vector> index_value, int pk_found, Object pk_value) {
 
         if (pk_value != null) {
            int searchPage= binarySearch(pagesInfo,0, pagesInfo.size(), pk_value);
            Page p = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(searchPage));
+           p.deleteRowFromPage(pk_found, pk_value, index_value);
             // page min w max
-
             // linear search 3la el pages ---
 
             // 200
@@ -265,6 +276,8 @@ public class Table implements java.io.Serializable {
 
         }
     }
+
+
 
 
     public int pageSearchSuggestion(Comparable rowKey,int Index_of_Key) throws Exception, FileNotFoundException{

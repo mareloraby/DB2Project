@@ -5,10 +5,15 @@ import java.util.Vector;
 
 public class Page implements java.io.Serializable {
     private Vector<Vector> rows;
+    private Vector<Object> pks;
     private Page overFlow;
     private Object min_pk_value;
     private Object max_pk_value;
     private int numOfRows;
+
+    public void deleteRowFromPage(int pk_found, Object pk_value, Vector<Vector> index_value) {
+        Vector<Object> pks = new Vector<Object>();
+    }
 
     public void setOverFlow(Page overFlow) {
         this.overFlow = overFlow;
@@ -51,7 +56,7 @@ public class Page implements java.io.Serializable {
     }
 
     public Vector<Object> addRow(Vector v, int index) throws DBAppException {
-        Vector<Object> info= new Vector<>();
+        Vector<Object> info = new Vector<>();
         numOfRows++;
         rows.add(v);
         Object pk = v.get(index);
@@ -64,6 +69,59 @@ public class Page implements java.io.Serializable {
         info.add(min_pk_value);
         info.add(max_pk_value);
         return info;
+    }
+
+    // used with sortB to update info in the page
+    public void updateRowInfo(Vector v, int index) {
+        Vector<Object> info = new Vector<>();
+        numOfRows++;
+        Object pk = v.get(index);
+        if (Trial.compare(pk, max_pk_value) == 1)
+            max_pk_value = pk;
+        if (Trial.compare(min_pk_value, pk) == 1)
+            min_pk_value = pk;
+        info.add(numOfRows);
+        info.add(min_pk_value);
+        info.add(max_pk_value);
+    }
+
+    // called only if there is space
+    public void sortB(Object pk_value, Vector<Object> rowAdded) {
+        int mid = binarySearch(0, rows.size(), pk_value);
+        int temp = mid;
+        for (int i = mid + 1; i < rows.size() - 1; i++) {
+            pks.setElementAt(pks.get(temp), i + 1);
+            rows.setElementAt(rows.get(temp), i + 1);
+        }
+        pks.setElementAt(pk_value, mid);
+        rows.setElementAt(rowAdded, mid);
+        updateRowInfo(rowAdded, mid);
+    }
+
+// used to sort within a page
+    public int binarySearch(int l, int r, Object x) {
+        if (r >= l) {
+            int mid = l + (r - l) / 2;
+
+            // If the element is present at the
+            // middle itself
+            int arr_mid = (int) (pks.get(mid));
+            if (Trial.compare(arr_mid, x) == 0)
+                return mid;
+
+            // If element is smaller than mid, then
+            // it can only be present in left subarray
+            if (Trial.compare(arr_mid, x) == 1)
+                return binarySearch(l, mid - 1, x);
+
+            // Else the element can only be present
+            // in right subarray
+            return binarySearch(mid + 1, r, x);
+        }
+
+        // We reach here when element is not present
+        // in array
+        return -1;
     }
 
     public void sortI(int index) {
@@ -135,7 +193,6 @@ public class Page implements java.io.Serializable {
                 }
             }
         }
-
 
 
     }

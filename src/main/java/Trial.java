@@ -1,3 +1,4 @@
+import java.time.LocalDate;
 import java.util.*;
 
 public class Trial {
@@ -59,6 +60,14 @@ public class Trial {
 
 
     public static int compare(Object o1, Object o2) { // compares 2 objects
+
+        if (o1 instanceof Date && o2 instanceof Date) {
+
+            if (((Date) o1).compareTo((Date) o2) > 0) return 1; // o1 appears after o2
+            else if (((Date) o1).compareTo((Date) o2) < 0) return -1;
+            else return 0;
+
+        }
         if (o1 instanceof Double && o2 instanceof Double) {
             if ((Double) o1 < (Double) o2) {
                 return -1;

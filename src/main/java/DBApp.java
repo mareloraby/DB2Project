@@ -239,6 +239,7 @@ public class DBApp implements DBAppInterface {
 
 
         // move from values array to values Vector
+        // stores index with its value
         Vector<Vector> index_value = new Vector<Vector>();
 
         for (int i = 0; i < colNames.size(); i++) {
@@ -274,7 +275,6 @@ public class DBApp implements DBAppInterface {
 
     private String checkColumnTypes(Hashtable<String, String> colNameType) //check if user entered correct type while creating table
     {
-
         HashSet<String> dataTypes = new HashSet<String>();
         dataTypes.add("java.lang.Integer");
         dataTypes.add("java.lang.String");
