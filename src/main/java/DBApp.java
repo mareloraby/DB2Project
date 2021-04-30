@@ -279,7 +279,8 @@ public class DBApp implements DBAppInterface {
         dataTypes.add("java.lang.Integer");
         dataTypes.add("java.lang.String");
         dataTypes.add("java.lang.Date");
-        dataTypes.add("java.lang.double");
+        dataTypes.add("java.lang.Double");
+
 
         for (Entry<String, String> entry : colNameType.entrySet())
             if (!dataTypes.contains(entry.getValue()))
