@@ -270,9 +270,10 @@ public class Table implements java.io.Serializable {
             // If the element is present at the
             // middle itself <numofPage, min, max>
 
-            Object arr_mid_min = (Object) (arr.get(mid)).get(2);
-            Object arr_mid_max = (Object) (arr.get(mid)).get(2);
-            if (Trial.compare(x, arr_mid_min)>=0 && Trial.compare(arr_mid_max, x) <=0)
+            Comparable xnew = (Comparable) x;
+            Comparable arr_mid_min = (Comparable) (arr.get(mid)).get(1);
+            Comparable arr_mid_max = (Comparable) (arr.get(mid)).get(2);
+            if ((xnew.compareTo(arr_mid_min))>=0 && (arr_mid_max.compareTo(xnew)) >=0)
                 return mid;
 
             // If element is smaller than mid, then

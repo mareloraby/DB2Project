@@ -121,10 +121,14 @@ public class Page implements java.io.Serializable {
         for (int i = 0; i < index_value.size(); i++) {
             int rowToDeleteIndex = (int) index_value.get(i).get(0);
             Object rowToDeleteValue = index_value.get(i).get(1);
-            if (compare(rows.get(rowToDeleteIndex), rowToDeleteValue) == 0)
+
+            Comparable rowToDeleteValuen = (Comparable) rowToDeleteValue;
+            Comparable tempr = (Comparable) row.get(rowToDeleteIndex);
+            if (((tempr).compareTo(rowToDeleteValuen))==0)
                 continue;
-            else
+            else {
                 throw new DBAppException("There is not existing row in the page with the same values.");
+            }
         }
         rows.remove(mid);
         numOfRows--;
