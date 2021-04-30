@@ -335,6 +335,7 @@ public class Table implements java.io.Serializable {
 //        Page p = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(pageID) + "." + overflowCount);
 
             Vector<Vector<Object>> overflowPages = p.getOverFlowInfo();
+            if(overflowPages!=null){
             for (int i = 0; i < overflowPages.size(); i++) {
                 Page o = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(pageID) + "." + overflowPages.get(i).get(0));
                 if (pk_value != null)
@@ -348,7 +349,7 @@ public class Table implements java.io.Serializable {
                 }
             }
             DBApp.serialize(p, tableName + "-" + pagesID.get(pageID) + "." + pagesID.get(pageID));
-        }
+        }}
     }
 
     public int pageSearchSuggestion(Comparable rowKey, int Index_of_Key) throws Exception, FileNotFoundException {

@@ -33,6 +33,7 @@ public class Page implements java.io.Serializable {
 
     //Page.class -> info rows, min,min + row values ?
     public Page() {
+        overFlowInfo= new Vector<Vector<Object>>();
         min_pk_value = null;
         max_pk_value = null;
         maxRows = DBApp.MaximumRowsCountinPage;

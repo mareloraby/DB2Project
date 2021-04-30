@@ -482,7 +482,7 @@ public class Milestone1Tests {
                 Date dateAdded = new Date(year - 1900, month - 1, day);
                 row.put("date_added", dateAdded);
                 row.put("course_name", fields[2]);
-System.out.println(dateAdded);
+//                System.out.println(dateAdded);
 
             }
             c++;
@@ -532,7 +532,7 @@ System.out.println(dateAdded);
         int c = 0;
         int finalLine = 1;
         while ((record = pcsTable.readLine()) != null && c <= finalLine) {
-            if(c == finalLine) {
+            if (c == finalLine) {
                 String[] fields = record.split(",");
 
                 row.put("pc_id", Integer.parseInt(fields[0].trim()));
