@@ -135,8 +135,9 @@ public class DBApp implements DBAppInterface {
         boolean found = false;
         int index = 0;
         while ((csvLine = csvReader.readLine()) != null) {
+
             String[] data = csvLine.split(",");
-            if (data[0] == tableName) {
+            if (data[0].equals(tableName)) {
                 found = true;
                 ArrayList<Object> MinMax = new ArrayList<>();
                 colTypes.add(data[2]);
@@ -144,14 +145,18 @@ public class DBApp implements DBAppInterface {
                 MinMax.add(data[6]);
                 min_max.add(MinMax);
                 colNames.add(data[1]);
-                if (data[3].equals("True") || data[3].equals("true")) pk_found = index;
+                if (data[3].equals("True") || data[3].equals("true")){ pk_found = index;}
                 index++;
+
+
             } else if (data[0] != tableName && found == true)
                 break;
+
         }
+
         csvReader.close();
 
-//        if (pk_found == -1) throw new DBAppException("No Primary Key inserted");
+      if (pk_found == -1) throw new DBAppException("No Primary Key inserted");
 
         // move from values array to values Vector
         Vector<Object> row = new Vector<Object>();
@@ -161,7 +166,7 @@ public class DBApp implements DBAppInterface {
             if (Trial.compare(value, min_max.get(i).get(0)) == -1 && Trial.compare(value, min_max.get(i).get(1)) == 1)
                 throw new DBAppException("The inserted value is not within the min and max value range. ");
 
-            if (colTypes.get(i) != colNameValue.get(colNames.get(i)).getClass().getName())
+            if (!(colTypes.get(i).equals(colNameValue.get(colNames.get(i)).getClass().getName())))
                 throw new DBAppException("The inserted value is not of the right type. ");
 
             row.add(colNameValue.get(colNames.get(i)));
@@ -292,7 +297,7 @@ public class DBApp implements DBAppInterface {
     public static void serialize(Object e, String fileName) {
         try {
             FileOutputStream fileOut =
-                    new FileOutputStream("src/main/resources/data" + fileName + ".class");
+                    new FileOutputStream("src/main/resources/data/" + fileName + ".class");
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(e);
             out.close();
@@ -306,7 +311,7 @@ public class DBApp implements DBAppInterface {
 
     public static Object deserialize(String fileName) {
         try {
-            FileInputStream fileIn = new FileInputStream("src/main/resources/data" + fileName + ".class");
+            FileInputStream fileIn = new FileInputStream("src/main/resources/data/" + fileName + ".class");
             ObjectInputStream in = new ObjectInputStream(fileIn);
             Object e = in.readObject();
             in.close();
@@ -369,9 +374,12 @@ public class DBApp implements DBAppInterface {
         max.put("name", "ZZZZZZZZZZZ");
         max.put("gpa", "1000000");
         //   dbApp.createTable("T1","id", htblColNameType , min , max );
-        Table t = (Table) deserialize("T1");
-        System.out.println(t.getCount());
+      //  Table t = (Table) deserialize("T1");
+     //   System.out.println(t.getCount());
 //        insertIntoTable(t.getTableName(), )
+
+
+
 
     }
 

@@ -5,7 +5,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 public class Page implements java.io.Serializable {
-    private Vector<Vector> rows;
+    private Vector<Vector<Object>> rows;
     private Vector<Object> pks;
 
     public Vector<Vector<Object>> getOverFlowInfo() {
@@ -34,7 +34,7 @@ public class Page implements java.io.Serializable {
         newPage.add(count);
         newPage.add(0);
         overFlowInfo.add(newPage);
-        DBApp.serialize(p, tableName + "/" + PageID+"."+count);
+        DBApp.serialize(p, tableName + "-" + PageID+"."+count);
     }
 
 
@@ -94,7 +94,7 @@ public class Page implements java.io.Serializable {
         this.overFlow = overFlow;
     }
 
-    public Vector<Vector> getRows() {
+    public Vector<Vector<Object>> getRows() {
         return rows;
     }
 
@@ -123,11 +123,11 @@ public class Page implements java.io.Serializable {
     //Page.class -> info rows, min,min + row values ?
     public Page() {
         maxRows = DBApp.MaximumRowsCountinPage;
-        rows = new Vector<Vector>();
+        rows = new Vector<Vector<Object>>();
         pks = new Vector<Object>();
     }
 
-    public void setRows(Vector<Vector> rows) {
+    public void setRows(Vector<Vector<Object>> rows) {
         this.rows = rows;
     }
 
@@ -211,7 +211,7 @@ public class Page implements java.io.Serializable {
     public void sortI(int index) {
         Vector<Object> pks = new Vector<>();
         for (int i = 0; i < rows.size(); i++) {
-            Vector row = rows.get(i);
+            Vector<Object> row = rows.get(i);
             pks.add(row.get(index));
         }
 
