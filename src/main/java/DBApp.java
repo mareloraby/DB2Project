@@ -7,7 +7,7 @@ public class DBApp implements DBAppInterface {
     static int MaximumKeysCountinIndexBucket;
 
     @Override
-    public void init()  {
+    public void init() {
 
     }
 
@@ -74,10 +74,12 @@ public class DBApp implements DBAppInterface {
             csvWriter.append(",");
             csvWriter.append(coltype);
             csvWriter.append(",");
-            if (clusteringKey.equals(colname))
-            {csvWriter.append("True"); ck_match = true;}
-            else
-            {csvWriter.append("False");}
+            if (clusteringKey.equals(colname)) {
+                csvWriter.append("True");
+                ck_match = true;
+            } else {
+                csvWriter.append("False");
+            }
             csvWriter.append(",");
             csvWriter.append("False"); //indexed
             csvWriter.append(",");
@@ -89,9 +91,6 @@ public class DBApp implements DBAppInterface {
             //each colname has a type as well as max and min values
             if (minvalue == null || minvalue.equals(""))
                 throw new DBAppException("The column minimum value should not be equal null.");
-
-            if (!ck_match)
-                throw new DBAppException("Clustering Key entered doesn't match any colName.");
 
             csvWriter.append(minvalue);
             csvWriter.append(",");
@@ -109,6 +108,8 @@ public class DBApp implements DBAppInterface {
 
 
         }
+        if (!ck_match)
+            throw new DBAppException("Clustering Key entered doesn't match any colName.");
         Table t = new Table(tableName);
         serialize(t, tableName);
         csvWriter.close();
@@ -150,7 +151,7 @@ public class DBApp implements DBAppInterface {
         }
         csvReader.close();
 
-        if (pk_found == -1) throw new DBAppException("No Primary Key inserted");
+//        if (pk_found == -1) throw new DBAppException("No Primary Key inserted");
 
         // move from values array to values Vector
         Vector<Object> row = new Vector<Object>();
@@ -249,7 +250,7 @@ public class DBApp implements DBAppInterface {
                     throw new DBAppException("Value is not within the min and max value range. ");
                 if (colTypes.get(i) != colNameValue.get(colNames.get(i)).getClass().getName())
                     throw new DBAppException("Value is not of the right type. ");
-                Vector<Object> v= new Vector<Object>();
+                Vector<Object> v = new Vector<Object>();
                 v.add(i);//??
                 v.add(value);
                 index_value.add(v);
@@ -278,7 +279,7 @@ public class DBApp implements DBAppInterface {
         HashSet<String> dataTypes = new HashSet<String>();
         dataTypes.add("java.lang.Integer");
         dataTypes.add("java.lang.String");
-        dataTypes.add("java.lang.Date");
+        dataTypes.add("java.util.Date");
         dataTypes.add("java.lang.Double");
 
 

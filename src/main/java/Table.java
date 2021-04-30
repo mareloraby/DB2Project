@@ -13,6 +13,8 @@ public class Table implements java.io.Serializable {
     transient private Vector<Integer> pagesID; // number of pages-- pages.size() and pages id-- page.get();
     private int maxRows;
 
+    // page p-> overflowID vector:<1,2,3>
+
     //index: 1,2
     //names: 1,3
 
@@ -25,6 +27,7 @@ public class Table implements java.io.Serializable {
         maxRows = DBApp.MaximumRowsCountinPage;
         //min_max_count= new Vector<Vector<Object>>();
         pagesID = new Vector<Integer>();
+        pagesInfo = new Vector<Vector<Object>>();
         tableName = name;
         count = 0;
     }
@@ -220,7 +223,6 @@ public class Table implements java.io.Serializable {
         }
     }
 
-
     public void addPage(Vector<Object> v, int index) throws DBAppException {
         count++;
         Page p = new Page();
@@ -240,13 +242,13 @@ public class Table implements java.io.Serializable {
 
             // If the element is present at the
             // middle itself
-            int arr_mid= (int)(arr.get(mid)).get(2);
-            if (Trial.compare(arr_mid,x)==0)
+            int arr_mid = (int) (arr.get(mid)).get(2);
+            if (Trial.compare(arr_mid, x) == 0)
                 return mid;
 
             // If element is smaller than mid, then
             // it can only be present in left subarray
-            if (Trial.compare(arr_mid,x)==1)
+            if (Trial.compare(arr_mid, x) == 1)
                 return binarySearch(arr, l, mid - 1, x);
 
             // Else the element can only be present
@@ -259,44 +261,79 @@ public class Table implements java.io.Serializable {
         return -1;
     }
 
+    public void removePage(Page p, int deletePage) {
+        pagesInfo.remove(deletePage);
+        pagesID.remove(deletePage);
+    }
 
-
-    public void deleteFromPage(Vector<Vector> index_value, int pk_found, Object pk_value) {
-
+    public void deleteFromPage(Vector<Vector> index_value, int pk_found, Object pk_value) throws DBAppException {
+        //binary search
         if (pk_value != null) {
-           int searchPage= binarySearch(pagesInfo,0, pagesInfo.size(), pk_value);
-           Page p = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(searchPage));
-           p.deleteRowFromPage(pk_found, pk_value, index_value);
-            // page min w max
-            // linear search 3la el pages ---
+            int searchPage = binarySearch(pagesInfo, 0, pagesInfo.size(), pk_value);
+            Page p = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(searchPage));
+            p.deleteRowFromPageB(pk_found, pk_value, index_value);
 
-            // 200
-            // 0-100 , 101-300, 350-400
-            // 100,300,400
+            if (p.getNumOfRows() == 0) {
+                removePage(p, searchPage);
+            } else {
+                DBApp.serialize(p, tableName + "/" + pagesID.get(searchPage));
+            }
+            deleteFromOverflowPage(pagesID.get(searchPage), index_value, pk_found, pk_value);
+        }
+        // linear search
+        else {
+            for (int i = 0; i < pagesID.size(); i++) {
+                Page p = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(i));
+                p.deleteRowFromPageL(pk_found, index_value);
+                if (p.getNumOfRows() == 0) {
+                    removePage(p, i);
+                } else {
+                    DBApp.serialize(p, tableName + "/" + pagesID.get(i));
+                }
+                deleteFromOverflowPage(pagesID.get(i), index_value, pk_found, pk_value);
+            }
 
+
+        }
+
+
+    }
+
+    public void deleteFromOverflowPage(int pageID, Vector<Vector> index_value, int pk_found, Object pk_value) throws DBAppException {
+        if (pk_value != null) {
+            Page p = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(pageID));
+//        Page p = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(pageID) + "." + overflowCount);
+
+            Vector<Vector<Object>> overflowPages = p.getOverFlowInfo();
+            for (int i = 0; i < overflowPages.size(); i++) {
+                Page o = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(pageID) + "." + overflowPages.get(i).get(0));
+                if (pk_value != null)
+                    o.deleteRowFromPageB(pk_found, pk_value, index_value);
+                else
+                    o.deleteRowFromPageL(pk_found, index_value);
+                if (o.getNumOfRows() == 0) {
+                    overflowPages.remove(i);
+                } else {
+                    DBApp.serialize(o, tableName + "/" + pagesID.get(pageID) + "." + overflowPages.get(i).get(0));
+                }
+            }
+            DBApp.serialize(p, tableName + "/" + pagesID.get(pageID) + "." + pagesID.get(pageID));
         }
     }
 
-
-
-
-    public int pageSearchSuggestion(Comparable rowKey,int Index_of_Key) throws Exception, FileNotFoundException{
-        int lo =0,hi = pagesID.size()-1,ans=-1;
-        while(lo<=hi)
-        {
-            int mid = (lo+hi)>>1;
+    public int pageSearchSuggestion(Comparable rowKey, int Index_of_Key) throws Exception, FileNotFoundException {
+        int lo = 0, hi = pagesID.size() - 1, ans = -1;
+        while (lo <= hi) {
+            int mid = (lo + hi) >> 1;
             Integer curr = pagesID.get(mid);
-            Page currentPage = (Page)DBApp.deserialize(curr+"");
+            Page currentPage = (Page) DBApp.deserialize(curr + "");
             Vector<Object> startTuple = currentPage.getRows().get(0);
             Comparable startTupleKey = (Comparable) startTuple.get(Index_of_Key);
-            if(startTupleKey.compareTo(rowKey) < 0)
-            {
+            if (startTupleKey.compareTo(rowKey) < 0) {
                 ans = mid;
-                lo = mid+1;
-            }
-            else
-            {
-                hi = mid-1;
+                lo = mid + 1;
+            } else {
+                hi = mid - 1;
             }
         }
         return ans;

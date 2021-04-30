@@ -1,18 +1,93 @@
 
 import java.time.DateTimeException;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Vector;
 
 public class Page implements java.io.Serializable {
     private Vector<Vector> rows;
     private Vector<Object> pks;
+
+    public Vector<Vector<Object>> getOverFlowInfo() {
+        return overFlowInfo;
+    }
+
+    public void setOverFlowInfo(Vector<Vector<Object>> overFlowInfo) {
+        this.overFlowInfo = overFlowInfo;
+    }
+
     private Page overFlow;
+    private int count;
+    private Vector<Vector<Object>> overFlowInfo; //stores ID and number of rows
     private Object min_pk_value;
     private Object max_pk_value;
     private int numOfRows;
+    private int last_index;
+    private int indexOfpk;
 
-    public void deleteRowFromPage(int pk_found, Object pk_value, Vector<Vector> index_value) {
-        Vector<Object> pks = new Vector<Object>();
+    // create overflow page
+    public void addOverflow(String tableName, int PageID, Vector<Object> v) throws DBAppException {
+        count++;
+        Page p = new Page();
+        p.addOverflowRow(v);
+        Vector<Object> newPage = new Vector<Object>();
+        newPage.add(count);
+        newPage.add(0);
+        overFlowInfo.add(newPage);
+        DBApp.serialize(p, tableName + "/" + PageID+"."+count);
+    }
+
+
+    public void deleteRowFromPageB(int pk_found, Object pk_value, Vector<Vector> index_value) throws DBAppException {
+        int mid = binarySearch(0, rows.size(), pk_value);
+        Vector<Object> row = rows.get(mid);
+        for (int i = 0; i < index_value.size(); i++) {
+            int rowToDeleteIndex = (int) index_value.get(i).get(0);
+            Object rowToDeleteValue = index_value.get(i).get(1);
+            if (compare(rows.get(rowToDeleteIndex), rowToDeleteValue) == 0)
+                continue;
+            else
+                throw new DBAppException("There is not existing row in the page with the same values.");
+        }
+        rows.remove(mid);
+        numOfRows--;
+        if (rows.size() > 0) {
+            int last_index = rows.size() - 1;
+            max_pk_value = rows.get(last_index).get(pk_found);
+            min_pk_value = rows.get(0).get(pk_found);
+        }
+    }
+
+    public void updatePageAfterDelete(int pk_found) {
+        numOfRows--;
+        if (rows.size() > 0) {
+            int last_index = rows.size() - 1;
+            max_pk_value = rows.get(last_index).get(pk_found);
+            min_pk_value = rows.get(0).get(pk_found);
+        }
+    }
+
+    public void deleteRowFromPageL(int pk_found, Vector<Vector> index_value) {
+        Vector<Integer> deletedRowsIndex = new Vector<Integer>();
+        for (int i = 0; i < rows.size(); i++) {
+            Vector<Object> row = rows.get(i);
+            boolean perfectMatch = true;
+            for (int j = 0; j < index_value.size(); j++) {
+                int rowToDeleteIndex = (int) index_value.get(i).get(0);
+                Object rowToDeleteValue = index_value.get(i).get(1);
+                if (compare(rows.get(rowToDeleteIndex), rowToDeleteValue) == 0) {
+                    continue;
+                } else {
+                    perfectMatch = false;
+                    break;
+                }
+            }
+            if (perfectMatch) deletedRowsIndex.add(i);
+        }
+        for (int i = 0; i < deletedRowsIndex.size(); i++) {
+            rows.remove(i);
+            updatePageAfterDelete(pk_found);
+        }
     }
 
     public void setOverFlow(Page overFlow) {
@@ -49,6 +124,7 @@ public class Page implements java.io.Serializable {
     public Page() {
         maxRows = DBApp.MaximumRowsCountinPage;
         rows = new Vector<Vector>();
+        pks = new Vector<Object>();
     }
 
     public void setRows(Vector<Vector> rows) {
@@ -69,6 +145,14 @@ public class Page implements java.io.Serializable {
         info.add(min_pk_value);
         info.add(max_pk_value);
         return info;
+    }
+
+    // add a row to an overflow page
+    public void addOverflowRow(Vector v) throws DBAppException {
+        Vector<Object> info = new Vector<>();
+        numOfRows++;
+        rows.add(v);
+        info.add(numOfRows);
     }
 
     // used with sortB to update info in the page
@@ -98,7 +182,7 @@ public class Page implements java.io.Serializable {
         updateRowInfo(rowAdded, mid);
     }
 
-// used to sort within a page
+    // used to sort within a page
     public int binarySearch(int l, int r, Object x) {
         if (r >= l) {
             int mid = l + (r - l) / 2;
@@ -146,6 +230,14 @@ public class Page implements java.io.Serializable {
     }
 
     public static int compare(Object o1, Object o2) { // compares 2 objects
+
+        if (o1 instanceof Date && o2 instanceof Date) {
+
+            if (((Date) o1).compareTo((Date) o2) > 0) return 1; // o1 appears after o2
+            else if (((Date) o1).compareTo((Date) o2) < 0) return -1;
+            else return 0;
+
+        }
         if (o1 instanceof Double && o2 instanceof Double) {
             if ((Double) o1 < (Double) o2) {
                 return -1;
@@ -193,9 +285,8 @@ public class Page implements java.io.Serializable {
                 }
             }
         }
-
-
     }
+
 
     public static void main(String[] args) {
         // write your code here
