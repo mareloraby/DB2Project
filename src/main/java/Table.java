@@ -1,5 +1,6 @@
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -76,6 +77,15 @@ public class Table implements java.io.Serializable {
         for (int i = 0; i < (pagesID).size(); i++) {
             // retrieve the info of the page we're standing at
             Vector<Object> page = pagesInfo.get(i);
+            Enumeration enu = pagesInfo.get(i).elements();
+
+            System.out.println("The enumeration of values are:");
+
+            // Displaying the Enumeration
+            while (enu.hasMoreElements()) {
+                System.out.println(enu.nextElement());
+            }
+
             int countRows = (int) page.get(0); // <"2,0,10000", >
             Object min = page.get(1);
             Object max = page.get(2);
@@ -117,7 +127,9 @@ public class Table implements java.io.Serializable {
                         Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
                         Vector<Vector<Object>> rows_in_prevPage = p.getRows();
                         Vector<Object> to_be_shifted = rows_in_prevPage.get(p.getNumOfRows() - 1);
-                        p.setRows(p.getRows().remove(p.getNumOfRows() - 1));
+                        Vector<Vector<Object>> r= p.getRows();
+                        r.remove(p.getNumOfRows() - 1);
+                        p.setRows(r);
                         Vector<Object> updatePage = p.addRow(v, index);
                         pagesInfo.remove(i);
                         pagesInfo.add(i, updatePage);
@@ -182,10 +194,12 @@ public class Table implements java.io.Serializable {
                         // checking for overflow
                         if (countRows2 < maxRows) {
                             Page p2 = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i + 1));
-                            Vector<Vector> rows_in_prevPage = p.getRows();
+                            Vector<Vector<Object>> rows_in_prevPage = p.getRows();
                             Vector<Object> to_be_shifted = rows_in_prevPage.get(p.getNumOfRows() - 1);
                             p2.addRow(to_be_shifted, index);
-                            p.setRows(p.getRows().remove(p.getNumOfRows() - 1));
+                            Vector<Vector<Object>> r= p.getRows();
+                            r.remove(p.getNumOfRows() - 1);
+                            p.setRows(r);
                             Vector<Object> updatePage = p.addRow(v, index);
                             pagesInfo.remove(i);
                             pagesInfo.add(i, updatePage);
@@ -226,9 +240,10 @@ public class Table implements java.io.Serializable {
 
     public void addPage(Vector<Object> v, int index) throws DBAppException {
         count++;
-
         Page p = new Page();
         p.addRow(v, index);
+        p.setMax_pk_value(v.get(index));
+        p.setMin_pk_value(v.get(index));
         this.pagesID.add(count);
         Vector<Object> newPage = new Vector<Object>();
         newPage.add(1);
@@ -242,15 +257,27 @@ public class Table implements java.io.Serializable {
         if (r >= l) {
             int mid = l + (r - l) / 2;
 
+            // Creating an empty enumeration to store
+            Enumeration enu = arr.get(mid).elements();
+
+            System.out.println("The enumeration of values are:");
+
+            // Displaying the Enumeration
+            while (enu.hasMoreElements()) {
+                System.out.println(enu.nextElement());
+            }
+
             // If the element is present at the
-            // middle itself
-            int arr_mid = (int) (arr.get(mid)).get(2);
-            if (Trial.compare(arr_mid, x) == 0)
+            // middle itself <numofPage, min, max>
+
+            Object arr_mid_min = (Object) (arr.get(mid)).get(2);
+            Object arr_mid_max = (Object) (arr.get(mid)).get(2);
+            if (Trial.compare(x, arr_mid_min)>=0 && Trial.compare(arr_mid_max, x) <=0)
                 return mid;
 
             // If element is smaller than mid, then
             // it can only be present in left subarray
-            if (Trial.compare(arr_mid, x) == 1)
+            if (Trial.compare(arr_mid_max, x) == 1)
                 return binarySearch(arr, l, mid - 1, x);
 
             // Else the element can only be present

@@ -1,11 +1,18 @@
 
 import java.time.DateTimeException;
-import java.util.Date;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.*;
 
 public class Page implements java.io.Serializable {
     private Vector<Vector<Object>> rows;
+
+    public void setMin_pk_value(Object min_pk_value) {
+        this.min_pk_value = min_pk_value;
+    }
+
+    public void setMax_pk_value(Object max_pk_value) {
+        this.max_pk_value = max_pk_value;
+    }
+
     private Vector<Object> pks;
 
     public Vector<Vector<Object>> getOverFlowInfo() {
@@ -22,9 +29,46 @@ public class Page implements java.io.Serializable {
     private Object min_pk_value;
     private Object max_pk_value;
     private int numOfRows;
-    private int last_index;
-    private int indexOfpk;
 
+
+    //Page.class -> info rows, min,min + row values ?
+    public Page() {
+        min_pk_value = null;
+        max_pk_value = null;
+        maxRows = DBApp.MaximumRowsCountinPage;
+        rows = new Vector<Vector<Object>>();
+        pks = new Vector<Object>();
+    }
+    // called only if there is space
+    public void sortB(Object pk_value) {
+        int mid = binarySearch(0, pks.size(), pk_value);
+        int temp = mid;
+        for (int i = pks.size() - 1; i > mid; i++) {
+            pks.setElementAt(pks.get(i), i+1);
+        }
+        pks.setElementAt(pk_value, mid);
+
+    }
+    //0,1
+    // 15,20 check ..!
+    public Vector<Object> addRow(Vector v, int index) throws DBAppException {
+        Vector<Object> info = new Vector<>();
+        numOfRows++;
+        rows.add(v);
+        pks.add(v.get(index));
+        sortI(index);
+//        Collections.sort(pks);
+        Object pk = v.get(index);
+        if (Trial.compare(pk, max_pk_value) == 1)
+            max_pk_value = pk;
+        if (Trial.compare(min_pk_value, pk) == 1)
+            min_pk_value = pk;
+
+        info.add(numOfRows);
+        info.add(min_pk_value);
+        info.add(max_pk_value);
+        return info;
+    }
     // create overflow page
     public void addOverflow(String tableName, int PageID, Vector<Object> v) throws DBAppException {
         count++;
@@ -34,12 +78,45 @@ public class Page implements java.io.Serializable {
         newPage.add(count);
         newPage.add(0);
         overFlowInfo.add(newPage);
-        DBApp.serialize(p, tableName + "-" + PageID+"."+count);
+        DBApp.serialize(p, tableName + "-" + PageID + "." + count);
     }
 
+    // used to sort within a page
+    public int binarySearch(int l, int r, Object x) {
+        if (r >= l) {
+            int mid = l + (r - l) / 2;
+            // If the element is present at the
+            // middle itself
+            Object arr_mid = (Object) (pks.get(mid));
+            if (Trial.compare(arr_mid, x) == 0)
+                return mid;
+
+            // If element is smaller than mid, then
+            // it can only be present in left subarray
+            if (Trial.compare(arr_mid, x) == 1)
+                return binarySearch(l, mid - 1, x);
+
+            // Else the element can only be present
+            // in right subarray
+            return binarySearch(mid + 1, r, x);
+        }
+        // We reach here when element is not present
+        // in array
+        return -1;
+    }
 
     public void deleteRowFromPageB(int pk_found, Object pk_value, Vector<Vector> index_value) throws DBAppException {
-        int mid = binarySearch(0, rows.size(), pk_value);
+        int mid = binarySearch(0, rows.size()-1, pk_value);
+        // Creating an empty enumeration to store
+        Enumeration enu = pks.elements();
+
+        System.out.println("The enumeration of values are:");
+
+        // Displaying the Enumeration
+        while (enu.hasMoreElements()) {
+            System.out.println(enu.nextElement());
+        }
+        if (mid == -1) throw new DBAppException("No such record");
         Vector<Object> row = rows.get(mid);
         for (int i = 0; i < index_value.size(); i++) {
             int rowToDeleteIndex = (int) index_value.get(i).get(0);
@@ -59,6 +136,7 @@ public class Page implements java.io.Serializable {
     }
 
     public void updatePageAfterDelete(int pk_found) {
+//        System.out.println(pk_found);
         numOfRows--;
         if (rows.size() > 0) {
             int last_index = rows.size() - 1;
@@ -82,7 +160,10 @@ public class Page implements java.io.Serializable {
                     break;
                 }
             }
-            if (perfectMatch) deletedRowsIndex.add(i);
+            // if it fully matches the value sin index_value , remove from the page
+            if (perfectMatch) {
+                deletedRowsIndex.add(i);
+            }
         }
         for (int i = 0; i < deletedRowsIndex.size(); i++) {
             rows.remove(i);
@@ -120,32 +201,13 @@ public class Page implements java.io.Serializable {
 
     private int maxRows;
 
-    //Page.class -> info rows, min,min + row values ?
-    public Page() {
-        maxRows = DBApp.MaximumRowsCountinPage;
-        rows = new Vector<Vector<Object>>();
-        pks = new Vector<Object>();
-    }
 
     public void setRows(Vector<Vector<Object>> rows) {
         this.rows = rows;
     }
 
-    public Vector<Object> addRow(Vector v, int index) throws DBAppException {
-        Vector<Object> info = new Vector<>();
-        numOfRows++;
-        rows.add(v);
-        Object pk = v.get(index);
-        if (Trial.compare(pk, max_pk_value) == 1)
-            max_pk_value = pk;
-        if (Trial.compare(min_pk_value, pk) == 1)
-            min_pk_value = pk;
 
-        info.add(numOfRows);
-        info.add(min_pk_value);
-        info.add(max_pk_value);
-        return info;
-    }
+
 
     // add a row to an overflow page
     public void addOverflowRow(Vector v) throws DBAppException {
@@ -169,47 +231,22 @@ public class Page implements java.io.Serializable {
         info.add(max_pk_value);
     }
 
-    // called only if there is space
-    public void sortB(Object pk_value, Vector<Object> rowAdded) {
-        int mid = binarySearch(0, rows.size(), pk_value);
-        int temp = mid;
-        for (int i = mid + 1; i < rows.size() - 1; i++) {
-            pks.setElementAt(pks.get(temp), i + 1);
-            rows.setElementAt(rows.get(temp), i + 1);
-        }
-        pks.setElementAt(pk_value, mid);
-        rows.setElementAt(rowAdded, mid);
-        updateRowInfo(rowAdded, mid);
-    }
+//    // called only if there is space
+//    public void sortB(Object pk_value, Vector<Object> rowAdded) {
+//        int mid = binarySearch(0, rows.size(), pk_value);
+//        int temp = mid;
+//        for (int i = mid + 1; i < rows.size() - 1; i++) {
+//            pks.setElementAt(pks.get(temp), i + 1);
+//            rows.setElementAt(rows.get(temp), i + 1);
+//        }
+//        pks.setElementAt(pk_value, mid);
+//        rows.setElementAt(rowAdded, mid);
+//        updateRowInfo(rowAdded, mid);
+//    }
 
-    // used to sort within a page
-    public int binarySearch(int l, int r, Object x) {
-        if (r >= l) {
-            int mid = l + (r - l) / 2;
-
-            // If the element is present at the
-            // middle itself
-            int arr_mid = (int) (pks.get(mid));
-            if (Trial.compare(arr_mid, x) == 0)
-                return mid;
-
-            // If element is smaller than mid, then
-            // it can only be present in left subarray
-            if (Trial.compare(arr_mid, x) == 1)
-                return binarySearch(l, mid - 1, x);
-
-            // Else the element can only be present
-            // in right subarray
-            return binarySearch(mid + 1, r, x);
-        }
-
-        // We reach here when element is not present
-        // in array
-        return -1;
-    }
 
     public void sortI(int index) {
-        Vector<Object> pks = new Vector<>();
+        pks = new Vector<>();
         for (int i = 0; i < rows.size(); i++) {
             Vector<Object> row = rows.get(i);
             pks.add(row.get(index));
