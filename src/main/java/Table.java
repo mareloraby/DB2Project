@@ -117,7 +117,9 @@ public class Table implements java.io.Serializable {
                         Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
                         Vector<Vector<Object>> rows_in_prevPage = p.getRows();
                         Vector<Object> to_be_shifted = rows_in_prevPage.get(p.getNumOfRows() - 1);
-                        p.setRows(p.getRows().remove(p.getNumOfRows() - 1));
+                        Vector<Vector<Object>> r= p.getRows();
+                        r.remove(p.getNumOfRows() - 1);
+                        p.setRows(r);
                         Vector<Object> updatePage = p.addRow(v, index);
                         pagesInfo.remove(i);
                         pagesInfo.add(i, updatePage);
@@ -182,10 +184,12 @@ public class Table implements java.io.Serializable {
                         // checking for overflow
                         if (countRows2 < maxRows) {
                             Page p2 = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i + 1));
-                            Vector<Vector> rows_in_prevPage = p.getRows();
+                            Vector<Vector<Object>> rows_in_prevPage = p.getRows();
                             Vector<Object> to_be_shifted = rows_in_prevPage.get(p.getNumOfRows() - 1);
                             p2.addRow(to_be_shifted, index);
-                            p.setRows(p.getRows().remove(p.getNumOfRows() - 1));
+                            Vector<Vector<Object>> r= p.getRows();
+                            r.remove(p.getNumOfRows() - 1);
+                            p.setRows(r);
                             Vector<Object> updatePage = p.addRow(v, index);
                             pagesInfo.remove(i);
                             pagesInfo.add(i, updatePage);

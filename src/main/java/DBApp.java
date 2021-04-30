@@ -145,7 +145,9 @@ public class DBApp implements DBAppInterface {
                 MinMax.add(data[6]);
                 min_max.add(MinMax);
                 colNames.add(data[1]);
-                if (data[3].equals("True") || data[3].equals("true")){ pk_found = index;}
+                if (data[3].equals("True") || data[3].equals("true")) {
+                    pk_found = index;
+                }
                 index++;
 
 
@@ -156,12 +158,17 @@ public class DBApp implements DBAppInterface {
 
         csvReader.close();
 
-      if (pk_found == -1) throw new DBAppException("No Primary Key inserted");
+        if (pk_found == -1) throw new DBAppException("No Primary Key inserted");
 
         // move from values array to values Vector
         Vector<Object> row = new Vector<Object>();
 
+        for (Entry<String, Object> entry : colNameValue.entrySet())
+            if (!colNames.contains(entry.getKey()))
+                throw new DBAppException("The table does not contain this column.");
+
         for (int i = 0; i < colNames.size(); i++) {
+
             Object value = colNameValue.get(colNames.get(i));
             if (Trial.compare(value, min_max.get(i).get(0)) == -1 && Trial.compare(value, min_max.get(i).get(1)) == 1)
                 throw new DBAppException("The inserted value is not within the min and max value range. ");
@@ -219,7 +226,7 @@ public class DBApp implements DBAppInterface {
         int index = 0;
         while ((csvLine = csvReader.readLine()) != null) {
             String[] data = csvLine.split(",");
-            if (data[0] == tableName) {
+            if (data[0].equals(tableName)) {
                 found = true;
                 ArrayList<Object> MinMax = new ArrayList<>();
                 colNames.add(data[1]);
@@ -232,11 +239,11 @@ public class DBApp implements DBAppInterface {
                     pk_colName = data[1]; // primary key column name
                 }
                 index++; //index of primary key in columns of a table
-            } else if (data[0] != tableName && found == true)
+            } else if (!data[0].equals(tableName) && found == true)
                 break;
         }
         csvReader.close();
-
+System.out.println(pk_found);
         boolean do_BS = false;
 //        if (pk_found == -1) throw new DBAppException("No Primary Key inserted");
         Object pk_value = colNameValue.get(pk_colName);
@@ -253,7 +260,7 @@ public class DBApp implements DBAppInterface {
             if (value != null) { //check if value within right range
                 if (Trial.compare(value, min_max.get(i).get(0)) == -1 && Trial.compare(value, min_max.get(i).get(1)) == 1)
                     throw new DBAppException("Value is not within the min and max value range. ");
-                if (colTypes.get(i) != colNameValue.get(colNames.get(i)).getClass().getName())
+                if (!colTypes.get(i).equals(colNameValue.get(colNames.get(i)).getClass().getName()))
                     throw new DBAppException("Value is not of the right type. ");
                 Vector<Object> v = new Vector<Object>();
                 v.add(i);//??
@@ -374,11 +381,9 @@ public class DBApp implements DBAppInterface {
         max.put("name", "ZZZZZZZZZZZ");
         max.put("gpa", "1000000");
         //   dbApp.createTable("T1","id", htblColNameType , min , max );
-      //  Table t = (Table) deserialize("T1");
-     //   System.out.println(t.getCount());
+        //  Table t = (Table) deserialize("T1");
+        //   System.out.println(t.getCount());
 //        insertIntoTable(t.getTableName(), )
-
-
 
 
     }

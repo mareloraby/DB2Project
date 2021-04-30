@@ -34,7 +34,7 @@ public class Page implements java.io.Serializable {
         newPage.add(count);
         newPage.add(0);
         overFlowInfo.add(newPage);
-        DBApp.serialize(p, tableName + "-" + PageID+"."+count);
+        DBApp.serialize(p, tableName + "-" + PageID + "." + count);
     }
 
 
@@ -59,6 +59,7 @@ public class Page implements java.io.Serializable {
     }
 
     public void updatePageAfterDelete(int pk_found) {
+        System.out.println(pk_found);
         numOfRows--;
         if (rows.size() > 0) {
             int last_index = rows.size() - 1;
@@ -82,7 +83,10 @@ public class Page implements java.io.Serializable {
                     break;
                 }
             }
-            if (perfectMatch) deletedRowsIndex.add(i);
+            // if it fully matches the value sin index_value , remove from the page
+            if (perfectMatch) {
+                deletedRowsIndex.add(i);
+            }
         }
         for (int i = 0; i < deletedRowsIndex.size(); i++) {
             rows.remove(i);
