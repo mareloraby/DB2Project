@@ -1,3 +1,4 @@
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -149,6 +150,18 @@ public class Trial {
             System.out.println();
         }
     }
+
+
+    public static Date parseDate(String s) throws Exception{
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        Date date= format.parse(s);
+        return date;
+    }
+
+
+
+
+
 
     public static void main(String[] args) // for testing
     {

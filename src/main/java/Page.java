@@ -59,9 +59,9 @@ public class Page implements java.io.Serializable {
         sortI(index);
 //        Collections.sort(pks);
         Object pk = v.get(index);
-        if (Trial.compare(pk, max_pk_value) == 1)
+        if (Trial.compare(pk, max_pk_value) > 0)
             max_pk_value = pk;
-        if (Trial.compare(min_pk_value, pk) == 1)
+        if (Trial.compare(min_pk_value, pk) > 0)
             min_pk_value = pk;
 
         info.add(numOfRows);
@@ -92,18 +92,19 @@ public class Page implements java.io.Serializable {
         while (enu.hasMoreElements()) {
             System.out.println(enu.nextElement());
         }
-
+        Comparable xnew = (Comparable) x;
         if (r >= l) {
             int mid = l + (r - l) / 2;
             // If the element is present at the
             // middle itself
             Object arr_mid = (Object) (pks.get(mid));
-            if (Trial.compare(arr_mid, x) == 0)
+
+            if (((Comparable)arr_mid).compareTo(xnew) == 0)
                 return mid;
 
             // If element is smaller than mid, then
             // it can only be present in left subarray
-            if (Trial.compare(arr_mid, x) == 1)
+            if (((Comparable)arr_mid).compareTo(xnew) > 1)
                 return binarySearch(l, mid - 1, x);
 
             // Else the element can only be present

@@ -76,14 +76,7 @@ public class Table implements java.io.Serializable {
         for (int i = 0; i < (pagesID).size(); i++) {
             // retrieve the info of the page we're standing at
             Vector<Object> page = pagesInfo.get(i);
-            Enumeration enu = pagesInfo.get(i).elements();
 
-            System.out.println("The enumeration of values are:");
-
-            // Displaying the Enumeration
-            while (enu.hasMoreElements()) {
-                System.out.println(enu.nextElement());
-            }
 
             int countRows = (int) page.get(0); // <"2,0,10000", >
             Object min = page.get(1);
@@ -256,31 +249,22 @@ public class Table implements java.io.Serializable {
         if (r >= l) {
             int mid = l + (r - l) / 2;
 
-            // Creating an empty enumeration to store
-            Enumeration enu = arr.get(mid).elements();
 
-            System.out.println("The enumeration of values are:");
-
-            // Displaying the Enumeration
-            while (enu.hasMoreElements()) {
-                System.out.println(enu.nextElement());
-            }
 
             // If the element is present at the
             // middle itself <numofPage, min, max>
 
             Comparable xnew = (Comparable) x;
+            //System.out.println(x.getClass().getName());
             Comparable arr_mid_min = (Comparable) (arr.get(mid)).get(1);
             Comparable arr_mid_max = (Comparable) (arr.get(mid)).get(2);
-            if (xnew instanceof Date) {
-                if ((xnew.compareTo(arr_mid_min)) >= 0 && (arr_mid_max.compareTo(xnew)) >= 0)
+
+            if ((xnew.compareTo(arr_mid_min)) >= 0 && (arr_mid_max.compareTo(xnew)) >= 0)
                     return mid;
-            } else if (Trial.compare(x, arr_mid_min) >= 0 && Trial.compare(arr_mid_max, x) >= 0)
-                return mid;
 
             // If element is smaller than mid, then
             // it can only be present in left subarray
-            if (Trial.compare(arr_mid_max, x) == 1)
+            if (arr_mid_max.compareTo(x) >= 0)
                 return binarySearch(arr, l, mid - 1, x);
 
             // Else the element can only be present
@@ -300,7 +284,10 @@ public class Table implements java.io.Serializable {
 
     public void deleteFromPage(Vector<Vector> index_value, int pk_found, Object pk_value) throws DBAppException {
         //binary search
+
+
         if (pk_value != null) {
+
             int searchPage = binarySearch(pagesInfo, 0, pagesInfo.size(), pk_value);
             Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(searchPage));
             p.deleteRowFromPageB(pk_found, pk_value, index_value);

@@ -5,6 +5,9 @@ import java.util.Map.Entry;
 public class DBApp implements DBAppInterface {
     static int MaximumRowsCountinPage;
     static int MaximumKeysCountinIndexBucket;
+    public static String types[] = { "java.lang.Integer", "java.lang.String",
+            "java.lang.Double", "java.util.Date"};
+
 
     @Override
     public void init() {
@@ -119,7 +122,7 @@ public class DBApp implements DBAppInterface {
 
     // check whether types are valid
     @Override
-    public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException, IOException {
+    public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws Exception {
         ArrayList<String> AllTablesNames = getTableNames();
         if (!AllTablesNames.contains(tableName))
             throw new DBAppException("The table does not exist.");
@@ -141,8 +144,12 @@ public class DBApp implements DBAppInterface {
                 found = true;
                 ArrayList<Object> MinMax = new ArrayList<>();
                 colTypes.add(data[2]);
-                MinMax.add(data[5]);
-                MinMax.add(data[6]);
+                //MinMax.add(data[5]);
+                //MinMax.add(data[6]);
+
+                MinMax.add(parse(data[2],data[5]));
+                MinMax.add(parse(data[2],data[6]));
+
                 min_max.add(MinMax);
                 colNames.add(data[1]);
                 if (data[3].equals("True") || data[3].equals("true")) {
@@ -170,7 +177,8 @@ public class DBApp implements DBAppInterface {
         for (int i = 0; i < colNames.size(); i++) {
 
             Object value = colNameValue.get(colNames.get(i));
-            if (Trial.compare(value, min_max.get(i).get(0)) == -1 && Trial.compare(value, min_max.get(i).get(1)) == 1)
+
+            if (((Comparable) value).compareTo((Comparable)min_max.get(i).get(0))<0 || ((Comparable) value).compareTo((Comparable)min_max.get(i).get(1))>0 )
                 throw new DBAppException("The inserted value is not within the min and max value range. ");
 
             if (!(colTypes.get(i).equals(colNameValue.get(colNames.get(i)).getClass().getName())))
@@ -196,7 +204,7 @@ public class DBApp implements DBAppInterface {
     }
 
     @Override
-    public void updateTable(String tableName, String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException, IOException {
+    public void updateTable(String tableName, String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws Exception {
         /* 1. Search for the record to be updated
          * 2. Use the clustering key to do binary search
          * 3. Update the record
@@ -223,9 +231,13 @@ public class DBApp implements DBAppInterface {
                 ArrayList<Object> MinMax = new ArrayList<>();
                 colNames.add(data[1]);
                 colTypes.add(data[2]);
-                MinMax.add(data[5]);
-                MinMax.add(data[6]);
+//                MinMax.add(data[5]);
+//                MinMax.add(data[6]);
+
+                MinMax.add(parse(data[2],data[5]));
+                MinMax.add(parse(data[2],data[6]));
                 min_max.add(MinMax);
+
                 if (data[3].equals("True") || data[3].equals("true")) {
                     pk_found = index; //found primary key index
                     pk_colName = data[1]; // primary key column name
@@ -246,7 +258,7 @@ public class DBApp implements DBAppInterface {
         for (int i = 0; i < colNames.size(); i++) {
             Object value = columnNameValue.get(colNames.get(i));
             if (value != null) { //check if value within right range
-                if (Trial.compare(value, min_max.get(i).get(0)) == -1 && Trial.compare(value, min_max.get(i).get(1)) == 1)
+                if (((Comparable) value).compareTo((Comparable)min_max.get(i).get(0))<0 || ((Comparable) value).compareTo((Comparable)min_max.get(i).get(1))>0 )
                     throw new DBAppException("Value is not within the min and max value range. ");
                 if (!colTypes.get(i).equals(columnNameValue.get(colNames.get(i)).getClass().getName()))
                     throw new DBAppException("Value is not of the right type. ");
@@ -293,8 +305,17 @@ public class DBApp implements DBAppInterface {
                 ArrayList<Object> MinMax = new ArrayList<>();
                 colNames.add(data[1]);
                 colTypes.add(data[2]);
-                MinMax.add(data[5]);
-                MinMax.add(data[6]);
+//                MinMax.add(data[5]);
+//                MinMax.add(data[6]);
+
+
+
+                try {MinMax.add(parse(data[2],data[5]));
+
+                    MinMax.add(parse(data[2],data[6]));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 min_max.add(MinMax);
                 if (data[3].equals("True") || data[3].equals("true")) {
                     pk_found = index; //found primary key index
@@ -323,7 +344,7 @@ public class DBApp implements DBAppInterface {
         for (int i = 0; i < colNames.size(); i++) {
             Object value = colNameValue.get(colNames.get(i));
             if (value != null) { //check if value within right range
-                if (Trial.compare(value, min_max.get(i).get(0)) == -1 && Trial.compare(value, min_max.get(i).get(1)) == 1)
+                if (((Comparable) value).compareTo((Comparable)min_max.get(i).get(0))<0 || ((Comparable) value).compareTo((Comparable)min_max.get(i).get(1))>0 )
                     throw new DBAppException("Value is not within the min and max value range. ");
                 if (!colTypes.get(i).equals(colNameValue.get(colNames.get(i)).getClass().getName()))
                     throw new DBAppException("Value is not of the right type. ");
@@ -410,45 +431,90 @@ public class DBApp implements DBAppInterface {
     }
 
 
-    public static void main(String[] args) throws DBAppException, IOException {
-        Hashtable htblColNameValue = new Hashtable();
-        String strTableName = "Yes";
-        DBApp dbApp = new DBApp();
-        //      htblColNameValue.put("id", new Integer( 453455 ));
-        htblColNameValue.put("id", Integer.valueOf(453455)); // fixed the "dashed" Integer elkan 3amlha 3shan kan metal3 error
-
-        htblColNameValue.put("name", new String("Ahmed Noor"));
-//        htblColNameValue.put("gpa", new Double( 0.95 ) );
-        htblColNameValue.put("gpa", Double.valueOf(0.95));
-
-        //   dbApp.insertIntoTable(strTableName , htblColNameValue );
 
 
-        try {
-            MaximumRowsCountinPage = dbApp.getPropValues("MaximumRowsCountinPage");
-            MaximumKeysCountinIndexBucket = dbApp.getPropValues("MaximumKeysCountinIndexBucket");
-
-        } catch (IOException e) {
-            e.printStackTrace();
+    public static Object parse(String keytype,String strClusteringKey)	throws Exception{
+        if(keytype.equals(types[0]))  // Integer
+        {
+            return Integer.parseInt(strClusteringKey);
+        }
+        else if(keytype.equals(types[1])) // String
+        {
+            return strClusteringKey;
+        }
+        else if(keytype.equals(types[2]))  // Double
+        {
+            return Double.parseDouble(strClusteringKey);
+        }
+        else // Date
+        {
+            return Trial.parseDate(strClusteringKey);
         }
 
-        System.out.println(MaximumRowsCountinPage + "");
-        Hashtable htblColNameType = new Hashtable();
+    }
+
+
+    public static void main(String[] args) throws Exception {
+
+
+
+
+        String strTableName = "Student";
+        DBApp dbApp = new DBApp( );
+        Hashtable htblColNameType = new Hashtable( );
         htblColNameType.put("id", "java.lang.Integer");
         htblColNameType.put("name", "java.lang.String");
-        htblColNameType.put("gpa", "java.lang.double");
-        Hashtable min = new Hashtable();
-        min.put("id", "0");
-        min.put("name", "A");
-        min.put("gpa", "0");
-        Hashtable max = new Hashtable();
-        max.put("id", "10000");
-        max.put("name", "ZZZZZZZZZZZ");
-        max.put("gpa", "1000000");
-        //   dbApp.createTable("T1","id", htblColNameType , min , max );
-        //  Table t = (Table) deserialize("T1");
-        //   System.out.println(t.getCount());
-//        insertIntoTable(t.getTableName(), )
+        htblColNameType.put("gpa", "java.lang.Double");
+
+        Hashtable htblColNameMin = new Hashtable( );
+
+        htblColNameMin.put("id", "0");
+        htblColNameMin.put("name", "A");
+        htblColNameMin.put("gpa", "0.0");
+
+
+        Hashtable htblColNameMax = new Hashtable( );
+
+        htblColNameMax.put("id", "99999999");
+        htblColNameMax.put("name", "zzzzzzzzzzzzzzzzzzzzzzzzzz");
+        htblColNameMax.put("gpa", "999.99");
+
+
+
+
+        dbApp.createTable( strTableName, "id", htblColNameType,htblColNameMin,htblColNameMax);
+dbApp.createIndex( strTableName, new String[] {"gpa"} );
+Hashtable htblColNameValue = new Hashtable( );
+htblColNameValue.put("id", 23432);
+htblColNameValue.put("name", new String("Ahmed Noor" ) );
+htblColNameValue.put("gpa", 0.95);
+dbApp.insertIntoTable( strTableName , htblColNameValue );
+htblColNameValue.clear( );
+htblColNameValue.put("id", ( 453455 ));
+htblColNameValue.put("name", new String("Ahmed Noor" ) );
+htblColNameValue.put("gpa", ( 0.95 ) );
+dbApp.insertIntoTable( strTableName , htblColNameValue );
+htblColNameValue.clear( );
+htblColNameValue.put("id", ( 567457 ));
+htblColNameValue.put("name", new String("Dalia Noor" ) );
+htblColNameValue.put("gpa", ( 1.25 ) );
+dbApp.insertIntoTable( strTableName , htblColNameValue );
+htblColNameValue.clear( );
+htblColNameValue.put("id", ( 23498 ));
+htblColNameValue.put("name", new String("John Noor" ) );
+htblColNameValue.put("gpa", ( 1.5 ) );
+dbApp.insertIntoTable( strTableName , htblColNameValue );
+htblColNameValue.clear( );
+htblColNameValue.put("id", ( 78452 ));
+htblColNameValue.put("name", new String("Zaky Noor" ) );
+htblColNameValue.put("gpa", ( 0.88 ) );
+dbApp.insertIntoTable( strTableName , htblColNameValue );
+
+
+        System.out.println(("Fri Jul 14 00:00:00 EET 1905").compareTo("Mon Aug 21 00:00:00 EET 1905"));
+
+
+
 
 
     }
