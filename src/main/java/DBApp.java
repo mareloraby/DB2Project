@@ -196,7 +196,69 @@ public class DBApp implements DBAppInterface {
     }
 
     @Override
-    public void updateTable(String tableName, String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
+    public void updateTable(String tableName, String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException, IOException {
+        /* 1. Search for the record to be updated
+         * 2. Use the clustering key to do binary search
+         * 3. Update the record
+         */
+        ArrayList<String> AllTablesNames = getTableNames();
+        if (!AllTablesNames.contains(tableName))
+            throw new DBAppException("The table does not exist.");
+
+        // String[] columnNames= get this from csv file
+        String csvLine;
+        ArrayList<String> colNames = new ArrayList<>();
+        ArrayList<ArrayList<Object>> min_max = new ArrayList<>();
+        ArrayList<String> colTypes = new ArrayList<>();
+        BufferedReader csvReader = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+
+        int pk_found = -1;
+        String pk_colName = "";
+        boolean found = false;
+        int index = 0;
+        while ((csvLine = csvReader.readLine()) != null) {
+            String[] data = csvLine.split(",");
+            if (data[0].equals(tableName)) {
+                found = true;
+                ArrayList<Object> MinMax = new ArrayList<>();
+                colNames.add(data[1]);
+                colTypes.add(data[2]);
+                MinMax.add(data[5]);
+                MinMax.add(data[6]);
+                min_max.add(MinMax);
+                if (data[3].equals("True") || data[3].equals("true")) {
+                    pk_found = index; //found primary key index
+                    pk_colName = data[1]; // primary key column name
+                }
+                index++; //index of primary key in columns of a table
+            } else if (!data[0].equals(tableName) && found == true)
+                break;
+        }
+        csvReader.close();
+
+        for (Entry<String, Object> entry : columnNameValue.entrySet())
+            if (!colNames.contains(entry.getKey()))
+                throw new DBAppException("The table does not contain this column.");
+        // move from values array to values Vector
+        // stores index with its value
+        Vector<Vector> index_value = new Vector<Vector>();
+
+        for (int i = 0; i < colNames.size(); i++) {
+            Object value = columnNameValue.get(colNames.get(i));
+            if (value != null) { //check if value within right range
+                if (Trial.compare(value, min_max.get(i).get(0)) == -1 && Trial.compare(value, min_max.get(i).get(1)) == 1)
+                    throw new DBAppException("Value is not within the min and max value range. ");
+                if (!colTypes.get(i).equals(columnNameValue.get(colNames.get(i)).getClass().getName()))
+                    throw new DBAppException("Value is not of the right type. ");
+                Vector<Object> v = new Vector<Object>();
+                v.add(i);
+                v.add(value);
+                index_value.add(v);
+            }
+        }
+        Table t = (Table) DBApp.deserialize(tableName);
+        t.updateInPage(index_value, pk_found, clusteringKeyValue);
+        serialize(t, tableName);
 
     }
 
@@ -250,6 +312,9 @@ public class DBApp implements DBAppInterface {
         if (pk_value != null)
             do_BS = true;
 
+        for (Entry<String, Object> entry : colNameValue.entrySet())
+            if (!colNames.contains(entry.getKey()))
+                throw new DBAppException("The table does not contain this column.");
 
         // move from values array to values Vector
         // stores index with its value

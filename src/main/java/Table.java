@@ -1,7 +1,6 @@
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Vector;
 
 public class Table implements java.io.Serializable {
@@ -127,7 +126,7 @@ public class Table implements java.io.Serializable {
                         Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
                         Vector<Vector<Object>> rows_in_prevPage = p.getRows();
                         Vector<Object> to_be_shifted = rows_in_prevPage.get(p.getNumOfRows() - 1);
-                        Vector<Vector<Object>> r= p.getRows();
+                        Vector<Vector<Object>> r = p.getRows();
                         r.remove(p.getNumOfRows() - 1);
                         p.setRows(r);
                         Vector<Object> updatePage = p.addRow(v, index);
@@ -197,7 +196,7 @@ public class Table implements java.io.Serializable {
                             Vector<Vector<Object>> rows_in_prevPage = p.getRows();
                             Vector<Object> to_be_shifted = rows_in_prevPage.get(p.getNumOfRows() - 1);
                             p2.addRow(to_be_shifted, index);
-                            Vector<Vector<Object>> r= p.getRows();
+                            Vector<Vector<Object>> r = p.getRows();
                             r.remove(p.getNumOfRows() - 1);
                             p.setRows(r);
                             Vector<Object> updatePage = p.addRow(v, index);
@@ -250,7 +249,7 @@ public class Table implements java.io.Serializable {
         newPage.add(v.get(index));
         newPage.add(v.get(index));
         pagesInfo.add(newPage);
-        DBApp.serialize(p, tableName + "-" + count +"" );
+        DBApp.serialize(p, tableName + "-" + count + "");
     }
 
     public int binarySearch(Vector<Vector<Object>> arr, int l, int r, Object x) {
@@ -273,7 +272,10 @@ public class Table implements java.io.Serializable {
             Comparable xnew = (Comparable) x;
             Comparable arr_mid_min = (Comparable) (arr.get(mid)).get(1);
             Comparable arr_mid_max = (Comparable) (arr.get(mid)).get(2);
-            if ((xnew.compareTo(arr_mid_min))>=0 && (arr_mid_max.compareTo(xnew)) >=0)
+            if (xnew instanceof Date) {
+                if ((xnew.compareTo(arr_mid_min)) >= 0 && (arr_mid_max.compareTo(xnew)) >= 0)
+                    return mid;
+            } else if (Trial.compare(x, arr_mid_min) >= 0 && Trial.compare(arr_mid_max, x) >= 0)
                 return mid;
 
             // If element is smaller than mid, then
@@ -333,23 +335,23 @@ public class Table implements java.io.Serializable {
         if (pk_value != null) {
             Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(pageID));
 //        Page p = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(pageID) + "." + overflowCount);
-
             Vector<Vector<Object>> overflowPages = p.getOverFlowInfo();
-            if(overflowPages!=null){
-            for (int i = 0; i < overflowPages.size(); i++) {
-                Page o = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(pageID) + "." + overflowPages.get(i).get(0));
-                if (pk_value != null)
-                    o.deleteRowFromPageB(pk_found, pk_value, index_value);
-                else
-                    o.deleteRowFromPageL(pk_found, index_value);
-                if (o.getNumOfRows() == 0) {
-                    overflowPages.remove(i);
-                } else {
-                    DBApp.serialize(o, tableName + "-" + pagesID.get(pageID) + "." + overflowPages.get(i).get(0));
+            if (overflowPages != null) {
+                for (int i = 0; i < overflowPages.size(); i++) {
+                    Page o = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(pageID) + "." + overflowPages.get(i).get(0));
+                    if (pk_value != null)
+                        o.deleteRowFromPageB(pk_found, pk_value, index_value);
+                    else
+                        o.deleteRowFromPageL(pk_found, index_value);
+                    if (o.getNumOfRows() == 0) {
+                        overflowPages.remove(i);
+                    } else {
+                        DBApp.serialize(o, tableName + "-" + pagesID.get(pageID) + "." + overflowPages.get(i).get(0));
+                    }
                 }
+                DBApp.serialize(p, tableName + "-" + pagesID.get(pageID) + "." + pagesID.get(pageID));
             }
-            DBApp.serialize(p, tableName + "-" + pagesID.get(pageID) + "." + pagesID.get(pageID));
-        }}
+        }
     }
 
     public int pageSearchSuggestion(Comparable rowKey, int Index_of_Key) throws Exception, FileNotFoundException {
@@ -370,4 +372,45 @@ public class Table implements java.io.Serializable {
         return ans;
     }
 
+    public void updateInPage(Vector<Vector> index_value, int pk_found, Object pk_value) throws DBAppException {
+        /*
+        1- binary search on the page
+        2- binary search on the pk_value
+        3- update
+         */
+        System.out.println(pk_value);
+        int searchPage = binarySearch(pagesInfo, 0, pagesInfo.size(), pk_value);
+        if (searchPage == -1) throw new DBAppException("There is not existing page.");
+        Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(searchPage));
+        boolean found = p.updateRowInPageB(pk_found, pk_value, index_value);
+        DBApp.serialize(p, tableName + "-" + pagesID.get(searchPage));
+        if (!found)
+            updateInOverflowPage(pagesID.get(searchPage), index_value, pk_found, pk_value);
+
+    }
+
+    private void updateInOverflowPage(Integer pageID, Vector<Vector> index_value, int pk_found, Object pk_value) throws DBAppException {
+        if (pk_value != null) {
+            Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(pageID));
+//        Page p = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(pageID) + "." + overflowCount);
+
+            Vector<Vector<Object>> overflowPages = p.getOverFlowInfo();
+            if (overflowPages != null) {
+                int count = 0;
+                for (int i = 0; i < overflowPages.size(); i++) {
+                    Page o = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(pageID) + "." + overflowPages.get(i).get(0));
+                    boolean found = o.updateRowInPageB(pk_found, pk_value, index_value);
+                    DBApp.serialize(o, tableName + "-" + pagesID.get(pageID) + "." + overflowPages.get(i).get(0));
+                    if (found) {
+                        count++;
+                        break;
+                    }
+                }
+
+                if (count == 0) throw new DBAppException("pk does not exist.");
+            }
+            DBApp.serialize(p, tableName + "-" + pagesID.get(pageID) + "." + pagesID.get(pageID));
+        }
+    }
 }
+

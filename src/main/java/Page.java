@@ -1,5 +1,4 @@
 
-import java.time.DateTimeException;
 import java.util.*;
 
 public class Page implements java.io.Serializable {
@@ -84,6 +83,16 @@ public class Page implements java.io.Serializable {
 
     // used to sort within a page
     public int binarySearch(int l, int r, Object x) {
+        // Creating an empty enumeration to store
+        Enumeration enu = pks.elements();
+
+        System.out.println("The enumeration of values are:");
+
+        // Displaying the Enumeration
+        while (enu.hasMoreElements()) {
+            System.out.println(enu.nextElement());
+        }
+
         if (r >= l) {
             int mid = l + (r - l) / 2;
             // If the element is present at the
@@ -117,7 +126,7 @@ public class Page implements java.io.Serializable {
         while (enu.hasMoreElements()) {
             System.out.println(enu.nextElement());
         }
-        if (mid == -1) throw new DBAppException("No such record");
+//if (mid == -1) throw new DBAppException("No such record");
         Vector<Object> row = rows.get(mid);
         for (int i = 0; i < index_value.size(); i++) {
             int rowToDeleteIndex = (int) index_value.get(i).get(0);
@@ -270,7 +279,19 @@ public class Page implements java.io.Serializable {
             rows.setElementAt(o, j + 1);
         }
     }
+    public boolean updateRowInPageB(int pk_found, Object pk_value, Vector<Vector> index_value) throws DBAppException {
+        int mid = binarySearch(0, rows.size()-1, pk_value);
+        if (mid == -1) return false;
+        Vector<Object> row = rows.get(mid);
+        for (int i = 0; i < index_value.size(); i++) {
+            int rowToUpdateIndex = (int) index_value.get(i).get(0);
+            Object rowToUpdateValue = index_value.get(i).get(1);
+            row.set(rowToUpdateIndex, rowToUpdateValue);
+        }
+        rows.set(mid, row);
 
+        return true;
+    }
     public static int compare(Object o1, Object o2) { // compares 2 objects
 
         if (o1 instanceof Date && o2 instanceof Date) {
@@ -329,9 +350,10 @@ public class Page implements java.io.Serializable {
         }
     }
 
-
     public static void main(String[] args) {
         // write your code here
 
     }
+
+
 }
