@@ -56,8 +56,17 @@ public class Table implements java.io.Serializable {
         // insert the info related to this page into the pagesInfo Vector
         if (count == 0) {
             addPage(v, index);
+
+            if (pks.contains(pk))
+                throw new DBAppException("You can not insert a duplicate key for a primary key.");
+            else {
+                pks.add(pk);
+            }
+
         }
 
+        else
+        {
 
         // check if pk already exists in the table
         if (pks.contains(pk))
@@ -76,10 +85,9 @@ public class Table implements java.io.Serializable {
         for (int i = 0; i < (pagesID).size(); i++) {
             // retrieve the info of the page we're standing at
             Vector<Object> page = pagesInfo.get(i);
+
             Enumeration enu = pagesInfo.get(i).elements();
-
             System.out.println("The enumeration of values are:");
-
             // Displaying the Enumeration
             while (enu.hasMoreElements()) {
                 System.out.println(enu.nextElement());
@@ -116,8 +124,9 @@ public class Table implements java.io.Serializable {
 //                    pagesInfo.add(i, pInfo);
                 } else {
                     // if pk is greater than max, add new page ( no overflow pages for the last page)
-                    if (Page.compare(pk, max) == 1) {
+                    if (Page.compare(pk, max) > 0) {
                         addPage(v, index);
+                        break;
                     }
                     // if pk is less than the max in the last page, create a new page
                     // and add the last row in the last page to the new page
@@ -132,6 +141,7 @@ public class Table implements java.io.Serializable {
                         Vector<Object> updatePage = p.addRow(v, index);
                         pagesInfo.remove(i);
                         pagesInfo.add(i, updatePage);
+
                         p.sortI(index);
                         addPage(to_be_shifted, index);
                         DBApp.serialize(p, tableName + "-" + pagesID.get(i));
@@ -146,10 +156,10 @@ public class Table implements java.io.Serializable {
             // if so, insert into the overflow page if this overflow page has space,
             // otherwise create a new overflow page
             // if (Page.compare(max, pk) == 1 ) {
-            if (Page.compare(max, pk) == 1) {
+            if (Page.compare(max, pk) > 0) {
                 Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
                 if (countRows == maxRows) {
-                    if (p.getOverFlow() != null) {
+                    if (p.getOverFlowInfo().size() != 0) {
                         int overflowID = 1;
                         // check for the first overflow page that has room for a new record
                         while (true) {
@@ -234,6 +244,7 @@ public class Table implements java.io.Serializable {
                 DBApp.serialize(p, tableName + "-" + pagesID.get(i));
                 break;
             }
+        }
         }
     }
 

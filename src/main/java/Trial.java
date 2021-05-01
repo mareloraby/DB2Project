@@ -59,63 +59,73 @@ public class Trial {
     }
 
 
-    public static int compare(Object o1, Object o2) { // compares 2 objects
 
-        if (o1 instanceof Date && o2 instanceof Date) {
 
-            if (((Date) o1).compareTo((Date) o2) > 0) return 1; // o1 appears after o2
-            else if (((Date) o1).compareTo((Date) o2) < 0) return -1;
-            else return 0;
+    public static int compare(Object o1, Object o2) {
 
-        }
-        if (o1 instanceof Double && o2 instanceof Double) {
-            if ((Double) o1 < (Double) o2) {
-                return -1;
-            } else {
-                if ((Double) o1 > (Double) o2) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            }
-        }
-        if (o1 instanceof Integer && o2 instanceof Integer) {
-            if ((Integer) o1 < (Integer) o2) {
-                return -1;
-            } else {
-                if ((Integer) o1 > (Integer) o2) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            }
-        }
-        if (o1 instanceof Float && o2 instanceof Float) {
-            if ((Float) o1 < (Float) o2) {
-                return -1;
-            } else {
-                if ((Float) o1 > (Float) o2) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            }
-        } else {
-            if (o1 instanceof Boolean && o2 instanceof Boolean) {
-                return Boolean.compare((Boolean) o1, (Boolean) o2);
-            } else {
-                if (o1 instanceof Character && o2 instanceof Character) {
-                    return Character.compare((Character) o1, (Character) o2);
-                } else {
-                    if (o1 instanceof String && o2 instanceof String) {
-                        return ((String) o1).compareTo((String) o2);
-                    } else {
-                        return 30;
-                    }
-                }
-            }
-        }
+        return (((Comparable) o1).compareTo((Comparable) o2));
     }
+
+//    public static int compare(Object o1, Object o2) { // compares 2 objects
+//
+//        if (o1 instanceof Date && o2 instanceof Date) {
+//
+//            if (((Date) o1).compareTo((Date) o2) > 0) return 1; // o1 appears after o2
+//            else if (((Date) o1).compareTo((Date) o2) < 0) return -1;
+//            else return 0;
+//
+//        }
+//        if (o1 instanceof Double && o2 instanceof Double) {
+//            if ((Double) o1 < (Double) o2) {
+//                return -1;
+//            } else {
+//                if ((Double) o1 > (Double) o2) {
+//                    return 1;
+//                } else {
+//                    return 0;
+//                }
+//            }
+//        }
+//        if (o1 instanceof Integer && o2 instanceof Integer) {
+//            if ((Integer) o1 < (Integer) o2) {
+//                return -1;
+//            } else {
+//                if ((Integer) o1 > (Integer) o2) {
+//                    return 1;
+//                } else {
+//                    return 0;
+//                }
+//            }
+//        }
+//        if (o1 instanceof Float && o2 instanceof Float) {
+//            if ((Float) o1 < (Float) o2) {
+//                return -1;
+//            } else {
+//                if ((Float) o1 > (Float) o2) {
+//                    return 1;
+//                } else {
+//                    return 0;
+//                }
+//            }
+//        } else {
+//            if (o1 instanceof Boolean && o2 instanceof Boolean) {
+//                return Boolean.compare((Boolean) o1, (Boolean) o2);
+//            } else {
+//                if (o1 instanceof Character && o2 instanceof Character) {
+//                    return Character.compare((Character) o1, (Character) o2);
+//                } else {
+//                    if (o1 instanceof String && o2 instanceof String) {
+//                        return ((String) o1).compareTo((String) o2);
+//                    } else {
+//                        return 30;
+//                    }
+//                }
+//            }
+//        }
+//    }
+
+
+
 
     public static void toStringV(Vector<Vector> v) // prints vector of vectors
     {
