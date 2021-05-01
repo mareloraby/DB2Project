@@ -396,18 +396,18 @@ public class Table implements java.io.Serializable {
 
             Vector<Vector<Object>> overflowPages = p.getOverFlowInfo();
             if (overflowPages != null) {
-                int count = 0;
+                int countup = 0;
                 for (int i = 0; i < overflowPages.size(); i++) {
                     Page o = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(pageID) + "." + overflowPages.get(i).get(0));
                     boolean found = o.updateRowInPageB(pk_found, pk_value, index_value);
                     DBApp.serialize(o, tableName + "-" + pagesID.get(pageID) + "." + overflowPages.get(i).get(0));
                     if (found) {
-                        count++;
+                        countup++;
                         break;
                     }
                 }
 
-                if (count == 0) throw new DBAppException("pk does not exist.");
+                if (countup == 0) throw new DBAppException("pk does not exist.");
             }
             DBApp.serialize(p, tableName + "-" + pagesID.get(pageID) + "." + pagesID.get(pageID));
         }
