@@ -62,8 +62,10 @@ public class Trial {
 
 
     public static int compare(Object o1, Object o2) {
+        System.out.println("o1.getClass().getName()o2.getClass().getName()");
+System.out.println(o2.getClass().getName());
 
-        return (((Comparable) o1).compareTo((Comparable) o2));
+        return (((Comparable) o1).compareTo(o2));
     }
 
 //    public static int compare(Object o1, Object o2) { // compares 2 objects

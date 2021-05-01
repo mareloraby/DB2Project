@@ -33,8 +33,8 @@ public class Page implements java.io.Serializable {
     //Page.class -> info rows, min,min + row values ?
     public Page() {
         overFlowInfo= new Vector<Vector<Object>>();
-        min_pk_value = null;
-        max_pk_value = null;
+        min_pk_value = new Object();
+        max_pk_value = new Object();
         maxRows = DBApp.MaximumRowsCountinPage;
         rows = new Vector<Vector<Object>>();
         pks = new Vector<Object>();
@@ -59,7 +59,7 @@ public class Page implements java.io.Serializable {
         sortI(index);
 //        Collections.sort(pks);
         Object pk = v.get(index);
-        if (Trial.compare(pk, max_pk_value) == 1)
+        if (Trial.compare(pk, max_pk_value) >0)
             max_pk_value = pk;
         if (Trial.compare(min_pk_value, pk) == 1)
             min_pk_value = pk;
@@ -73,14 +73,19 @@ public class Page implements java.io.Serializable {
     public void addOverflow(String tableName, int PageID, Vector<Object> v) throws DBAppException {
         count++;
         Page p = new Page();
-        p.addOverflowRow(v);
+        int n= p.addOverflowRow(v);
         Vector<Object> newPage = new Vector<Object>();
         newPage.add(count);
-        newPage.add(0);
+        newPage.add(n);
         overFlowInfo.add(newPage);
         DBApp.serialize(p, tableName + "-" + PageID + "." + count);
     }
-
+    // add a row to an overflow page
+    public int addOverflowRow(Vector v) throws DBAppException {
+        numOfRows++;
+        rows.add(v);
+        return numOfRows;
+    }
     // used to sort within a page
     public int binarySearch(int l, int r, Object x) {
         // Creating an empty enumeration to store
@@ -221,16 +226,17 @@ public class Page implements java.io.Serializable {
     }
 
 
+/*
+page full -> access overflow pages -> add row in one of the overflow pages- >
+page.getOverflowInfo ( check num of rows)
+overflow page has space
+
+add vector in the overflow page :
+* update overflowInfo vector of the current main page ** overflow.getNumofRows()**
+* update the num of rows in the overflow page
 
 
-    // add a row to an overflow page
-    public void addOverflowRow(Vector v) throws DBAppException {
-        Vector<Object> info = new Vector<>();
-        numOfRows++;
-        rows.add(v);
-        info.add(numOfRows);
-    }
-
+*/
     // used with sortB to update info in the page
     public void updateRowInfo(Vector v, int index) {
         Vector<Object> info = new Vector<>();
