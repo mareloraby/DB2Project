@@ -1,4 +1,5 @@
 import java.io.*;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Properties;
@@ -230,12 +231,18 @@ public class DBApp implements DBAppInterface {
          */
     }
 
+
+
     @Override
     public void updateTable(String tableName, String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException, IOException {
         /* 1. Search for the record to be updated
          * 2. Use the clustering key to do binary search
          * 3. Update the record
          */
+
+
+
+
         ArrayList<String> AllTablesNames = getTableNames();
         if (!AllTablesNames.contains(tableName))
             throw new DBAppException("The table does not exist.");
@@ -249,6 +256,7 @@ public class DBApp implements DBAppInterface {
 
         int pk_found = -1;
         String pk_colName = "";
+        String pkType = "";
         boolean found = false;
         int index = 0;
         while ((csvLine = csvReader.readLine()) != null) {
@@ -270,6 +278,7 @@ public class DBApp implements DBAppInterface {
 
                 min_max.add(MinMax);
                 if (data[3].equals("True") || data[3].equals("true")) {
+                    pkType = data[2];
                     pk_found = index; //found primary key index
                     pk_colName = data[1]; // primary key column name
                 }
@@ -299,8 +308,9 @@ public class DBApp implements DBAppInterface {
                 index_value.add(v);
             }
         }
+
         Table t = (Table) DBApp.deserialize(tableName);
-        t.updateInPage(index_value, pk_found, clusteringKeyValue);
+        t.updateInPage(index_value, pk_found, parse(pkType,clusteringKeyValue));
         serialize(t, tableName);
 
     }
@@ -464,7 +474,7 @@ public class DBApp implements DBAppInterface {
 
 
 
-    public static Object parse(String keytype,String strClusteringKey)	throws Exception{
+    public static Object parse(String keytype,String strClusteringKey)	{
         if(keytype.equals(types[0]))  // Integer
         {
             return Integer.parseInt(strClusteringKey);
@@ -483,9 +493,15 @@ public class DBApp implements DBAppInterface {
         }
 
     }
-    public static Date parseDate(String s) throws Exception{
+    public static Date parseDate(String s) {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-        Date date= format.parse(s);
+
+        Date date= null;
+        try {
+            date = format.parse(s);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         return date;
     }
 
