@@ -167,7 +167,7 @@ public class Table implements java.io.Serializable {
                 // if we are on the last page in the table
                 if (i == (pagesID.size() - 1)) {
 
-                    // check whether we have room for a new row in the last page.If so, add the new row.
+                    // check whether wehave room for a new row in the last page.If so, add the new row.
                     if (countRows < maxRows) {
                         Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
                         // after adding the new row, update the page info and add it into the pagesInfo Vector in the table.
@@ -205,7 +205,16 @@ public class Table implements java.io.Serializable {
                             Vector<Vector<Object>> r = p.getRows();
                             r.remove(p.getNumOfRows() - 1);
                             p.setRows(r);
+                            // update the info in the original page as well (because it has been incremented but not decremented)
                             Vector<Object> updatePage = p.addRow(v, index);
+                            if (Trial.compare(v.get(index), p.getMax_pk_value()) > 0)
+                                p.setMax_pk_value(v.get(index));
+                            if (Trial.compare(p.getMin_pk_value(),v.get(index)) > 0)
+                                p.setMin_pk_value(v.get(index));
+                            updatePage.set(0,(Integer)(updatePage.get(0))-1);
+                            updatePage.set(1,(p.getMin_pk_value()));
+                            updatePage.set(2,(p.getMax_pk_value()));
+                            p.setNumOfRows(p.getNumOfRows()-1);
                             pagesInfo.remove(i);
                             pagesInfo.add(i, updatePage);
                             System.out.println("inserted here!!!" + 2 + " " + pagesID.get(i) + "and page count is" + " " + countRows);
@@ -249,7 +258,7 @@ public class Table implements java.io.Serializable {
                                     o.sortI(index);
 
                                     if (ID == 2) System.out.println("OVERFLOW PAGE");
-                                    System.out.println("inserted here!!!" + 4 + " " + pagesID.get(i) + "and page count is" + " " + countRows);
+                                    System.out.println("inserted here!!!" + 4 + " " + pagesID.get(i) + "and page count is" + " " + countRows+" "+v.get(index)+" "+ max);
                                     Vector<Vector<Object>> updatedOverflowInfoPages = updatePageOverflowInfo(p, o, j);
                                     p.setOverFlowInfo(updatedOverflowInfoPages);
                                     DBApp.serialize(o, tableName + "-" + pagesID.get(i) + "." + (ID + ""));
@@ -273,7 +282,7 @@ public class Table implements java.io.Serializable {
                     check the following page. If the following page has room, insert in the following page, otherwise,
                     create a new overflow page linked to the main page. */
                         else if ((i + 1) < pagesID.size()) {
-                            Vector<Object> page2 = pagesInfo.get(i);
+                            Vector<Object> page2 = pagesInfo.get(i+1);
                             int countRows2 = (int) page2.get(0); // <"2,0,10000", >
                             Object min2 = page2.get(1);
                             Object max2 = page2.get(2);
@@ -286,17 +295,35 @@ public class Table implements java.io.Serializable {
                                 Page p2 = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i + 1));
                                 Vector<Vector<Object>> rows_in_prevPage = p.getRows();
                                 Vector<Object> to_be_shifted = rows_in_prevPage.get(p.getNumOfRows() - 1);
-                                p2.addRow(to_be_shifted, index);
+
                                 System.out.println("inserted here!!!" + 6 + " " + pagesID.get(i) + "and page count is" + " " + countRows);
                                 Vector<Vector<Object>> r = p.getRows();
                                 r.remove(p.getNumOfRows() - 1);
                                 p.setRows(r);
                                 Vector<Object> updatePage = p.addRow(v, index);
+                                if (Trial.compare(v.get(index), p.getMax_pk_value()) > 0)
+                                    p.setMax_pk_value(v.get(index));
+                                if (Trial.compare(p.getMin_pk_value(),v.get(index)) > 0)
+                                    p.setMin_pk_value(v.get(index));
+                                updatePage.set(0,(Integer)(updatePage.get(0))-1);
+                                updatePage.set(1,(p.getMin_pk_value()));
+                                updatePage.set(2,(p.getMax_pk_value()));
+                                p.setNumOfRows(p.getNumOfRows()-1);
                                 System.out.println("inserted here!!!" + 7 + " " + pagesID.get(i) + "and page count is" + " " + countRows);
                                 pagesInfo.remove(i);
                                 pagesInfo.add(i, updatePage);
                                 //pagesInfo.setElementAt();
-                                p.sortI(index);
+
+                                Vector<Object> updatePage2 = p2.addRow(to_be_shifted, index);
+                                if (Trial.compare(v.get(index), p2.getMax_pk_value()) > 0)
+                                    p2.setMax_pk_value(v.get(index));
+                                if (Trial.compare(p2.getMin_pk_value(),v.get(index)) > 0)
+                                    p2.setMin_pk_value(v.get(index));
+                                updatePage2.set(0,(Integer)(updatePage2.get(0))-1);
+                                updatePage2.set(1,(p2.getMin_pk_value()));
+                                updatePage2.set(2,(p2.getMax_pk_value()));
+                                pagesInfo.remove(i+1);
+                                pagesInfo.add(i+1, updatePage2);
                                 DBApp.serialize(p2, tableName + "-" + pagesID.get(i + 1));
                                 DBApp.serialize(p, tableName + "-" + pagesID.get(i));
                                 break;

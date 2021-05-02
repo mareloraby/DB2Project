@@ -249,6 +249,10 @@ public class Page implements java.io.Serializable {
         return maxRows;
     }
 
+    public void setNumOfRows(int numOfRows) {
+        this.numOfRows = numOfRows;
+    }
+
     private int maxRows;
 
 

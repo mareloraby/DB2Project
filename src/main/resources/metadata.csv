@@ -13,6 +13,3 @@ transcripts,course_name,java.lang.String,False,False,AAAAAA,zzzzzz
 transcripts,student_id,java.lang.String,False,False,43-0000,99-9999
 pcs,pc_id,java.lang.Integer,True,False,0,20000
 pcs,student_id,java.lang.String,False,False,43-0000,99-9999
-Student,gpa,java.lang.Double,False,False,0.0,999.99
-Student,name,java.lang.String,False,False,A,zzzzzzzzzzzzzzzzzzzzzzzzzz
-Student,id,java.lang.Integer,True,False,0,99999999
