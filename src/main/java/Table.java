@@ -107,6 +107,7 @@ public class Table implements java.io.Serializable {
 
                 // if we are on the last page in the table
                 if (i == (pagesID.size() - 1)) {
+
                     // check whether we have room for a new row in the last page.If so, add the new row.
                     if (countRows < maxRows) {
                         Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
@@ -163,6 +164,8 @@ public class Table implements java.io.Serializable {
                 // if (Page.compare(max, pk) == 1 ) {
                 if (Page.compare(max, pk) > 0) {
                     Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
+
+
                     if (countRows == maxRows) {
                         if (p.getOverFlowInfo().size() != 0) {
                             boolean found_space = false;
@@ -177,14 +180,16 @@ public class Table implements java.io.Serializable {
                                     o.sortI(index);
                                     Vector<Vector<Object>> updatedOverflowInfoPages = updatePageOverflowInfo(p, o, j);
                                     p.setOverFlowInfo(updatedOverflowInfoPages);
-                                    DBApp.serialize(o, tableName + "-" + count + "." + (ID + ""));
+                                    DBApp.serialize(o, tableName + "-" + pagesID.get(i) + "." + (ID + ""));
                                     found_space = true;
                                     break;
                                 }
                             }
                             if (!found_space) {
                                 p.addOverflow(tableName, pagesID.get(i), v);
+
                             }
+                            DBApp.serialize(p, tableName + "-" + (pagesID.get(i) + ""));
                             break;
                         }
 
@@ -219,6 +224,7 @@ public class Table implements java.io.Serializable {
                             } else {
                                 //create an overflow page and insert into the new page
                                 p.addOverflow(tableName, pagesID.get(i), v);
+                                DBApp.serialize(p, tableName + "-" + (pagesID.get(i) + ""));
                                 break;
                             }
                         }
@@ -248,9 +254,10 @@ public class Table implements java.io.Serializable {
     public void addPage(Vector<Object> v, int index) throws DBAppException {
         count++;
         Page p = new Page();
-        p.addRow(v, index);
         p.setMax_pk_value(v.get(index));
         p.setMin_pk_value(v.get(index));
+        p.addRow(v, index);
+
         this.pagesID.add(count);
         Vector<Object> newPage = new Vector<Object>();
         newPage.add(1);
@@ -308,29 +315,38 @@ public class Table implements java.io.Serializable {
 
     public void deleteFromPage(Vector<Vector> index_value, int pk_found, Object pk_value) throws DBAppException {
         //binary search
+        int c = 0; // this is used to count the number of record deleted. ( the method delete returns boolean, so we count how many trues we have)
+
         if (pk_value != null) {
             int searchPage = binarySearch(pagesInfo, 0, pagesInfo.size(), pk_value);
             Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(searchPage));
-            p.deleteRowFromPageB(pk_found, pk_value, index_value);
-
+            boolean t = p.deleteRowFromPageB(pk_found, pk_value, index_value);
+            if (t) c++;
             if (p.getNumOfRows() == 0) {
                 removePage(p, searchPage);
             } else {
                 DBApp.serialize(p, tableName + "-" + pagesID.get(searchPage));
             }
-            deleteFromOverflowPage(pagesID.get(searchPage), index_value, pk_found, pk_value);
+            if (p.getOverFlowInfo() == null) {
+                if (c == 0) throw new DBAppException("No such record.");
+            } else
+                deleteFromOverflowPage(pagesID.get(searchPage), index_value, pk_found, pk_value);
         }
         // linear search
         else {
             for (int i = 0; i < pagesID.size(); i++) {
                 Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
-                p.deleteRowFromPageL(pk_found, index_value);
+                boolean t = p.deleteRowFromPageL(pk_found, index_value);
                 if (p.getNumOfRows() == 0) {
+                    c++;
                     removePage(p, i);
                 } else {
                     DBApp.serialize(p, tableName + "-" + pagesID.get(i));
                 }
-                deleteFromOverflowPage(pagesID.get(i), index_value, pk_found, pk_value);
+                if (p.getOverFlowInfo() == null) {
+                    if (c == 0) throw new DBAppException("No such record.");
+                } else
+                    deleteFromOverflowPage(pagesID.get(i), index_value, pk_found, pk_value);
             }
 
 
@@ -340,6 +356,7 @@ public class Table implements java.io.Serializable {
     }
 
     public void deleteFromOverflowPage(int pageID, Vector<Vector> index_value, int pk_found, Object pk_value) throws DBAppException {
+        int c = 0;
         if (pk_value != null) {
             Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(pageID));
 //        Page p = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(pageID) + "." + overflowCount);
@@ -347,10 +364,13 @@ public class Table implements java.io.Serializable {
             if (overflowPages != null) {
                 for (int i = 0; i < overflowPages.size(); i++) {
                     Page o = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(pageID) + "." + overflowPages.get(i).get(0));
-                    if (pk_value != null)
-                        o.deleteRowFromPageB(pk_found, pk_value, index_value);
-                    else
-                        o.deleteRowFromPageL(pk_found, index_value);
+                    if (pk_value != null) {
+                        boolean t = o.deleteRowFromPageB(pk_found, pk_value, index_value);
+                        if (t) c++;
+                    } else {
+                        boolean t = o.deleteRowFromPageL(pk_found, index_value);
+                        if (t) c++;
+                    }
                     if (o.getNumOfRows() == 0) {
                         overflowPages.remove(i);
                     } else {
@@ -359,6 +379,7 @@ public class Table implements java.io.Serializable {
                 }
                 DBApp.serialize(p, tableName + "-" + pagesID.get(pageID) + "." + pagesID.get(pageID));
             }
+            if (c == 0) throw new DBAppException("No such record.");
         }
     }
 

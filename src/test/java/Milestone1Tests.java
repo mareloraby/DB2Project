@@ -482,7 +482,7 @@ public class Milestone1Tests {
                 Date dateAdded = new Date(year - 1900, month - 1, day);
                 row.put("date_added", dateAdded);
                 row.put("course_name", fields[2]);
-//                System.out.println(dateAdded);
+                System.out.println(dateAdded);
 
             }
             c++;
