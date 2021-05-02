@@ -48,7 +48,59 @@ public class Table implements java.io.Serializable {
         return oldOverflowInfoPages;
     }
 
+    public void checktablePage() {
+        for (int i = 0; i < (pagesID).size(); i++) {
+            Vector<Object> page = pagesInfo.get(i);
+
+            Enumeration enu = pagesInfo.get(i).elements();
+            System.out.println("Pages " + pagesID.get(i) + " " + "in " + tableName + " with pagesCount " + pagesInfo.get(i).get(0));
+            // Displaying the Enumeration
+            while (enu.hasMoreElements()) {
+                System.out.println(enu.nextElement());
+            }
+        }
+    }
+
+    public void printPages() {
+        for (int i = 0; i < (pagesID).size(); i++) {
+            Vector<Object> page = pagesInfo.get(i);
+            Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
+            Vector<Vector<Object>> r = p.getRows();
+            System.out.println("Page " + pagesID.get(i) + " " + "in " + tableName + " with pagesCount " + pagesInfo.get(i).get(0));
+            // rows of page:
+            for (int j = 0; j < r.size(); j++) {
+                Enumeration enu = r.get(j).elements();
+//                // Displaying the Enumeration
+                while (enu.hasMoreElements()) {
+                    System.out.println(enu.nextElement() + " ");
+                }
+            }
+            System.out.println();
+            // check if this page has overflows:
+            if (p.getOverFlowInfo() != null) {
+                Vector<Vector<Object>> overflowPagesInfo = p.getOverFlowInfo();
+                for (int k = 0; k < p.getOverFlowInfo().size(); k++) {
+                    Vector<Object> overflow = overflowPagesInfo.get(k);
+                    int ID = (int) overflow.get(0);
+                    Page o = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i) + "." + ID);
+                    Vector<Vector<Object>> rowsOverflow = o.getRows();
+                    System.out.println("PageOVERFLOW" + pagesID.get(i) + " " + ID + " " + "in " + tableName + " with pagesCount " + overflow.get(1));
+                    for (int l = 0; l < o.getRows().size(); l++) {
+                        Enumeration enu1 = rowsOverflow.get(k).elements();
+
+                        // Displaying the Enumeration
+                        while (enu1.hasMoreElements()) {
+                            System.out.println(enu1.nextElement());
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public void insertIntoPage(Vector<Object> v, int index) throws DBAppException {
+        checktablePage();
 
         // check if the page is full, if yes, go to the next page and check whether it has space
         // if the next page has space, insert into the second page and do the needed shifting
@@ -58,11 +110,10 @@ public class Table implements java.io.Serializable {
 
         // get the clusteringKey ck of v
         Object pk = v.get(index);
-
+        System.out.println("THE VALUE TO BE INSERTED IS " + pk);
         // check whether the table has pages
         // if there is no page, create a new one and insert
         // insert the info related to this page into the pagesInfo Vector
-
         if (count == 0) {
             addPage(v, index);
 
@@ -86,9 +137,17 @@ public class Table implements java.io.Serializable {
 // which means I need to shift one record from 0-100 to 120-130 and insert into 0-100
 // however if 120-130 is also full, create an overflow page for 0-100
 
-
+            int searchPage = binarySearch(pagesInfo, 0, pagesInfo.size() - 1, pk);
             // check whether the pk fits within the ranges of min-max of any existing page
-            for (int i = 0; i < (pagesID).size(); i++) {
+//            for (int i = 0; i < (pagesID).size(); i++) {
+            int i = searchPage;
+            while (true) {
+                System.out.println(i);
+                if (i == -1) {
+                    System.out.println("ur i is -1 ");
+                    i = pagesID.size() - 1;
+                }
+                System.out.println("the amazing searchKey " + i);
                 // retrieve the info of the page we're standing at
                 Vector<Object> page = pagesInfo.get(i);
 
@@ -116,6 +175,8 @@ public class Table implements java.io.Serializable {
                         Vector<Object> updatePage = p.addRow(v, index);
                         pagesInfo.remove(i);
                         pagesInfo.add(i, updatePage);
+                        System.out.println("inserted here!!!" + 1 + " " + pagesID.get(i) + " " + "and page count is" + " " + countRows);
+
                         // sort in the vector
                         p.sortI(index);
                         DBApp.serialize(p, tableName + "-" + pagesID.get(i));
@@ -148,9 +209,14 @@ public class Table implements java.io.Serializable {
                             Vector<Object> updatePage = p.addRow(v, index);
                             pagesInfo.remove(i);
                             pagesInfo.add(i, updatePage);
-
+                            System.out.println("inserted here!!!" + 2 + " " + pagesID.get(i) + "and page count is" + " " + countRows);
                             p.sortI(index);
                             addPage(to_be_shifted, index);
+                            for (int k = 0; k < pagesID.size(); k++) {
+                                System.out.print("All the pages available" + " " + pagesID.get(k));
+                                System.out.println();
+                            }
+
                             DBApp.serialize(p, tableName + "-" + pagesID.get(i));
                             break;
                         }
@@ -163,11 +229,12 @@ public class Table implements java.io.Serializable {
                 // if so, insert into the overflow page if this overflow page has space,
                 // otherwise create a new overflow page
                 // if (Page.compare(max, pk) == 1 ) {
-                if (Page.compare(max, pk) > 0) {
+                if (Page.compare(max, pk) >= 0) {
+                    System.out.println(max + " " + pk);
                     Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
 
 
-                    if (countRows == maxRows) {
+                    if (countRows >maxRows) {
                         if (p.getOverFlowInfo().size() != 0) {
                             boolean found_space = false;
                             Vector<Vector<Object>> overflowPagesInfo = p.getOverFlowInfo();
@@ -179,6 +246,9 @@ public class Table implements java.io.Serializable {
                                 if (o.getNumOfRows() < maxRows) {
                                     o.addOverflowRow(v);
                                     o.sortI(index);
+
+                                    if (ID == 2) System.out.println("OVERFLOW PAGE");
+                                    System.out.println("inserted here!!!" + 4 + " " + pagesID.get(i) + "and page count is" + " " + countRows);
                                     Vector<Vector<Object>> updatedOverflowInfoPages = updatePageOverflowInfo(p, o, j);
                                     p.setOverFlowInfo(updatedOverflowInfoPages);
                                     DBApp.serialize(o, tableName + "-" + pagesID.get(i) + "." + (ID + ""));
@@ -187,7 +257,10 @@ public class Table implements java.io.Serializable {
                                 }
                             }
                             if (!found_space) {
+
+                                System.out.println("OVERFLOW PAGE");
                                 p.addOverflow(tableName, pagesID.get(i), v);
+                                System.out.println("inserted here!!!" + 5 + " " + pagesID.get(i) + "and page count is" + " " + countRows);
 
                             }
                             DBApp.serialize(p, tableName + "-" + (pagesID.get(i) + ""));
@@ -207,15 +280,17 @@ public class Table implements java.io.Serializable {
 //                        Object min2 = p2.getMin_pk_value();
 //                        Object max2 = p2.getMax_pk_value();
                             // checking for overflow
-                            if (countRows2 < maxRows) {
+                            if (countRows2 == maxRows) {
                                 Page p2 = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i + 1));
                                 Vector<Vector<Object>> rows_in_prevPage = p.getRows();
                                 Vector<Object> to_be_shifted = rows_in_prevPage.get(p.getNumOfRows() - 1);
                                 p2.addRow(to_be_shifted, index);
+                                System.out.println("inserted here!!!" + 6 + " " + pagesID.get(i) + "and page count is" + " " + countRows);
                                 Vector<Vector<Object>> r = p.getRows();
                                 r.remove(p.getNumOfRows() - 1);
                                 p.setRows(r);
                                 Vector<Object> updatePage = p.addRow(v, index);
+                                System.out.println("inserted here!!!" + 7 + " " + pagesID.get(i) + "and page count is" + " " + countRows);
                                 pagesInfo.remove(i);
                                 pagesInfo.add(i, updatePage);
                                 p.sortI(index);
@@ -224,26 +299,32 @@ public class Table implements java.io.Serializable {
                                 break;
                             } else {
                                 //create an overflow page and insert into the new page
+                                System.out.println("OVERFLOW PAGE");
                                 p.addOverflow(tableName, pagesID.get(i), v);
+                                System.out.println("inserted here!!!" + 8 + " " + pagesID.get(i) + "and page count is" + " " + countRows);
                                 DBApp.serialize(p, tableName + "-" + (pagesID.get(i) + ""));
                                 break;
                             }
                         }
-                    } else {
+                    } else if (countRows < maxRows) {
                         // the pk lies within the range and there is room for it, so we add immediately into the page
                         Vector<Object> updatePage = p.addRow(v, index);
                         pagesInfo.remove(i);
                         pagesInfo.add(i, updatePage);
+                        System.out.println("inserted here!!!" + 9 + " " + pagesID.get(i) + "and page count is" + " " + countRows);
                         p.sortI(index);
                         DBApp.serialize(p, tableName + "-" + pagesID.get(i));
                         break;
                     }
+                    System.out.println("break here");
+                    break;
                 } else if (countRows < maxRows) {
                     // pk greater than the max but there is room in the page.
                     Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
                     Vector<Object> updatePage = p.addRow(v, index);
                     pagesInfo.remove(i);
                     pagesInfo.add(i, updatePage);
+                    System.out.println("inserted here!!!" + 10 + " " + pagesID.get(i) + "and page count is" + " " + countRows);
                     p.sortI(index);
                     DBApp.serialize(p, tableName + "-" + pagesID.get(i));
                     break;
@@ -291,7 +372,7 @@ public class Table implements java.io.Serializable {
             if (xnew instanceof Date) {
                 if ((xnew.compareTo(arr_mid_min)) >= 0 && (arr_mid_max.compareTo(xnew)) >= 0)
                     return mid;
-            } else if (Trial.compare(x,(arr.get(mid)).get(1)) >= 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0)
+            } else if (Trial.compare(x, (arr.get(mid)).get(1)) >= 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0)
                 return mid;
 
             // If element is smaller than mid, then
@@ -319,20 +400,21 @@ public class Table implements java.io.Serializable {
         int c = 0; // this is used to count the number of record deleted. ( the method delete returns boolean, so we count how many trues we have)
 
         if (pk_value != null) {
-            int searchPage = binarySearch(pagesInfo, 0, pagesInfo.size(), pk_value);
+            int searchPage = binarySearch(pagesInfo, 0, pagesInfo.size() - 1, pk_value);
             Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(searchPage));
             boolean t = p.deleteRowFromPageB(pk_found, pk_value, index_value);
             if (t) {
-                c = c + 1; }
-                if (p.getNumOfRows() == 0) {
-                    removePage(p, searchPage);
-                } else {
-                    DBApp.serialize(p, tableName + "-" + pagesID.get(searchPage));
-                }
-                if (p.getOverFlowInfo() == null) {
-                    if (c == 0) throw new DBAppException("No such record.");
-                } else
-                    deleteFromOverflowPage(pagesID.get(searchPage), index_value, pk_found, pk_value , c);
+                c = c + 1;
+            }
+            if (p.getNumOfRows() == 0) {
+                removePage(p, searchPage);
+            } else {
+                DBApp.serialize(p, tableName + "-" + pagesID.get(searchPage));
+            }
+            if (p.getOverFlowInfo() == null) {
+                if (c == 0) throw new DBAppException("No such record.");
+            } else
+                deleteFromOverflowPage(pagesID.get(searchPage), index_value, pk_found, pk_value, c);
 
         }
         // linear search
@@ -349,7 +431,7 @@ public class Table implements java.io.Serializable {
                 if (p.getOverFlowInfo() == null) {
                     if (c == 0) throw new DBAppException("No such record.");
                 } else
-                    deleteFromOverflowPage(pagesID.get(i), index_value, pk_found, pk_value,c);
+                    deleteFromOverflowPage(pagesID.get(i), index_value, pk_found, pk_value, c);
             }
 
 
@@ -359,7 +441,7 @@ public class Table implements java.io.Serializable {
     }
 
     public void deleteFromOverflowPage(int pageID, Vector<Vector> index_value, int pk_found, Object pk_value, int c) throws DBAppException {
-     //   int c = 0;
+        //   int c = 0;
         if (pk_value != null) {
             Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(pageID));
 //        Page p = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(pageID) + "." + overflowCount);
@@ -411,7 +493,7 @@ public class Table implements java.io.Serializable {
         3- update
          */
         System.out.println(pk_value);
-        int searchPage = binarySearch(pagesInfo, 0, pagesInfo.size(), pk_value);
+        int searchPage = binarySearch(pagesInfo, 0, pagesInfo.size() - 1, pk_value);
         if (searchPage == -1) throw new DBAppException("There is not existing page.");
         Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(searchPage));
         boolean found = p.updateRowInPageB(pk_found, pk_value, index_value);
@@ -444,5 +526,6 @@ public class Table implements java.io.Serializable {
             DBApp.serialize(p, tableName + "-" + pagesID.get(pageID) + "." + pagesID.get(pageID));
         }
     }
-}
 
+
+}
