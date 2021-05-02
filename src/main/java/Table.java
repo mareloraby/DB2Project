@@ -291,12 +291,12 @@ public class Table implements java.io.Serializable {
             if (xnew instanceof Date) {
                 if ((xnew.compareTo(arr_mid_min)) >= 0 && (arr_mid_max.compareTo(xnew)) >= 0)
                     return mid;
-            } else if (Trial.compare(x, arr_mid_min) >= 0 && Trial.compare(arr_mid_max, x) >= 0)
+            } else if (Trial.compare(x,(arr.get(mid)).get(1)) >= 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0)
                 return mid;
 
             // If element is smaller than mid, then
             // it can only be present in left subarray
-            if (Trial.compare(arr_mid_max, x) == 1)
+            if (Trial.compare(arr_mid_max, x) > 0)
                 return binarySearch(arr, l, mid - 1, x);
 
             // Else the element can only be present
