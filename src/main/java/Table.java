@@ -14,7 +14,6 @@ public class Table implements java.io.Serializable {
     private int maxRows;
 
     // page p-> overflowID vector:<1,2,3>
-
     //index: 1,2
     //names: 1,3
 
@@ -234,7 +233,7 @@ public class Table implements java.io.Serializable {
                     Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
 
 
-                    if (countRows >maxRows) {
+                    if (countRows > maxRows) {
                         if (p.getOverFlowInfo().size() != 0) {
                             boolean found_space = false;
                             Vector<Vector<Object>> overflowPagesInfo = p.getOverFlowInfo();
@@ -255,6 +254,7 @@ public class Table implements java.io.Serializable {
                                     found_space = true;
                                     break;
                                 }
+                                DBApp.serialize(o, tableName + "-" + pagesID.get(i) + "." + (ID + ""));
                             }
                             if (!found_space) {
 
@@ -462,7 +462,7 @@ public class Table implements java.io.Serializable {
                         DBApp.serialize(o, tableName + "-" + pagesID.get(pageID) + "." + overflowPages.get(i).get(0));
                     }
                 }
-                DBApp.serialize(p, tableName + "-" + pagesID.get(pageID) + "." + pagesID.get(pageID));
+                DBApp.serialize(p, tableName + "-" + pagesID.get(pageID));
             }
             if (c == 0) throw new DBAppException("No such record.");
         }
@@ -520,10 +520,9 @@ public class Table implements java.io.Serializable {
                         break;
                     }
                 }
-
+                DBApp.serialize(p, tableName + "-" + pagesID.get(pageID));
                 if (countup == 0) throw new DBAppException("pk does not exist.");
             }
-            DBApp.serialize(p, tableName + "-" + pagesID.get(pageID) + "." + pagesID.get(pageID));
         }
     }
 
