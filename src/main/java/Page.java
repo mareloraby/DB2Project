@@ -97,14 +97,14 @@ public class Page implements java.io.Serializable {
     // used to sort within a page
     public int binarySearch(int l, int r, Object x) {
         // Creating an empty enumeration to store
-        Enumeration enu = pks.elements();
+     /*   Enumeration enu = pks.elements();
 
         System.out.println("The enumeration of values are:");
 
         // Displaying the Enumeration
         while (enu.hasMoreElements()) {
             System.out.println(enu.nextElement());
-        }
+        }      */
 
         if (r >= l) {
             int mid = l + (r - l) / 2;
@@ -116,7 +116,7 @@ public class Page implements java.io.Serializable {
 
             // If element is smaller than mid, then
             // it can only be present in left subarray
-            if (Trial.compare(arr_mid, x) == 1)
+            if (Trial.compare(arr_mid, x) > 0)
                 return binarySearch(l, mid - 1, x);
 
             // Else the element can only be present
@@ -125,38 +125,49 @@ public class Page implements java.io.Serializable {
         }
         // We reach here when element is not present
         // in array
+
         return -1;
     }
 
     public boolean deleteRowFromPageB(int pk_found, Object pk_value, Vector<Vector> index_value) throws DBAppException {
+
         int mid = binarySearch(0, rows.size() - 1, pk_value);
         // Creating an empty enumeration to store
         Enumeration enu = pks.elements();
-
+                       System.out.println("1234");
+                       System.out.println(pk_value.toString() + "  "+ index_value.get(0).get(0)+" "+index_value.get(0).get(1));
+                        System.out.println(mid);
         System.out.println("The enumeration of values are:");
-
+            int countx = 0;
         // Displaying the Enumeration
         while (enu.hasMoreElements()) {
             System.out.println(enu.nextElement());
+                 countx++;
         }
-//if (mid == -1) throw new DBAppException("No such record");
+        System.out.println(countx + " no of rows " );
+       if (mid == -1) throw new DBAppException("No such record");
         Vector<Object> row = rows.get(mid);
         boolean found = true;
         for (int i = 0; i < index_value.size(); i++) {
+             System.out.println("123");
             int rowToDeleteIndex = (int) index_value.get(i).get(0);
             Object rowToDeleteValue = index_value.get(i).get(1);
 
             Comparable rowToDeleteValuen = (Comparable) rowToDeleteValue;
             Comparable tempr = (Comparable) row.get(rowToDeleteIndex);
-            if (((tempr).compareTo(rowToDeleteValuen)) == 0)
-                continue;
-            else {
-                found = false;
-//                throw new DBAppException("There is not existing row in the page with the same values.");
+            if (((tempr).compareTo(rowToDeleteValuen)) == 0) {
+                System.out.println("12");
+                
             }
+            else{
+                 found = false;
+            }
+//                throw new DBAppException("There is not existing row in the page with the same values.");
+
         }
         if (found) {
             rows.remove(mid);
+             System.out.println("DeleteCheck");
             numOfRows--;
             if (rows.size() > 0) {
                 int last_index = rows.size() - 1;
