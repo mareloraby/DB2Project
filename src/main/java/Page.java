@@ -40,6 +40,7 @@ public class Page implements java.io.Serializable {
         rows = new Vector<Vector<Object>>();
         pks = new Vector<Object>();
         count = 0;
+        numOfRows = 0;
     }
 
     // called only if there is space

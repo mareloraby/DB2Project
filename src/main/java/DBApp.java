@@ -549,7 +549,7 @@ public class DBApp implements DBAppInterface {
 //        insertIntoTable(t.getTableName(), )
 
 
-//        String strTableName = "Student";
+       // String strTableName = "Student";
         DBApp dbApp = new DBApp();
 //        Hashtable htblColNameType = new Hashtable();
 //        htblColNameType.put("id", "java.lang.Integer");
@@ -578,30 +578,44 @@ public class DBApp implements DBAppInterface {
 //        htblColNameValue.put("gpa", 0.95);
 //        dbApp.insertIntoTable(strTableName, htblColNameValue);
 //        htblColNameValue.clear();
+//
 //        htblColNameValue.put("id", (453455));
 //        htblColNameValue.put("name", new String("Ahmed Noor"));
 //        htblColNameValue.put("gpa", (0.95));
 //        dbApp.insertIntoTable(strTableName, htblColNameValue);
 //        htblColNameValue.clear();
+//
 //        htblColNameValue.put("id", (567457));
 //        htblColNameValue.put("name", new String("Dalia Noor"));
 //        htblColNameValue.put("gpa", (1.25));
 //        dbApp.insertIntoTable(strTableName, htblColNameValue);
 //        htblColNameValue.clear();
+//
+//        htblColNameValue.put("id", (74502));
+//        htblColNameValue.put("name", new String("Slim Noor"));
+//        htblColNameValue.put("gpa", (0.88));
+//        dbApp.insertIntoTable(strTableName, htblColNameValue);
+//        htblColNameValue.clear();
+//
 //        htblColNameValue.put("id", (23498));
 //        htblColNameValue.put("name", new String("John Noor"));
 //        htblColNameValue.put("gpa", (1.5));
 //        dbApp.insertIntoTable(strTableName, htblColNameValue);
 //        htblColNameValue.clear();
+//
 //        htblColNameValue.put("id", (78452));
 //        htblColNameValue.put("name", new String("Zaky Noor"));
 //        htblColNameValue.put("gpa", (0.88));
 //        dbApp.insertIntoTable(strTableName, htblColNameValue);
+//        htblColNameValue.clear();
+
+
+
 //
 //
 //        System.out.println(("Fri Jul 14 00:00:00 EET 1905").compareTo("Mon Aug 21 00:00:00 EET 1905"));
 
-dbApp.getAllrows("transcripts");
+dbApp.getAllrows("courses");
 //
 //        int x = 123;
 //        Object ob = new Object();

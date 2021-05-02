@@ -85,7 +85,7 @@ public class Table implements java.io.Serializable {
                     Vector<Vector<Object>> rowsOverflow = o.getRows();
                     System.out.println("PageOVERFLOW" + pagesID.get(i) + " " + ID + " " + "in " + tableName + " with pagesCount " + overflow.get(1));
                     for (int l = 0; l < o.getRows().size(); l++) {
-                        Enumeration enu1 = rowsOverflow.get(k).elements();
+                        Enumeration enu1 = rowsOverflow.get(l).elements();
 
                         // Displaying the Enumeration
                         while (enu1.hasMoreElements()) {
@@ -233,8 +233,10 @@ public class Table implements java.io.Serializable {
                     Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
 
 
-                    if (countRows > maxRows) {
+                    if (countRows >= maxRows) {
+
                         if (p.getOverFlowInfo().size() != 0) {
+
                             boolean found_space = false;
                             Vector<Vector<Object>> overflowPagesInfo = p.getOverFlowInfo();
                             for (int j = 0; j < p.getOverFlowInfo().size(); j++) {
@@ -280,7 +282,7 @@ public class Table implements java.io.Serializable {
 //                        Object min2 = p2.getMin_pk_value();
 //                        Object max2 = p2.getMax_pk_value();
                             // checking for overflow
-                            if (countRows2 == maxRows) {
+                            if (countRows2 < maxRows) { //to think
                                 Page p2 = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i + 1));
                                 Vector<Vector<Object>> rows_in_prevPage = p.getRows();
                                 Vector<Object> to_be_shifted = rows_in_prevPage.get(p.getNumOfRows() - 1);
@@ -293,6 +295,7 @@ public class Table implements java.io.Serializable {
                                 System.out.println("inserted here!!!" + 7 + " " + pagesID.get(i) + "and page count is" + " " + countRows);
                                 pagesInfo.remove(i);
                                 pagesInfo.add(i, updatePage);
+                                //pagesInfo.setElementAt();
                                 p.sortI(index);
                                 DBApp.serialize(p2, tableName + "-" + pagesID.get(i + 1));
                                 DBApp.serialize(p, tableName + "-" + pagesID.get(i));
@@ -305,6 +308,8 @@ public class Table implements java.io.Serializable {
                                 DBApp.serialize(p, tableName + "-" + (pagesID.get(i) + ""));
                                 break;
                             }
+
+
                         }
                     } else if (countRows < maxRows) {
                         // the pk lies within the range and there is room for it, so we add immediately into the page
