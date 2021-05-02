@@ -116,7 +116,7 @@ public class Page implements java.io.Serializable {
 
             // If element is smaller than mid, then
             // it can only be present in left subarray
-            if (Trial.compare(arr_mid, x) == 1)
+            if (Trial.compare(arr_mid, x) > 0)
                 return binarySearch(l, mid - 1, x);
 
             // Else the element can only be present
@@ -144,7 +144,7 @@ public class Page implements java.io.Serializable {
         boolean found = true;
         for (int i = 0; i < index_value.size(); i++) {
             int rowToDeleteIndex = (int) index_value.get(i).get(0);
-            Object rowToDeleteValue = index_value.get(i).get(1);
+                Object rowToDeleteValue = index_value.get(i).get(1);
 
             Comparable rowToDeleteValuen = (Comparable) rowToDeleteValue;
             Comparable tempr = (Comparable) row.get(rowToDeleteIndex);
@@ -261,9 +261,9 @@ public class Page implements java.io.Serializable {
         Vector<Object> info = new Vector<>();
         numOfRows++;
         Object pk = v.get(index);
-        if (Trial.compare(pk, max_pk_value) == 1)
+        if (Trial.compare(pk, max_pk_value) > 0)
             max_pk_value = pk;
-        if (Trial.compare(min_pk_value, pk) == 1)
+        if (Trial.compare(min_pk_value, pk) > 0)
             min_pk_value = pk;
         info.add(numOfRows);
         info.add(min_pk_value);

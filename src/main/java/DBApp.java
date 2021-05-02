@@ -362,9 +362,10 @@ public class DBApp implements DBAppInterface {
         if (pk_value != null)
             do_BS = true;
 
-        for (Entry<String, Object> entry : colNameValue.entrySet())
+        for (Entry<String, Object> entry : colNameValue.entrySet()) {
             if (!colNames.contains(entry.getKey()))
                 throw new DBAppException("The table does not contain this column.");
+        }
 
         // move from values array to values Vector
         // stores index with its value
@@ -373,7 +374,7 @@ public class DBApp implements DBAppInterface {
         for (int i = 0; i < colNames.size(); i++) {
             Object value = colNameValue.get(colNames.get(i));
             if (value != null) { //check if value within right range
-                if (Trial.compare(value, min_max.get(i).get(0)) == -1 && Trial.compare(value, min_max.get(i).get(1)) == 1)
+                if (((Comparable) value).compareTo((Comparable)min_max.get(i).get(0))<0 || ((Comparable) value).compareTo((Comparable)min_max.get(i).get(1))>0 )
                     throw new DBAppException("Value is not within the min and max value range. ");
                 if (!colTypes.get(i).equals(colNameValue.get(colNames.get(i)).getClass().getName()))
                     throw new DBAppException("Value is not of the right type. ");
@@ -583,9 +584,11 @@ public class DBApp implements DBAppInterface {
         htblColNameValue.put("name", new String("Zaky Noor"));
         htblColNameValue.put("gpa", (0.88));
         dbApp.insertIntoTable(strTableName, htblColNameValue);
+
 //
 //
 //        System.out.println(("Fri Jul 14 00:00:00 EET 1905").compareTo("Mon Aug 21 00:00:00 EET 1905"));
+
 
 
 //

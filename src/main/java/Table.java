@@ -252,6 +252,7 @@ public class Table implements java.io.Serializable {
     }
 
     public void addPage(Vector<Object> v, int index) throws DBAppException {
+
         count++;
         Page p = new Page();
         p.setMax_pk_value(v.get(index));
@@ -295,7 +296,7 @@ public class Table implements java.io.Serializable {
 
             // If element is smaller than mid, then
             // it can only be present in left subarray
-            if (Trial.compare(arr_mid_max, x) == 1)
+            if (Trial.compare(arr_mid_max, x) > 0)
                 return binarySearch(arr, l, mid - 1, x);
 
             // Else the element can only be present
@@ -361,7 +362,7 @@ public class Table implements java.io.Serializable {
             Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(pageID));
 //        Page p = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(pageID) + "." + overflowCount);
             Vector<Vector<Object>> overflowPages = p.getOverFlowInfo();
-            if (overflowPages != null) {
+            if (overflowPages.size()!= 0) {
                 for (int i = 0; i < overflowPages.size(); i++) {
                     Page o = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(pageID) + "." + overflowPages.get(i).get(0));
                     if (pk_value != null) {
@@ -379,7 +380,7 @@ public class Table implements java.io.Serializable {
                 }
                 DBApp.serialize(p, tableName + "-" + pagesID.get(pageID) + "." + pagesID.get(pageID));
             }
-            if (c == 0) throw new DBAppException("No such record.");
+            if (c == 0) throw new DBAppException("No such record."); //edit here
         }
     }
 
