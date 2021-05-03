@@ -14,9 +14,6 @@ public class Table implements java.io.Serializable {
     private int maxRows;
 
 
-    public String getTableName() {
-        return tableName;
-    }
 
     public Table(String name) {
         maxRows = DBApp.MaximumRowsCountinPage;
@@ -285,7 +282,6 @@ public class Table implements java.io.Serializable {
                             int countRows2 = (int) page2.get(0); // <"2,0,10000", >
                             Object min2 = page2.get(1);
                             Object max2 = page2.get(2);
-
                             // checking for overflow
                             if (countRows2 < maxRows) { //to think
                                 Page p2 = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i + 1));
@@ -333,10 +329,11 @@ public class Table implements java.io.Serializable {
                                 DBApp.serialize(p, tableName + "-" + (pagesID.get(i) + ""));
                                 break;
                             }
-
-
                         }
+
+                        System.out.println("Danger Zone1");
                     } else if (countRows < maxRows) {
+
                         // the pk lies within the range and there is room for it, so we add immediately into the page
                         Vector<Object> updatePage = p.addRow(v, index);
                         pagesInfo.remove(i);
@@ -349,6 +346,7 @@ public class Table implements java.io.Serializable {
                     System.out.println("break here");
                     break;
                 } else if (countRows < maxRows) {
+             //   {
                     // pk greater than the max but there is room in the page.
                     Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
                     Vector<Object> updatePage = p.addRow(v, index);
@@ -359,6 +357,7 @@ public class Table implements java.io.Serializable {
                     DBApp.serialize(p, tableName + "-" + pagesID.get(i));
                     break;
                 }
+
             }
         }
     }
@@ -399,8 +398,10 @@ public class Table implements java.io.Serializable {
 
             if ((Trial.compare(x, (arr.get(mid)).get(1)) >= 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0) ||
                     (mid == 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0) ||
-                    (mid == arr.size() - 1)){
-//                    ((mid < arr.size() - 1) && ((Trial.compare(x, arr.get(mid).get(1)) >= 0) && (Trial.compare(arr.get(mid + 1).get(1), x) >= 0)))) {
+                    (mid == arr.size() - 1))
+                    //|| (((mid < arr.size() - 1)  &&  (Trial.compare(arr.get(mid + 1).get(1), x) >= 0))))
+           // || ((mid < arr.size() - 1) && ((Trial.compare(x, arr.get(mid).get(1)) >= 0) && (Trial.compare(arr.get(mid + 1).get(1), x) >= 0))))
+            {
                 return mid;
             }
 
