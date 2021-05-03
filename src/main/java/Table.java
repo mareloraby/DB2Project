@@ -10,21 +10,16 @@ public class Table implements java.io.Serializable {
     private int count;
     private Vector<Vector<Object>> pagesInfo;
     private Vector<Object> pks;
-    private Vector<Integer> pagesID; // number of pages-- pages.size() and pages id-- page.get();
+    private Vector<Integer> pagesID;
     private int maxRows;
 
-    // page p-> overflowID vector:<1,2,3>
-    //index: 1,2
-    //names: 1,3
 
-    //transient private Vector<Vector<Object>> min_max_count;
     public String getTableName() {
         return tableName;
     }
 
     public Table(String name) {
         maxRows = DBApp.MaximumRowsCountinPage;
-        //min_max_count= new Vector<Vector<Object>>();
         pagesID = new Vector<Integer>();
         pagesInfo = new Vector<Vector<Object>>();
         pks = new Vector<Object>();
@@ -32,7 +27,6 @@ public class Table implements java.io.Serializable {
         count = 0;
     }
 
-    // name of pages: tableName/pageID/path
 
     public int getCount() {
         return count;
@@ -149,7 +143,6 @@ public class Table implements java.io.Serializable {
             System.out.println();
             int searchPage = binarySearch(pagesInfo, 0, pagesInfo.size() - 1, pk);
             // check whether the pk fits within the ranges of min-max of any existing page
-//            for (int i = 0; i < (pagesID).size(); i++) {
             int i = searchPage;
             while (true) {
                 System.out.println(i);
@@ -171,9 +164,6 @@ public class Table implements java.io.Serializable {
                 int countRows = (int) page.get(0); // <"2,0,10000", >
                 Object min = page.get(1);
                 Object max = page.get(2);
-//            int countRows = p.getNumOfRows(); // <"2,0,10000", >
-//            Object min = p.getMin_pk_value();
-//            Object max = p.getMax_pk_value();
 
                 // if we are on the last page in the table
                 if (i == (pagesID.size() - 1)) {
@@ -191,15 +181,7 @@ public class Table implements java.io.Serializable {
                         p.sortI(index);
                         DBApp.serialize(p, tableName + "-" + pagesID.get(i));
                         break;
-                        // In case we want to refer back to binary search in the page itself:
-//                    pagesInfo.remove(i);
-//                    // sort in the vector
-//                    p.sortB(pk,v);
-//                    Vector<Object> pInfo= new Vector<Object>();
-//                    pInfo.add(p.getNumOfRows());
-//                    pInfo.add(p.getMin_pk_value());
-//                    pInfo.add(p.getMax_pk_value());
-//                    pagesInfo.add(i, pInfo);
+                // In case we want to refer back to binary search in the page itself:
                     } else {
                         // if pk is greater than max, add new page ( no overflow pages for the last page)
                         if (Page.compare(pk, max) > 0) {
@@ -220,10 +202,7 @@ public class Table implements java.io.Serializable {
                             p.setMax_pk_value(p.getRows().get(p.getNumOfRows() - 1).get(index));
                             // update the info in the original page as well (because it has been incremented but not decremented)
                             Vector<Object> updatePage = p.addRow(v, index);
-//                            if (Trial.compare(v.get(index), p.getRows().get(p.getNumOfRows() - 1).get(index)) > 0)
-//                                p.setMax_pk_value(v.get(index));
-//                            if (Trial.compare(p.getRows().get(p.getNumOfRows() - 1).get(index), v.get(index)) > 0)
-//                                p.setMin_pk_value(v.get(index));
+
                             updatePage.set(0, (Integer) (updatePage.get(0)));
                             updatePage.set(1, (p.getMin_pk_value()));
                             updatePage.set(2, (p.getMax_pk_value()));
@@ -306,10 +285,7 @@ public class Table implements java.io.Serializable {
                             int countRows2 = (int) page2.get(0); // <"2,0,10000", >
                             Object min2 = page2.get(1);
                             Object max2 = page2.get(2);
-//                        Page page2 = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(i + 1))
-//                        int countRows2 = p2.getNumOfRows();
-//                        Object min2 = p2.getMin_pk_value();
-//                        Object max2 = p2.getMax_pk_value();
+
                             // checking for overflow
                             if (countRows2 < maxRows) { //to think
                                 Page p2 = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i + 1));
@@ -325,10 +301,7 @@ public class Table implements java.io.Serializable {
 
                                 Vector<Object> updatePage = p.addRow(v, index);
                                 // I need to compare with the new ( after removing the last row)
-//                                if (Trial.compare(v.get(index), p.getRows().get(p.getNumOfRows() - 1).get(index)) > 0)
-//                                    p.setMax_pk_value(v.get(index));
-//                                if (Trial.compare(p.getRows().get(p.getNumOfRows() - 1).get(index), v.get(index)) > 0)
-//                                    p.setMin_pk_value(v.get(index));
+
                                 updatePage.set(0, (Integer) (updatePage.get(0)));
                                 updatePage.set(1, (p.getMin_pk_value()));
                                 updatePage.set(2, (p.getMax_pk_value()));
@@ -341,10 +314,7 @@ public class Table implements java.io.Serializable {
                                 Vector<Object> updatePage2 = p2.addRow(to_be_shifted, index);
                                 // already done in addrow
 //                                // I need to compare with the added row
-//                                if (Trial.compare(to_be_shifted.get(index), p2.getMax_pk_value()) > 0)
-//                                    p2.setMax_pk_value(to_be_shifted.get(index));
-//                                if (Trial.compare(p2.getMin_pk_value(), to_be_shifted.get(index)) > 0)
-//                                    p2.setMin_pk_value(to_be_shifted.get(index));
+
                                 updatePage2.set(0, (Integer) (updatePage2.get(0)));
                                 updatePage2.set(1, (p2.getMin_pk_value()));
                                 updatePage2.set(2, (p2.getMax_pk_value()));
@@ -426,19 +396,14 @@ public class Table implements java.io.Serializable {
             Comparable xnew = (Comparable) x;
             Comparable arr_mid_min = (Comparable) (arr.get(mid)).get(1);
             Comparable arr_mid_max = (Comparable) (arr.get(mid)).get(2);
-//            if (xnew instanceof Date) {
-//                if ((xnew.compareTo(arr_mid_min)) >= 0 && (arr_mid_max.compareTo(xnew)) >= 0)
-//                    return mid;
 
-//            }// 1-5, 6-6, 68-68
             if ((Trial.compare(x, (arr.get(mid)).get(1)) >= 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0) ||
                     (mid == 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0) ||
-                    (mid == arr.size() - 1) ||
-                    ((mid < arr.size() - 1) && ((Trial.compare(x, arr.get(mid).get(1)) >= 0) && (Trial.compare(arr.get(mid + 1).get(1), x) >= 0)))) {
+                    (mid == arr.size() - 1)){
+//                    ((mid < arr.size() - 1) && ((Trial.compare(x, arr.get(mid).get(1)) >= 0) && (Trial.compare(arr.get(mid + 1).get(1), x) >= 0)))) {
                 return mid;
             }
-//            if ((mid == 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0) || Trial.compare(x, (arr.get(mid)).get(1)) >= 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0)
-//                return mid;
+
             // If element is smaller than mid, then
             // it can only be present in left subarray
             if (Trial.compare(arr_mid_max, x) > 0)
@@ -525,7 +490,6 @@ public class Table implements java.io.Serializable {
         //   int c = 0;
         if (pk_value != null) {
             Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(pageID));
-//        Page p = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(pageID) + "." + overflowCount);
             Vector<Vector<Object>> overflowPages = p.getOverFlowInfo();
             if (overflowPages != null) {
                 for (int i = 0; i < overflowPages.size(); i++) {
@@ -534,6 +498,7 @@ public class Table implements java.io.Serializable {
                         boolean t = o.deleteRowFromPageB(pk_found, pk_value, index_value);
                         if (t) {
                             pks.remove(pk_value);
+                            overflowPages.get(i).set(1,o.getNumOfRows());
                             c++;
                         }
                     } else {
@@ -542,7 +507,8 @@ public class Table implements java.io.Serializable {
                             for (int g = t.size() - 1; g >= 0; g--) {
                                 pks.remove(t.get(g));
                             }
-//                            pks.remove(pk_value);
+
+                            overflowPages.get(i).set(1,o.getNumOfRows());
                             c++;
                         }
                     }
@@ -559,23 +525,7 @@ public class Table implements java.io.Serializable {
         }
     }
 
-    public int pageSearchSuggestion(Comparable rowKey, int Index_of_Key) throws Exception, FileNotFoundException {
-        int lo = 0, hi = pagesID.size() - 1, ans = -1;
-        while (lo <= hi) {
-            int mid = (lo + hi) >> 1;
-            Integer curr = pagesID.get(mid);
-            Page currentPage = (Page) DBApp.deserialize(curr + "");
-            Vector<Object> startTuple = currentPage.getRows().get(0);
-            Comparable startTupleKey = (Comparable) startTuple.get(Index_of_Key);
-            if (startTupleKey.compareTo(rowKey) < 0) {
-                ans = mid;
-                lo = mid + 1;
-            } else {
-                hi = mid - 1;
-            }
-        }
-        return ans;
-    }
+
 
     public void updateInPage(Vector<Vector> index_value, int pk_found, Object pk_value) throws DBAppException {
         /*

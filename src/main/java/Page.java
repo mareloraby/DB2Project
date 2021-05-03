@@ -3,6 +3,13 @@ import java.util.*;
 
 public class Page implements java.io.Serializable {
 
+    private static final long serialVersionUID = 1L;
+    private Page overFlow;
+    private int count;
+    private int pk_index;
+    private Vector<Vector<Object>> overFlowInfo; //stores ID and number of rows
+    private Object min_pk_value;
+    private Vector<Object> pks;
     private Vector<Vector<Object>> rows;
 
     public void setMin_pk_value(Object min_pk_value) {
@@ -13,7 +20,6 @@ public class Page implements java.io.Serializable {
         this.max_pk_value = max_pk_value;
     }
 
-    private Vector<Object> pks;
 
     public Vector<Vector<Object>> getOverFlowInfo() {
         return overFlowInfo;
@@ -22,13 +28,6 @@ public class Page implements java.io.Serializable {
     public void setOverFlowInfo(Vector<Vector<Object>> overFlowInfo) {
         this.overFlowInfo = overFlowInfo;
     }
-
-    private static final long serialVersionUID = 1L;
-    private Page overFlow;
-    private int count;
-    private int pk_index;
-    private Vector<Vector<Object>> overFlowInfo; //stores ID and number of rows
-    private Object min_pk_value;
 
     public int getPk_index() {
         return pk_index;
@@ -53,7 +52,6 @@ public class Page implements java.io.Serializable {
     private int numOfRows;
 
 
-    //Page.class -> info rows, min,min + row values ?
     public Page() {
         pk_index = 0;
         overFlowInfo = new Vector<Vector<Object>>();
@@ -114,7 +112,7 @@ public class Page implements java.io.Serializable {
     }
 
     // add a row to an overflow page
-    public int addOverflowRow(Vector v) throws DBAppException {
+public int addOverflowRow(Vector v) throws DBAppException {
         numOfRows++;
         rows.add(v);
 //        pks.add(v.get(index));
@@ -161,47 +159,24 @@ public class Page implements java.io.Serializable {
     public boolean deleteRowFromPageB(int pk_found, Object pk_value, Vector<Vector> index_value) throws DBAppException {
 
         int mid = binarySearch(0, rows.size() - 1, pk_value);
-        // Creating an empty enumeration to store
-        Enumeration enu = pks.elements();
-        System.out.println("1234");
-        System.out.println(pk_value.toString() + "  " + index_value.get(0).get(0) + " " + index_value.get(0).get(1));
-        System.out.println("INDEX VALUES");
-        Enumeration enu1 = index_value.elements();
-        while (enu1.hasMoreElements()) {
-            System.out.println(enu1.nextElement());
-        }
-        System.out.println(mid);
-        System.out.println("The enumeration of values are:");
-        int countx = 0;
-        // Displaying the Enumeration
-        while (enu.hasMoreElements()) {
-            System.out.println(enu.nextElement());
-            countx++;
-        }
-        System.out.println(countx + " no of rows ");
         if (mid == -1) return false;
+
         Vector<Object> row = rows.get(mid);
+
         boolean found = true;
         for (int i = 0; i < index_value.size(); i++) {
-            System.out.println("123");
             int rowToDeleteIndex = (int) index_value.get(i).get(0);
             Object rowToDeleteValue = index_value.get(i).get(1);
-
-//            Comparable rowToDeleteValuen = (Comparable) rowToDeleteValue;
-//            Comparable tempr = (Comparable) row.get(rowToDeleteIndex);
             if (Trial.compare(rowToDeleteValue, row.get(rowToDeleteIndex)) == 0) {
-                System.out.println("12");
-
             } else {
                 found = false;
             }
-//                throw new DBAppException("There is not existing row in the page with the same values.");
 
         }
         if (found) {
             rows.remove(mid);
-            System.out.println("DeleteCheck");
-            numOfRows--;
+            this.numOfRows--;
+            System.out.print("this.numOfRows"+ this.numOfRows);
             if (rows.size() > 0) {
                 int last_index = rows.size() - 1;
                 max_pk_value = rows.get(last_index).get(pk_found);
@@ -232,7 +207,6 @@ public class Page implements java.io.Serializable {
             for (int j = 0; j < index_value.size(); j++) {
                 int rowToDeleteIndex = (int) index_value.get(j).get(0);
                 Object rowToDeleteValue = index_value.get(j).get(1);
-               // Trial.compare(rowToDeleteValue, row.get(rowToDeleteIndex)) == 0
                 if (compare(row.get(rowToDeleteIndex), rowToDeleteValue) == 0) {
                     continue;
                 } else {
@@ -250,53 +224,19 @@ public class Page implements java.io.Serializable {
         if (c == 0) return removed_pks;
         else {
 
-//            int i=0;
-//            while(true){
-//                int idx = deletedRowsIndex.get(i);
-//                Vector<Object> removed = rows.get(idx);//henaaaa
-//                rows.remove(removed);
-//
-//                i++;
-//
-//
-//            }
+
 
 
 // index in rows is shifted so we loop
             for (int i = deletedRowsIndex.size()-1; i>=0; i--){
-//                for (int i = 0; i<deletedRowsIndex.size(); i++){
                 Vector<Object> removed = rows.get(deletedRowsIndex.get(i));//henaaaa
-
                 // values of pk of rows that will be removed is added here:
                 removed_pks.add(rows.get(deletedRowsIndex.get(i)).get(pk_found));
                 rows.remove(removed);
                 updatePageAfterDelete(pk_found);
 
-
-
             }
 
-//
-//            for (int i = 0; i < deletedRowsIndex.size(); i++) {
-//                countdelete--;
-//                if (countdelete == -1){break;}
-              //  System.out.println(deletedRowsIndex.get(i) +" deleted row indx ");
-//                Vector<Object> removed = rows.get(deletedRowsIndex.get(i));//henaaaa
-//                deletedRowsIndex.remove(i);
-                //i--;
-                //rows.remove(removed);
-
-
-                //if (i == (deletedRowsIndex.size()-1)){break;}
-
-//            System.out.print("DELETED ROWS IN THE PAGE");
-//            Enumeration enu1 = removed.elements();
-//            while (enu1.hasMoreElements()) {
-//                System.out.print(enu1.nextElement()+" ");
-//            }
-//            System.out.println();
-//            updatePageAfterDelete(pk_found);
-            //}
 
             return removed_pks;
         }
@@ -369,18 +309,6 @@ public class Page implements java.io.Serializable {
         info.add(max_pk_value);
     }
 
-//    // called only if there is space
-//    public void sortB(Object pk_value, Vector<Object> rowAdded) {
-//        int mid = binarySearch(0, rows.size(), pk_value);
-//        int temp = mid;
-//        for (int i = mid + 1; i < rows.size() - 1; i++) {
-//            pks.setElementAt(pks.get(temp), i + 1);
-//            rows.setElementAt(rows.get(temp), i + 1);
-//        }
-//        pks.setElementAt(pk_value, mid);
-//        rows.setElementAt(rowAdded, mid);
-//        updateRowInfo(rowAdded, mid);
-//    }
 
 
     public void sortI(int index) {
@@ -480,10 +408,7 @@ public class Page implements java.io.Serializable {
 
     }
 
-    public static void main(String[] args) {
-        // write your code here
 
-    }
 
 
 }

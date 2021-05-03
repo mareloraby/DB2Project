@@ -154,7 +154,6 @@ public class DBApp implements DBAppInterface {
         if (!AllTablesNames.contains(tableName))
             throw new DBAppException("The table does not exist.");
 
-        // String[] columnNames= get this from csv file
         String csvLine;
         ArrayList<String> colNames = new ArrayList<>();
         ArrayList<ArrayList<Object>> min_max = new ArrayList<>();
@@ -171,8 +170,6 @@ public class DBApp implements DBAppInterface {
                 found = true;
                 ArrayList<Object> MinMax = new ArrayList<>();
                 colTypes.add(data[2]);
-//                MinMax.add(data[5]);
-//                MinMax.add(data[6]);
 
                 try {
                     MinMax.add(parse(data[2], data[5]));
@@ -314,7 +311,7 @@ public class DBApp implements DBAppInterface {
     }
 
     //table columns:<gpa,id,date>
-    @Override //hastable parameter: <gpa,2> <id,1>
+    @Override
     public void deleteFromTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException, IOException {
         /* 1. Search for the record to be deleted
          * 2. If the search key is a primary key, do binary search
@@ -344,8 +341,7 @@ public class DBApp implements DBAppInterface {
                 ArrayList<Object> MinMax = new ArrayList<>();
                 colNames.add(data[1]);
                 colTypes.add(data[2]);
-//                MinMax.add(data[5]);
-//                MinMax.add(data[6]);
+
 
                 try {
                     MinMax.add(parse(data[2], data[5]));
@@ -363,9 +359,8 @@ public class DBApp implements DBAppInterface {
                 break;
         }
         csvReader.close();
-//System.out.println(pk_found);
+
         boolean do_BS = false;
-//        if (pk_found == -1) throw new DBAppException("No Primary Key inserted");
         Object pk_value = colNameValue.get(pk_colName);
         if (pk_value != null)
             do_BS = true;
@@ -582,13 +577,13 @@ public class DBApp implements DBAppInterface {
 //        dbApp.insertIntoTable(strTableName, htblColNameValue);
         htblColNameValue.clear();
         htblColNameValue.put("id", 1);
-//        htblColNameValue.put("name", new String("The Musketeers"));
-//        htblColNameValue.put("gpa", (0.88));
-//        dbApp.insertIntoTable(strTableName,htblColNameValue );
+        htblColNameValue.put("name", new String("The Musketeers"));
+        htblColNameValue.put("gpa", (0.88));
+        dbApp.insertIntoTable(strTableName,htblColNameValue );
         //1-5  //6 -6 // 68
 //        htblColNameValue.clear();
 //        htblColNameValue.put("id", (1));
-        dbApp.deleteFromTable(strTableName,htblColNameValue);
+//        dbApp.deleteFromTable(strTableName,htblColNameValue);
         dbApp.getAllrows(strTableName);
 
 
