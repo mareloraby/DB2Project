@@ -283,7 +283,8 @@ public class Table implements java.io.Serializable {
                             if (!found_space) {
 
                                 System.out.println("OVERFLOW PAGE");
-                                p.addOverflow(tableName, pagesID.get(i), v);
+                                p.addOverflow(tableName, pagesID.get(i), v, index);
+
                                 System.out.println("inserted here!!!" + 5 + " " + pagesID.get(i) + "and page count is" + " " + countRows + " " + v.get(index) + " " + max);
 
                             }
@@ -350,8 +351,8 @@ public class Table implements java.io.Serializable {
                                 break;
                             } else {
                                 //create an overflow page and insert into the new page
-                                System.out.println("OVERFLOW PAGE");
-                                p.addOverflow(tableName, pagesID.get(i),v);
+//                                System.out.println("OVERFLOW PAGE");
+                                p.addOverflow(tableName, pagesID.get(i), v, index);
                                 System.out.println("inserted here!!!" + 8 + " " + pagesID.get(i) + "and page count is" + " " + countRows + " " + v.get(index) + " " + max);
                                 DBApp.serialize(p, tableName + "-" + (pagesID.get(i) + ""));
                                 break;
@@ -389,6 +390,7 @@ public class Table implements java.io.Serializable {
     public void addPage(Vector<Object> v, int index) throws DBAppException {
         count++;
         Page p = new Page();
+        p.setPk_index(index);
         p.setMax_pk_value(v.get(index));
         p.setMin_pk_value(v.get(index));
         p.addRow(v, index);
@@ -422,7 +424,7 @@ public class Table implements java.io.Serializable {
 //                if ((xnew.compareTo(arr_mid_min)) >= 0 && (arr_mid_max.compareTo(xnew)) >= 0)
 //                    return mid;
 //            }
-            if ((mid==0 && Trial.compare((arr.get(mid)).get(2), x) >= 0)|| Trial.compare(x, (arr.get(mid)).get(1)) >= 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0)
+            if ((mid == 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0) || Trial.compare(x, (arr.get(mid)).get(1)) >= 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0)
                 return mid;
             // If element is smaller than mid, then
             // it can only be present in left subarray
@@ -453,13 +455,18 @@ public class Table implements java.io.Serializable {
             boolean t = p.deleteRowFromPageB(pk_found, pk_value, index_value);
             if (t) {
                 c = c + 1;
+                Vector<Object> updatePageInfo= new Vector<Object>();
+                updatePageInfo.add(p.getNumOfRows());
+                updatePageInfo.add(p.getMin_pk_value());
+                updatePageInfo.add(p.getMax_pk_value());
+                pagesInfo.set(searchPage, updatePageInfo);
             }
             if (p.getNumOfRows() == 0) {
                 removePage(p, searchPage);
             } else {
                 DBApp.serialize(p, tableName + "-" + pagesID.get(searchPage));
             }
-            if (p.getOverFlowInfo().size()==0) {
+            if (p.getOverFlowInfo().size() == 0) {
                 if (c == 0) throw new DBAppException("No such record.");
             } else
                 deleteFromOverflowPage(searchPage, index_value, pk_found, pk_value, c);
@@ -473,10 +480,19 @@ public class Table implements java.io.Serializable {
                 if (p.getNumOfRows() == 0) {
                     c++;
                     removePage(p, i);
+                    i--;
                 } else {
+                    if (t) {
+                        c = c + 1;
+                        Vector<Object> updatePageInfo= new Vector<Object>();
+                        updatePageInfo.add(p.getNumOfRows());
+                        updatePageInfo.add(p.getMin_pk_value());
+                        updatePageInfo.add(p.getMax_pk_value());
+                        pagesInfo.set(i, updatePageInfo);
+                    }
                     DBApp.serialize(p, tableName + "-" + pagesID.get(i));
                 }
-                if (p.getOverFlowInfo().size()==0) {
+                if (p.getOverFlowInfo().size() == 0) {
                     if (c == 0) throw new DBAppException("No such record.");
                 } else
                     deleteFromOverflowPage(i, index_value, pk_found, pk_value, c);
@@ -499,13 +515,18 @@ public class Table implements java.io.Serializable {
                     Page o = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(pageID) + "." + overflowPages.get(i).get(0));
                     if (pk_value != null) {
                         boolean t = o.deleteRowFromPageB(pk_found, pk_value, index_value);
-                        if (t) c++;
+                        if (t) {
+                            c++;
+                        }
                     } else {
                         boolean t = o.deleteRowFromPageL(pk_found, index_value);
-                        if (t) c++;
+                        if (t) {
+                            c++;
+                        }
                     }
                     if (o.getNumOfRows() == 0) {
                         overflowPages.remove(i);
+                        i--;
                     } else {
                         DBApp.serialize(o, tableName + "-" + pagesID.get(pageID) + "." + overflowPages.get(i).get(0));
                     }

@@ -509,136 +509,87 @@ public class DBApp implements DBAppInterface {
 
 
     public static void main(String[] args) throws DBAppException, IOException {
-//        Hashtable htblColNameValue = new Hashtable();
-//        String strTableName = "Yes";
-//        DBApp dbApp = new DBApp();
-//        //      htblColNameValue.put("id", new Integer( 453455 ));
-//        htblColNameValue.put("id", Integer.valueOf(453455)); // fixed the "dashed" Integer elkan 3amlha 3shan kan metal3 error
-//
-//        htblColNameValue.put("name", new String("Ahmed Noor"));
-////        htblColNameValue.put("gpa", new Double( 0.95 ) );
-//        htblColNameValue.put("gpa", Double.valueOf(0.95));
-//
-//        //   dbApp.insertIntoTable(strTableName , htblColNameValue );
-//
-//
-//        try {
-//            MaximumRowsCountinPage = dbApp.getPropValues("MaximumRowsCountinPage");
-//            MaximumKeysCountinIndexBucket = dbApp.getPropValues("MaximumKeysCountinIndexBucket");
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        System.out.println(MaximumRowsCountinPage + "");
-//        Hashtable htblColNameType = new Hashtable();
-//        htblColNameType.put("id", "java.lang.Integer");
-//        htblColNameType.put("name", "java.lang.String");
-//        htblColNameType.put("gpa", "java.lang.double");
-//        Hashtable min = new Hashtable();
-//        min.put("id", "0");
-//        min.put("name", "A");
-//        min.put("gpa", "0");
-//        Hashtable max = new Hashtable();
-//        max.put("id", "10000");
-//        max.put("name", "ZZZZZZZZZZZ");
-//        max.put("gpa", "1000000");
-        //   dbApp.createTable("T1","id", htblColNameType , min , max );
-        //  Table t = (Table) deserialize("T1");
-        //   System.out.println(t.getCount());
-//        insertIntoTable(t.getTableName(), )
 
-//
         String strTableName = "Student";
         DBApp dbApp = new DBApp();
-        Hashtable htblColNameType = new Hashtable();
-        htblColNameType.put("id", "java.lang.Integer");
-        htblColNameType.put("name", "java.lang.String");
-        htblColNameType.put("gpa", "java.lang.Double");
-
-        Hashtable htblColNameMin = new Hashtable();
-
-        htblColNameMin.put("id", "0");
-        htblColNameMin.put("name", "A");
-        htblColNameMin.put("gpa", "0.0");
-
-
-        Hashtable htblColNameMax = new Hashtable();
-
-        htblColNameMax.put("id", "99999999");
-        htblColNameMax.put("name", "zzzzzzzzzzzzzzzzzzzzzzzzzz");
-        htblColNameMax.put("gpa", "999.99");
-
-
-        dbApp.createTable(strTableName, "id", htblColNameType, htblColNameMin, htblColNameMax);
-        dbApp.createIndex(strTableName, new String[]{"gpa"});
-
-
-
         Hashtable htblColNameValue = new Hashtable();
-//        htblColNameValue.put("id", 23432);
+
+//      Hashtable htblColNameType = new Hashtable();
+//        htblColNameType.put("id", "java.lang.Integer");
+//        htblColNameType.put("name", "java.lang.String");
+//        htblColNameType.put("gpa", "java.lang.Double");
+//
+//        Hashtable htblColNameMin = new Hashtable();
+//
+//        htblColNameMin.put("id", "0");
+//        htblColNameMin.put("name", "A");
+//        htblColNameMin.put("gpa", "0.0");
+//
+//
+//        Hashtable htblColNameMax = new Hashtable();
+//
+//        htblColNameMax.put("id", "99999999");
+//        htblColNameMax.put("name", "zzzzzzzzzzzzzzzzzzzzzzzzzz");
+//        htblColNameMax.put("gpa", "999.99");
+//        dbApp.createTable(strTableName, "id", htblColNameType, htblColNameMin, htblColNameMax);
+//        dbApp.createIndex(strTableName, new String[]{"gpa"});
+//
+//
+//
+//
+//
+//
+//        htblColNameValue.put("id", (68));
 //        htblColNameValue.put("name", new String("Ahmed Noor"));
-//        htblColNameValue.put("gpa", 0.95);
+//        htblColNameValue.put("gpa", (0.95));
 //        dbApp.insertIntoTable(strTableName, htblColNameValue);
 //        htblColNameValue.clear();
-
-        htblColNameValue.put("id", (68));
-        htblColNameValue.put("name", new String("Ahmed Noor"));
-        htblColNameValue.put("gpa", (0.95));
-        dbApp.insertIntoTable(strTableName, htblColNameValue);
-        htblColNameValue.clear();
-
-        htblColNameValue.put("id", (5));
-        htblColNameValue.put("name", new String("Dalia Noor"));
-        htblColNameValue.put("gpa", (1.25));
-        dbApp.insertIntoTable(strTableName, htblColNameValue);
-        htblColNameValue.clear();
-
-        htblColNameValue.put("id", (6));
-        htblColNameValue.put("name", new String("Slim Noor"));
-        htblColNameValue.put("gpa", (0.88));
-        dbApp.insertIntoTable(strTableName, htblColNameValue);
-        htblColNameValue.clear();
-
-        htblColNameValue.put("id", (3));
-        htblColNameValue.put("name", new String("John Noor"));
-        htblColNameValue.put("gpa", (1.5));
-        dbApp.insertIntoTable(strTableName, htblColNameValue);
-        htblColNameValue.clear();
-
-        htblColNameValue.put("id", (2));
-        htblColNameValue.put("name", new String("Zaky Noor"));
-        htblColNameValue.put("gpa", (0.88));
-        dbApp.insertIntoTable(strTableName, htblColNameValue);
-        htblColNameValue.clear();
-        htblColNameValue.put("id", (20));
-        htblColNameValue.put("name", new String("Zaky Noor"));
-        htblColNameValue.put("gpa", (0.88));
-        dbApp.insertIntoTable(strTableName, htblColNameValue);
-        htblColNameValue.clear();
-        htblColNameValue.put("id", (10));
-        htblColNameValue.put("name", new String("Zaky Noor"));
-        htblColNameValue.put("gpa", (0.88));
-        dbApp.insertIntoTable(strTableName, htblColNameValue);
-        htblColNameValue.clear();
-        htblColNameValue.put("id", (4));
-        htblColNameValue.put("name", new String("Last row"));
-        htblColNameValue.put("gpa", (0.88));
-        dbApp.insertIntoTable(strTableName, htblColNameValue);
-
+//
+//        htblColNameValue.put("id", (5));
+//        htblColNameValue.put("name", new String("Dalia Noor"));
+//        htblColNameValue.put("gpa", (1.25));
+//        dbApp.insertIntoTable(strTableName, htblColNameValue);
+//        htblColNameValue.clear();
+//
+//        htblColNameValue.put("id", (6));
+//        htblColNameValue.put("name", new String("Slim Noor"));
+//        htblColNameValue.put("gpa", (0.88));
+//        dbApp.insertIntoTable(strTableName, htblColNameValue);
+//        htblColNameValue.clear();
+//
+//        htblColNameValue.put("id", (3));
+//        htblColNameValue.put("name", new String("John Noor"));
+//        htblColNameValue.put("gpa", (1.5));
+//        dbApp.insertIntoTable(strTableName, htblColNameValue);
+//        htblColNameValue.clear();
+//
+//        htblColNameValue.put("id", (2));
+//        htblColNameValue.put("name", new String("Zaky Noor"));
+//        htblColNameValue.put("gpa", (0.88));
+//        dbApp.insertIntoTable(strTableName, htblColNameValue);
+//        htblColNameValue.clear();
+//        htblColNameValue.put("id", (20));
+//        htblColNameValue.put("name", new String("Zaky Noor"));
+//        htblColNameValue.put("gpa", (0.88));
+//        dbApp.insertIntoTable(strTableName, htblColNameValue);
+//        htblColNameValue.clear();
+//        htblColNameValue.put("id", (10));
+//        htblColNameValue.put("name", new String("Zaky Noor"));
+//        htblColNameValue.put("gpa", (0.88));
+//        dbApp.insertIntoTable(strTableName, htblColNameValue);
 //        htblColNameValue.clear();
 //        htblColNameValue.put("id", (4));
 //        htblColNameValue.put("name", new String("Last row"));
 //        htblColNameValue.put("gpa", (0.88));
-//        dbApp.deleteFromTable("Student", htblColNameValue);
-//        System.out.println(("Fri Jul 14 00:00:00 EET 1905").compareTo("Mon Aug 21 00:00:00 EET 1905"));
+//        dbApp.insertIntoTable(strTableName, htblColNameValue);
+
+
+        htblColNameValue.clear();
+        htblColNameValue.put("name", new String("Zaky Noor"));
+        dbApp.deleteFromTable("Student", htblColNameValue);
+
 
         dbApp.getAllrows(strTableName);
-//
-//        int x = 123;
-//        Object ob = new Object();
-//        ob = "123";
-//        System.out.print(ob.getClass().getName());
 
 
     }
