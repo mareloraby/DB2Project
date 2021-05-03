@@ -261,11 +261,11 @@ public class Page implements java.io.Serializable {
 //            }
 
 
-
+// index in rows is shifted so we loop
             for (int i = deletedRowsIndex.size()-1; i>=0; i--){
-
+//                for (int i = 0; i<deletedRowsIndex.size(); i++){
                 Vector<Object> removed = rows.get(deletedRowsIndex.get(i));//henaaaa
-                deletedRowsIndex.remove(i);
+//                deletedRowsIndex.remove(i);
                 rows.remove(removed);
                 updatePageAfterDelete(pk_found);
 
@@ -406,12 +406,12 @@ public class Page implements java.io.Serializable {
         if (mid == -1) return false;
         Vector<Object> row = rows.get(mid);
         for (int i = 0; i < index_value.size(); i++) {
+            System.out.println("UPDATED OVERFLOW2");
             int rowToUpdateIndex = (int) index_value.get(i).get(0);
             Object rowToUpdateValue = index_value.get(i).get(1);
             row.set(rowToUpdateIndex, rowToUpdateValue);
         }
         rows.set(mid, row);
-
         return true;
     }
 

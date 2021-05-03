@@ -423,9 +423,16 @@ public class Table implements java.io.Serializable {
 //            if (xnew instanceof Date) {
 //                if ((xnew.compareTo(arr_mid_min)) >= 0 && (arr_mid_max.compareTo(xnew)) >= 0)
 //                    return mid;
-//            }
-            if ((mid == 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0) || Trial.compare(x, (arr.get(mid)).get(1)) >= 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0)
-                return mid;
+
+//            }// 1-5, 6-6, 68-68
+if( (Trial.compare(x, (arr.get(mid)).get(1)) >= 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0)||
+        (mid == 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0)||
+        (mid== arr.size()-1) ||
+        ((mid<arr.size()-1)&&((Trial.compare(x,arr.get(mid).get(1)) >= 0 )&& (Trial.compare(x,arr.get(mid+1).get(1)) >= 0 )))){
+    return mid;
+            }
+//            if ((mid == 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0) || Trial.compare(x, (arr.get(mid)).get(1)) >= 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0)
+//                return mid;
             // If element is smaller than mid, then
             // it can only be present in left subarray
             if (Trial.compare(arr_mid_max, x) > 0)
@@ -563,12 +570,12 @@ public class Table implements java.io.Serializable {
          */
         System.out.println(pk_value);
         int searchPage = binarySearch(pagesInfo, 0, pagesInfo.size() - 1, pk_value);
-        if (searchPage == -1) throw new DBAppException("There is not existing page.");
+        if (searchPage == -1) throw new DBAppException("There is no existing record with the entered key value.");
         Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(searchPage));
         boolean found = p.updateRowInPageB(pk_found, pk_value, index_value);
         DBApp.serialize(p, tableName + "-" + pagesID.get(searchPage));
         if (!found)
-            updateInOverflowPage(pagesID.get(searchPage), index_value, pk_found, pk_value);
+            updateInOverflowPage(searchPage, index_value, pk_found, pk_value);
 
     }
 
@@ -576,9 +583,11 @@ public class Table implements java.io.Serializable {
         if (pk_value != null) {
             Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(pageID));
 //        Page p = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(pageID) + "." + overflowCount);
-
+System.out.println("UPDATED OVERFLOW");
             Vector<Vector<Object>> overflowPages = p.getOverFlowInfo();
-            if (overflowPages != null) {
+            System.out.println(p.getOverFlowInfo().size());
+            if (overflowPages.size()!=0) {
+                System.out.println("UPDATED OVERFLOW1");
                 int countup = 0;
                 for (int i = 0; i < overflowPages.size(); i++) {
                     Page o = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(pageID) + "." + overflowPages.get(i).get(0));
