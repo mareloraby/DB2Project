@@ -573,71 +573,52 @@ public class DBApp implements DBAppInterface {
         dbApp.createTable(strTableName, "id", htblColNameType, htblColNameMin, htblColNameMax);
         dbApp.createIndex(strTableName, new String[]{"gpa"});
         Hashtable htblColNameValue = new Hashtable();
-        htblColNameValue.put("id", 23432);
-        htblColNameValue.put("name", new String("Ahmed Noor"));
-        htblColNameValue.put("gpa", 0.95);
-        dbApp.insertIntoTable(strTableName, htblColNameValue);
-        htblColNameValue.clear();
+//        htblColNameValue.put("id", 23432);
+//        htblColNameValue.put("name", new String("Ahmed Noor"));
+//        htblColNameValue.put("gpa", 0.95);
+//        dbApp.insertIntoTable(strTableName, htblColNameValue);
+//        htblColNameValue.clear();
 
-        htblColNameValue.put("id", (1));
+        htblColNameValue.put("id", (68));
         htblColNameValue.put("name", new String("Ahmed Noor"));
         htblColNameValue.put("gpa", (0.95));
         dbApp.insertIntoTable(strTableName, htblColNameValue);
         htblColNameValue.clear();
 
-        htblColNameValue.put("id", (3));
+        htblColNameValue.put("id", (5));
         htblColNameValue.put("name", new String("Dalia Noor"));
         htblColNameValue.put("gpa", (1.25));
         dbApp.insertIntoTable(strTableName, htblColNameValue);
         htblColNameValue.clear();
 
-        htblColNameValue.put("id", (4));
+        htblColNameValue.put("id", (6));
         htblColNameValue.put("name", new String("Slim Noor"));
         htblColNameValue.put("gpa", (0.88));
         dbApp.insertIntoTable(strTableName, htblColNameValue);
         htblColNameValue.clear();
 
-        htblColNameValue.put("id", (5));
+        htblColNameValue.put("id", (3));
         htblColNameValue.put("name", new String("John Noor"));
         htblColNameValue.put("gpa", (1.5));
         dbApp.insertIntoTable(strTableName, htblColNameValue);
         htblColNameValue.clear();
 
-        htblColNameValue.put("id", (6));
+        htblColNameValue.put("id", (2));
         htblColNameValue.put("name", new String("Zaky Noor"));
         htblColNameValue.put("gpa", (0.88));
         dbApp.insertIntoTable(strTableName, htblColNameValue);
         htblColNameValue.clear();
-        htblColNameValue.put("id", (7));
+        htblColNameValue.put("id", (20));
         htblColNameValue.put("name", new String("Zaky Noor"));
         htblColNameValue.put("gpa", (0.88));
         dbApp.insertIntoTable(strTableName, htblColNameValue);
         htblColNameValue.clear();
-        htblColNameValue.put("id", (8));
+        htblColNameValue.put("id", (10));
         htblColNameValue.put("name", new String("Zaky Noor"));
         htblColNameValue.put("gpa", (0.88));
         dbApp.insertIntoTable(strTableName, htblColNameValue);
-        htblColNameValue.clear();
-        htblColNameValue.put("id", (8392));
-        htblColNameValue.put("name", new String("Zaky Noor"));
-        htblColNameValue.put("gpa", (0.88));
-        dbApp.insertIntoTable(strTableName, htblColNameValue);
-        htblColNameValue.clear();
-        htblColNameValue.put("id", (895));
-        htblColNameValue.put("name", new String("Zaky Noor"));
-        htblColNameValue.put("gpa", (0.88));
-        dbApp.insertIntoTable(strTableName, htblColNameValue);
-        htblColNameValue.clear();
-        htblColNameValue.put("id", (899));
-        htblColNameValue.put("name", new String("Zaky Noor"));
-        htblColNameValue.put("gpa", (0.88));
-        dbApp.insertIntoTable(strTableName, htblColNameValue);
-        htblColNameValue.clear();
-        htblColNameValue.put("id", (90));
-        htblColNameValue.put("name", new String("Zaky Noor"));
-        htblColNameValue.put("gpa", (0.88));
-        dbApp.insertIntoTable(strTableName, htblColNameValue);
-        htblColNameValue.clear();
+
+
 //
 //
 //        System.out.println(("Fri Jul 14 00:00:00 EET 1905").compareTo("Mon Aug 21 00:00:00 EET 1905"));

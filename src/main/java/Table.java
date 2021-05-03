@@ -64,6 +64,12 @@ public class Table implements java.io.Serializable {
         for (int i = 0; i < (pagesID).size(); i++) {
             Vector<Object> page = pagesInfo.get(i);
             Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
+            Enumeration enu2 = page.elements();
+System.out.println("Pages info for"+ pagesID.get(i));
+            while (enu2.hasMoreElements()) {
+                System.out.print(enu2.nextElement() + " ");
+            }
+            System.out.println();
             Vector<Vector<Object>> r = p.getRows();
             System.out.println("Page " + pagesID.get(i) + " " + "in " + tableName + " with pagesCount " + pagesInfo.get(i).get(0));
             // rows of page:
@@ -107,6 +113,7 @@ public class Table implements java.io.Serializable {
         // update min/max if needed
         // insert into the right page then call sortI
 
+
         // get the clusteringKey ck of v
         Object pk = v.get(index);
         System.out.println("THE VALUE TO BE INSERTED IS " + pk);
@@ -115,7 +122,7 @@ public class Table implements java.io.Serializable {
         // insert the info related to this page into the pagesInfo Vector
         if (count == 0) {
             addPage(v, index);
-
+            System.out.println("the amazing searchKey "+" to insert: "+pk);
             if (pks.contains(pk))
                 throw new DBAppException("You can not insert a duplicate key for a primary key.");
             else {
@@ -135,7 +142,11 @@ public class Table implements java.io.Serializable {
 // I want to insert 30, but 30 should not go into 120-130!, thus I have to insert in the prev page(0-100)
 // which means I need to shift one record from 0-100 to 120-130 and insert into 0-100
 // however if 120-130 is also full, create an overflow page for 0-100
-
+            System.out.println("Binary maxes");
+for(int m =0; m<pagesID.size();m++ ){
+    System.out.print(pagesInfo.get(m).get(2)+" ");
+}
+System.out.println();
             int searchPage = binarySearch(pagesInfo, 0, pagesInfo.size() - 1, pk);
             // check whether the pk fits within the ranges of min-max of any existing page
 //            for (int i = 0; i < (pagesID).size(); i++) {
@@ -144,9 +155,9 @@ public class Table implements java.io.Serializable {
                 System.out.println(i);
                 if (i == -1) {
                     System.out.println("ur i is -1 ");
-                    i = pagesID.size() - 1;
+                    i = pagesID.size()-1;
                 }
-                System.out.println("the amazing searchKey " + i);
+                System.out.println("the amazing searchKey " + i+" to insert: "+pk);
                 // retrieve the info of the page we're standing at
                 Vector<Object> page = pagesInfo.get(i);
 
@@ -167,14 +178,14 @@ public class Table implements java.io.Serializable {
                 // if we are on the last page in the table
                 if (i == (pagesID.size() - 1)) {
 
-                    // check whether wehave room for a new row in the last page.If so, add the new row.
+                    // check whether we have room for a new row in the last page.If so, add the new row.
                     if (countRows < maxRows) {
                         Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
                         // after adding the new row, update the page info and add it into the pagesInfo Vector in the table.
                         Vector<Object> updatePage = p.addRow(v, index);
                         pagesInfo.remove(i);
                         pagesInfo.add(i, updatePage);
-                        System.out.println("inserted here!!!" + 1 + " " + pagesID.get(i) + " " + "and page count is" + " " + countRows);
+                        System.out.println("inserted here!!!" + 1 + " " + pagesID.get(i) + " " + "and page count is" + " " + countRows+" "+v.get(index)+" "+ max);
 
                         // sort in the vector
                         p.sortI(index);
@@ -205,16 +216,18 @@ public class Table implements java.io.Serializable {
                             Vector<Vector<Object>> r = p.getRows();
                             r.remove(p.getNumOfRows() - 1);
                             p.setRows(r);
+                            p.setNumOfRows(p.getNumOfRows()-1);
+                            p.setMax_pk_value(p.getRows().get(p.getNumOfRows()-1).get(index));
                             // update the info in the original page as well (because it has been incremented but not decremented)
                             Vector<Object> updatePage = p.addRow(v, index);
-                            if (Trial.compare(v.get(index), p.getMax_pk_value()) > 0)
+                            if (Trial.compare(v.get(index), p.getRows().get(p.getNumOfRows()-1).get(index)) > 0)
                                 p.setMax_pk_value(v.get(index));
-                            if (Trial.compare(p.getMin_pk_value(),v.get(index)) > 0)
+                            if (Trial.compare(p.getRows().get(p.getNumOfRows()-1).get(index),v.get(index)) > 0)
                                 p.setMin_pk_value(v.get(index));
                             updatePage.set(0,(Integer)(updatePage.get(0))-1);
                             updatePage.set(1,(p.getMin_pk_value()));
                             updatePage.set(2,(p.getMax_pk_value()));
-                            p.setNumOfRows(p.getNumOfRows()-1);
+
                             pagesInfo.remove(i);
                             pagesInfo.add(i, updatePage);
                             System.out.println("inserted here!!!" + 2 + " " + pagesID.get(i) + "and page count is" + " " + countRows);
@@ -271,7 +284,7 @@ public class Table implements java.io.Serializable {
 
                                 System.out.println("OVERFLOW PAGE");
                                 p.addOverflow(tableName, pagesID.get(i), v);
-                                System.out.println("inserted here!!!" + 5 + " " + pagesID.get(i) + "and page count is" + " " + countRows);
+                                System.out.println("inserted here!!!" + 5 + " " + pagesID.get(i) + "and page count is" + " " + countRows+" "+v.get(index)+" "+ max);
 
                             }
                             DBApp.serialize(p, tableName + "-" + (pagesID.get(i) + ""));
@@ -296,34 +309,42 @@ public class Table implements java.io.Serializable {
                                 Vector<Vector<Object>> rows_in_prevPage = p.getRows();
                                 Vector<Object> to_be_shifted = rows_in_prevPage.get(p.getNumOfRows() - 1);
 
-                                System.out.println("inserted here!!!" + 6 + " " + pagesID.get(i) + "and page count is" + " " + countRows);
+                                System.out.println("inserted here!!!" + 6 + " " + pagesID.get(i) + "and page count is" + " " + countRows+" "+v.get(index)+" "+ max);
                                 Vector<Vector<Object>> r = p.getRows();
                                 r.remove(p.getNumOfRows() - 1);
                                 p.setRows(r);
+
+                                p.setMax_pk_value(p.getRows().get(p.getNumOfRows()-1).get(index));
+                                p.setNumOfRows(p.getNumOfRows()-1);
                                 Vector<Object> updatePage = p.addRow(v, index);
-                                if (Trial.compare(v.get(index), p.getMax_pk_value()) > 0)
+                                // I need to compare with the new ( after removing the last row)
+                                if (Trial.compare(v.get(index), p.getRows().get(p.getNumOfRows()-1).get(index)) > 0)
                                     p.setMax_pk_value(v.get(index));
-                                if (Trial.compare(p.getMin_pk_value(),v.get(index)) > 0)
+                                if (Trial.compare(p.getRows().get(p.getNumOfRows()-1).get(index),v.get(index)) > 0)
                                     p.setMin_pk_value(v.get(index));
                                 updatePage.set(0,(Integer)(updatePage.get(0))-1);
                                 updatePage.set(1,(p.getMin_pk_value()));
                                 updatePage.set(2,(p.getMax_pk_value()));
-                                p.setNumOfRows(p.getNumOfRows()-1);
-                                System.out.println("inserted here!!!" + 7 + " " + pagesID.get(i) + "and page count is" + " " + countRows);
+
+                                System.out.println("inserted here!!!" + 7 + " " + pagesID.get(i) + "and page count is" + " " + countRows+" "+v.get(index)+" "+ max);
                                 pagesInfo.remove(i);
                                 pagesInfo.add(i, updatePage);
                                 //pagesInfo.setElementAt();
 
                                 Vector<Object> updatePage2 = p2.addRow(to_be_shifted, index);
-                                if (Trial.compare(v.get(index), p2.getMax_pk_value()) > 0)
-                                    p2.setMax_pk_value(v.get(index));
-                                if (Trial.compare(p2.getMin_pk_value(),v.get(index)) > 0)
-                                    p2.setMin_pk_value(v.get(index));
-                                updatePage2.set(0,(Integer)(updatePage2.get(0))-1);
+                                // already done in addrow
+//                                // I need to compare with the added row
+                                if (Trial.compare(to_be_shifted.get(index), p2.getMax_pk_value()) > 0)
+                                    p2.setMax_pk_value(to_be_shifted.get(index));
+                                if (Trial.compare(p2.getMin_pk_value(),to_be_shifted.get(index)) > 0)
+                                    p2.setMin_pk_value(to_be_shifted.get(index));
+                                updatePage2.set(0,(Integer)(updatePage2.get(0)));
                                 updatePage2.set(1,(p2.getMin_pk_value()));
                                 updatePage2.set(2,(p2.getMax_pk_value()));
                                 pagesInfo.remove(i+1);
                                 pagesInfo.add(i+1, updatePage2);
+                                p.sortI(index);
+                                p2.sortI(index);
                                 DBApp.serialize(p2, tableName + "-" + pagesID.get(i + 1));
                                 DBApp.serialize(p, tableName + "-" + pagesID.get(i));
                                 break;
@@ -331,7 +352,7 @@ public class Table implements java.io.Serializable {
                                 //create an overflow page and insert into the new page
                                 System.out.println("OVERFLOW PAGE");
                                 p.addOverflow(tableName, pagesID.get(i), v);
-                                System.out.println("inserted here!!!" + 8 + " " + pagesID.get(i) + "and page count is" + " " + countRows);
+                                System.out.println("inserted here!!!" + 8 + " " + pagesID.get(i) + "and page count is" + " " + countRows+" "+v.get(index)+" "+ max);
                                 DBApp.serialize(p, tableName + "-" + (pagesID.get(i) + ""));
                                 break;
                             }
@@ -343,7 +364,7 @@ public class Table implements java.io.Serializable {
                         Vector<Object> updatePage = p.addRow(v, index);
                         pagesInfo.remove(i);
                         pagesInfo.add(i, updatePage);
-                        System.out.println("inserted here!!!" + 9 + " " + pagesID.get(i) + "and page count is" + " " + countRows);
+                        System.out.println("inserted here!!!" + 9 + " " + pagesID.get(i) + "and page count is" + " " + countRows+" "+v.get(index)+" "+ max);
                         p.sortI(index);
                         DBApp.serialize(p, tableName + "-" + pagesID.get(i));
                         break;
@@ -356,7 +377,7 @@ public class Table implements java.io.Serializable {
                     Vector<Object> updatePage = p.addRow(v, index);
                     pagesInfo.remove(i);
                     pagesInfo.add(i, updatePage);
-                    System.out.println("inserted here!!!" + 10 + " " + pagesID.get(i) + "and page count is" + " " + countRows);
+                    System.out.println("inserted here!!!" + 10 + " " + pagesID.get(i) + "and page count is" + " " + countRows+" "+v.get(index)+" "+ max);
                     p.sortI(index);
                     DBApp.serialize(p, tableName + "-" + pagesID.get(i));
                     break;
