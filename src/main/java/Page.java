@@ -249,13 +249,41 @@ public class Page implements java.io.Serializable {
         if (c == 0) return false;
         else {
 
+//            int i=0;
+//            while(true){
+//                int idx = deletedRowsIndex.get(i);
+//                Vector<Object> removed = rows.get(idx);//henaaaa
+//                rows.remove(removed);
+//
+//                i++;
+//
+//
+//            }
 
 
-            for (int i = 0; i < deletedRowsIndex.size(); i++) {
-                System.out.println(deletedRowsIndex.get(i));
+
+            for (int i = deletedRowsIndex.size()-1; i>=0; i--){
+
                 Vector<Object> removed = rows.get(deletedRowsIndex.get(i));//henaaaa
+                deletedRowsIndex.remove(i);
                 rows.remove(removed);
-//                i--;
+                updatePageAfterDelete(pk_found);
+
+
+
+            }
+
+//
+//            for (int i = 0; i < deletedRowsIndex.size(); i++) {
+//                countdelete--;
+//                if (countdelete == -1){break;}
+              //  System.out.println(deletedRowsIndex.get(i) +" deleted row indx ");
+//                Vector<Object> removed = rows.get(deletedRowsIndex.get(i));//henaaaa
+//                deletedRowsIndex.remove(i);
+                //i--;
+                //rows.remove(removed);
+
+
                 //if (i == (deletedRowsIndex.size()-1)){break;}
 
 //            System.out.print("DELETED ROWS IN THE PAGE");
@@ -264,8 +292,9 @@ public class Page implements java.io.Serializable {
 //                System.out.print(enu1.nextElement()+" ");
 //            }
 //            System.out.println();
-                updatePageAfterDelete(pk_found);
-            }
+//            updatePageAfterDelete(pk_found);
+            //}
+
             return true;
         }
 

@@ -586,7 +586,25 @@ public class DBApp implements DBAppInterface {
         htblColNameValue.put("name", new String("Zaky Noor"));
         dbApp.deleteFromTable("Student", htblColNameValue);
 
-//        dbApp.getAllrows(strTableName);
+//        Vector<Object> arr = new Vector<>();
+//        arr.add("0");
+//        arr.add("1");
+//        arr.add("2");
+//        arr.add("3");
+//        arr.add("4");
+//        arr.add("5");
+//        arr.add("6");
+//
+//        for (int i=0; i<arr.size();i++)
+//        {
+//            System.out.print(arr.get(i) + " ");
+//            if ( arr.get(i) == "3") arr.remove("3");
+//            System.out.println(arr.get(i));
+//
+//
+//        }
+//        System.out.println(arr.toString());
+          dbApp.getAllrows(strTableName);
 
 
     }
