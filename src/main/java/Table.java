@@ -253,8 +253,6 @@ public class Table implements java.io.Serializable {
                 if (Page.compare(max, pk) >= 0) {
                     System.out.println(max + " " + pk);
                     Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
-
-
                     if (countRows >= maxRows) {
 
                         if (p.getOverFlowInfo().size() != 0) {
@@ -268,6 +266,11 @@ public class Table implements java.io.Serializable {
                                 Page o = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i) + "." + ID);
                                 if (o.getNumOfRows() < maxRows) {
                                     o.addOverflowRow(v);
+                                    if (Trial.compare(p.getMin_pk_value(), pk) > 0) {
+                                        System.out.println("IT ENTERS HERE");
+                                        p.setMin_pk_value(pk);
+                                        pagesInfo.get(i).set(1, pk);
+                                    }
                                     o.sortI(index);
 
                                     if (ID == 2) System.out.println("OVERFLOW PAGE");
@@ -284,7 +287,10 @@ public class Table implements java.io.Serializable {
 
                                 System.out.println("OVERFLOW PAGE");
                                 p.addOverflow(tableName, pagesID.get(i), v, index);
-
+                                if (Trial.compare(p.getMin_pk_value(), pk) > 0) {
+                                    p.setMin_pk_value(pk);
+                                    pagesInfo.get(i).set(1, pk);
+                                }
                                 System.out.println("inserted here!!!" + 5 + " " + pagesID.get(i) + "and page count is" + " " + countRows + " " + v.get(index) + " " + max);
 
                             }
@@ -425,11 +431,11 @@ public class Table implements java.io.Serializable {
 //                    return mid;
 
 //            }// 1-5, 6-6, 68-68
-if( (Trial.compare(x, (arr.get(mid)).get(1)) >= 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0)||
-        (mid == 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0)||
-        (mid== arr.size()-1) ||
-        ((mid<arr.size()-1)&&((Trial.compare(x,arr.get(mid).get(1)) >= 0 )&& (Trial.compare(x,arr.get(mid+1).get(1)) >= 0 )))){
-    return mid;
+            if ((Trial.compare(x, (arr.get(mid)).get(1)) >= 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0) ||
+                    (mid == 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0) ||
+                    (mid == arr.size() - 1) ||
+                    ((mid < arr.size() - 1) && ((Trial.compare(x, arr.get(mid).get(1)) >= 0) && (Trial.compare(arr.get(mid + 1).get(1), x) >= 0)))) {
+                return mid;
             }
 //            if ((mid == 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0) || Trial.compare(x, (arr.get(mid)).get(1)) >= 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0)
 //                return mid;
@@ -461,8 +467,9 @@ if( (Trial.compare(x, (arr.get(mid)).get(1)) >= 0 && Trial.compare((arr.get(mid)
             Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(searchPage));
             boolean t = p.deleteRowFromPageB(pk_found, pk_value, index_value);
             if (t) {
+                pks.remove(pk_value);
                 c = c + 1;
-                Vector<Object> updatePageInfo= new Vector<Object>();
+                Vector<Object> updatePageInfo = new Vector<Object>();
                 updatePageInfo.add(p.getNumOfRows());
                 updatePageInfo.add(p.getMin_pk_value());
                 updatePageInfo.add(p.getMax_pk_value());
@@ -483,15 +490,18 @@ if( (Trial.compare(x, (arr.get(mid)).get(1)) >= 0 && Trial.compare((arr.get(mid)
         else {
             for (int i = 0; i < pagesID.size(); i++) {
                 Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
-                boolean t = p.deleteRowFromPageL(pk_found, index_value);
+                Vector<Object> t = p.deleteRowFromPageL(pk_found, index_value);
                 if (p.getNumOfRows() == 0) {
                     c++;
                     removePage(p, i);
                     i--;
                 } else {
-                    if (t) {
+                    if (t.size() > 0) {
+                        for (int g = t.size() - 1; g >= 0; g--) {
+                            pks.remove(t.get(g));
+                        }
                         c = c + 1;
-                        Vector<Object> updatePageInfo= new Vector<Object>();
+                        Vector<Object> updatePageInfo = new Vector<Object>();
                         updatePageInfo.add(p.getNumOfRows());
                         updatePageInfo.add(p.getMin_pk_value());
                         updatePageInfo.add(p.getMax_pk_value());
@@ -523,11 +533,16 @@ if( (Trial.compare(x, (arr.get(mid)).get(1)) >= 0 && Trial.compare((arr.get(mid)
                     if (pk_value != null) {
                         boolean t = o.deleteRowFromPageB(pk_found, pk_value, index_value);
                         if (t) {
+                            pks.remove(pk_value);
                             c++;
                         }
                     } else {
-                        boolean t = o.deleteRowFromPageL(pk_found, index_value);
-                        if (t) {
+                        Vector<Object> t = o.deleteRowFromPageL(pk_found, index_value);
+                        if (t.size() > 0) {
+                            for (int g = t.size() - 1; g >= 0; g--) {
+                                pks.remove(t.get(g));
+                            }
+//                            pks.remove(pk_value);
                             c++;
                         }
                     }
@@ -583,10 +598,10 @@ if( (Trial.compare(x, (arr.get(mid)).get(1)) >= 0 && Trial.compare((arr.get(mid)
         if (pk_value != null) {
             Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(pageID));
 //        Page p = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(pageID) + "." + overflowCount);
-System.out.println("UPDATED OVERFLOW");
+            System.out.println("UPDATED OVERFLOW");
             Vector<Vector<Object>> overflowPages = p.getOverFlowInfo();
             System.out.println(p.getOverFlowInfo().size());
-            if (overflowPages.size()!=0) {
+            if (overflowPages.size() != 0) {
                 System.out.println("UPDATED OVERFLOW1");
                 int countup = 0;
                 for (int i = 0; i < overflowPages.size(); i++) {

@@ -222,7 +222,8 @@ public class Page implements java.io.Serializable {
         }
     }
 
-    public boolean deleteRowFromPageL(int pk_found, Vector<Vector> index_value) {
+    public Vector<Object> deleteRowFromPageL(int pk_found, Vector<Vector> index_value) {
+        Vector<Object> removed_pks= new Vector<Object>();
         Vector<Integer> deletedRowsIndex = new Vector<Integer>();
         int c = 0;
         for (int i = 0; i < rows.size(); i++) {
@@ -246,7 +247,7 @@ public class Page implements java.io.Serializable {
                 deletedRowsIndex.add(i);
             }
         }
-        if (c == 0) return false;
+        if (c == 0) return removed_pks;
         else {
 
 //            int i=0;
@@ -265,7 +266,9 @@ public class Page implements java.io.Serializable {
             for (int i = deletedRowsIndex.size()-1; i>=0; i--){
 //                for (int i = 0; i<deletedRowsIndex.size(); i++){
                 Vector<Object> removed = rows.get(deletedRowsIndex.get(i));//henaaaa
-//                deletedRowsIndex.remove(i);
+
+                // values of pk of rows that will be removed is added here:
+                removed_pks.add(rows.get(deletedRowsIndex.get(i)).get(pk_found));
                 rows.remove(removed);
                 updatePageAfterDelete(pk_found);
 
@@ -295,7 +298,7 @@ public class Page implements java.io.Serializable {
 //            updatePageAfterDelete(pk_found);
             //}
 
-            return true;
+            return removed_pks;
         }
 
 
