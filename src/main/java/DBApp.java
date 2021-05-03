@@ -512,8 +512,8 @@ public class DBApp implements DBAppInterface {
 
         String strTableName = "Student";
         DBApp dbApp = new DBApp();
-        Hashtable htblColNameValue = new Hashtable();
-
+     Hashtable htblColNameValue = new Hashtable();
+//
 //      Hashtable htblColNameType = new Hashtable();
 //        htblColNameType.put("id", "java.lang.Integer");
 //        htblColNameType.put("name", "java.lang.String");
@@ -533,9 +533,6 @@ public class DBApp implements DBAppInterface {
 //        htblColNameMax.put("gpa", "999.99");
 //        dbApp.createTable(strTableName, "id", htblColNameType, htblColNameMin, htblColNameMax);
 //        dbApp.createIndex(strTableName, new String[]{"gpa"});
-//
-//
-//
 //
 //
 //
@@ -573,23 +570,23 @@ public class DBApp implements DBAppInterface {
 //        htblColNameValue.put("gpa", (0.88));
 //        dbApp.insertIntoTable(strTableName, htblColNameValue);
 //        htblColNameValue.clear();
+//
 //        htblColNameValue.put("id", (10));
 //        htblColNameValue.put("name", new String("Zaky Noor"));
 //        htblColNameValue.put("gpa", (0.88));
 //        dbApp.insertIntoTable(strTableName, htblColNameValue);
 //        htblColNameValue.clear();
+//
 //        htblColNameValue.put("id", (4));
 //        htblColNameValue.put("name", new String("Last row"));
 //        htblColNameValue.put("gpa", (0.88));
 //        dbApp.insertIntoTable(strTableName, htblColNameValue);
-
-
-        htblColNameValue.clear();
+//        htblColNameValue.clear();
+//
         htblColNameValue.put("name", new String("Zaky Noor"));
         dbApp.deleteFromTable("Student", htblColNameValue);
 
-
-        dbApp.getAllrows(strTableName);
+//        dbApp.getAllrows(strTableName);
 
 
     }

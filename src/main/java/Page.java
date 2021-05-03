@@ -246,19 +246,29 @@ public class Page implements java.io.Serializable {
                 deletedRowsIndex.add(i);
             }
         }
-        for (int i = 0; i < deletedRowsIndex.size(); i++) {
-            Vector<Object> removed= rows.get(i);
-            rows.remove(i);
-            System.out.print("DELETED ROWS IN THE PAGE");
-            Enumeration enu1 = removed.elements();
-            while (enu1.hasMoreElements()) {
-                System.out.print(enu1.nextElement()+" ");
-            }
-            System.out.println();
-            updatePageAfterDelete(pk_found);
-        }
         if (c == 0) return false;
-        else return true;
+        else {
+
+
+
+            for (int i = 0; i < deletedRowsIndex.size(); i++) {
+                System.out.println(deletedRowsIndex.get(i));
+                Vector<Object> removed = rows.get(deletedRowsIndex.get(i));//henaaaa
+                rows.remove(removed);
+//                i--;
+                //if (i == (deletedRowsIndex.size()-1)){break;}
+
+//            System.out.print("DELETED ROWS IN THE PAGE");
+//            Enumeration enu1 = removed.elements();
+//            while (enu1.hasMoreElements()) {
+//                System.out.print(enu1.nextElement()+" ");
+//            }
+//            System.out.println();
+                updatePageAfterDelete(pk_found);
+            }
+            return true;
+        }
+
 
     }
 
