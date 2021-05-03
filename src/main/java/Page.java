@@ -22,7 +22,7 @@ public class Page implements java.io.Serializable {
     public void setOverFlowInfo(Vector<Vector<Object>> overFlowInfo) {
         this.overFlowInfo = overFlowInfo;
     }
-
+    private static final long serialVersionUID = 1L;
     private Page overFlow;
     private int count;
     private Vector<Vector<Object>> overFlowInfo; //stores ID and number of rows
@@ -45,7 +45,7 @@ public class Page implements java.io.Serializable {
 
     // called only if there is space
     public void sortB(Object pk_value) {
-        int mid = binarySearch(0, pks.size(), pk_value);
+        int mid = binarySearch(0, pks.size() - 1, pk_value);
         int temp = mid;
         for (int i = pks.size() - 1; i > mid; i++) {
             pks.setElementAt(pks.get(i), i + 1);
@@ -92,6 +92,8 @@ public class Page implements java.io.Serializable {
     public int addOverflowRow(Vector v) throws DBAppException {
         numOfRows++;
         rows.add(v);
+//        pks.add(v.get(index));
+//        sortI(index);
         return numOfRows;
     }
 
@@ -135,40 +137,44 @@ public class Page implements java.io.Serializable {
         int mid = binarySearch(0, rows.size() - 1, pk_value);
         // Creating an empty enumeration to store
         Enumeration enu = pks.elements();
-                       System.out.println("1234");
-                       System.out.println(pk_value.toString() + "  "+ index_value.get(0).get(0)+" "+index_value.get(0).get(1));
-                        System.out.println(mid);
+        System.out.println("1234");
+        System.out.println(pk_value.toString() + "  " + index_value.get(0).get(0) + " " + index_value.get(0).get(1));
+        System.out.println("INDEX VALUES");
+        Enumeration enu1 = index_value.elements();
+        while (enu1.hasMoreElements()) {
+            System.out.println(enu1.nextElement());
+        }
+        System.out.println(mid);
         System.out.println("The enumeration of values are:");
-            int countx = 0;
+        int countx = 0;
         // Displaying the Enumeration
         while (enu.hasMoreElements()) {
             System.out.println(enu.nextElement());
-                 countx++;
+            countx++;
         }
-        System.out.println(countx + " no of rows " );
-       if (mid == -1) throw new DBAppException("No such record");
+        System.out.println(countx + " no of rows ");
+        if (mid == -1) return false;
         Vector<Object> row = rows.get(mid);
         boolean found = true;
         for (int i = 0; i < index_value.size(); i++) {
-             System.out.println("123");
+            System.out.println("123");
             int rowToDeleteIndex = (int) index_value.get(i).get(0);
             Object rowToDeleteValue = index_value.get(i).get(1);
 
-            Comparable rowToDeleteValuen = (Comparable) rowToDeleteValue;
-            Comparable tempr = (Comparable) row.get(rowToDeleteIndex);
-            if (((tempr).compareTo(rowToDeleteValuen)) == 0) {
+//            Comparable rowToDeleteValuen = (Comparable) rowToDeleteValue;
+//            Comparable tempr = (Comparable) row.get(rowToDeleteIndex);
+            if (Trial.compare(rowToDeleteValue,row.get(rowToDeleteIndex)) == 0) {
                 System.out.println("12");
-                
-            }
-            else{
-                 found = false;
+
+            } else {
+                found = false;
             }
 //                throw new DBAppException("There is not existing row in the page with the same values.");
 
         }
         if (found) {
             rows.remove(mid);
-             System.out.println("DeleteCheck");
+            System.out.println("DeleteCheck");
             numOfRows--;
             if (rows.size() > 0) {
                 int last_index = rows.size() - 1;

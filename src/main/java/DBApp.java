@@ -548,7 +548,7 @@ public class DBApp implements DBAppInterface {
         //   System.out.println(t.getCount());
 //        insertIntoTable(t.getTableName(), )
 
-
+//
         String strTableName = "Student";
         DBApp dbApp = new DBApp();
         Hashtable htblColNameType = new Hashtable();
@@ -572,6 +572,9 @@ public class DBApp implements DBAppInterface {
 
         dbApp.createTable(strTableName, "id", htblColNameType, htblColNameMin, htblColNameMax);
         dbApp.createIndex(strTableName, new String[]{"gpa"});
+
+
+
         Hashtable htblColNameValue = new Hashtable();
 //        htblColNameValue.put("id", 23432);
 //        htblColNameValue.put("name", new String("Ahmed Noor"));
@@ -617,10 +620,17 @@ public class DBApp implements DBAppInterface {
         htblColNameValue.put("name", new String("Zaky Noor"));
         htblColNameValue.put("gpa", (0.88));
         dbApp.insertIntoTable(strTableName, htblColNameValue);
+        htblColNameValue.clear();
+        htblColNameValue.put("id", (4));
+        htblColNameValue.put("name", new String("Last row"));
+        htblColNameValue.put("gpa", (0.88));
+        dbApp.insertIntoTable(strTableName, htblColNameValue);
 
-
-//
-//
+//        htblColNameValue.clear();
+//        htblColNameValue.put("id", (4));
+//        htblColNameValue.put("name", new String("Last row"));
+//        htblColNameValue.put("gpa", (0.88));
+//        dbApp.deleteFromTable("Student", htblColNameValue);
 //        System.out.println(("Fri Jul 14 00:00:00 EET 1905").compareTo("Mon Aug 21 00:00:00 EET 1905"));
 
         dbApp.getAllrows(strTableName);

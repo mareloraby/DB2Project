@@ -65,7 +65,7 @@ public class Table implements java.io.Serializable {
             Vector<Object> page = pagesInfo.get(i);
             Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
             Enumeration enu2 = page.elements();
-System.out.println("Pages info for"+ pagesID.get(i));
+            System.out.println("Pages info for" + pagesID.get(i));
             while (enu2.hasMoreElements()) {
                 System.out.print(enu2.nextElement() + " ");
             }
@@ -82,7 +82,7 @@ System.out.println("Pages info for"+ pagesID.get(i));
             }
             System.out.println();
             // check if this page has overflows:
-            if (p.getOverFlowInfo() != null) {
+            if (p.getOverFlowInfo().size() != 0) {
                 Vector<Vector<Object>> overflowPagesInfo = p.getOverFlowInfo();
                 for (int k = 0; k < p.getOverFlowInfo().size(); k++) {
                     Vector<Object> overflow = overflowPagesInfo.get(k);
@@ -122,7 +122,7 @@ System.out.println("Pages info for"+ pagesID.get(i));
         // insert the info related to this page into the pagesInfo Vector
         if (count == 0) {
             addPage(v, index);
-            System.out.println("the amazing searchKey "+" to insert: "+pk);
+            System.out.println("the amazing searchKey " + " to insert: " + pk);
             if (pks.contains(pk))
                 throw new DBAppException("You can not insert a duplicate key for a primary key.");
             else {
@@ -143,10 +143,10 @@ System.out.println("Pages info for"+ pagesID.get(i));
 // which means I need to shift one record from 0-100 to 120-130 and insert into 0-100
 // however if 120-130 is also full, create an overflow page for 0-100
             System.out.println("Binary maxes");
-for(int m =0; m<pagesID.size();m++ ){
-    System.out.print(pagesInfo.get(m).get(2)+" ");
-}
-System.out.println();
+            for (int m = 0; m < pagesID.size(); m++) {
+                System.out.print(pagesInfo.get(m).get(2) + " ");
+            }
+            System.out.println();
             int searchPage = binarySearch(pagesInfo, 0, pagesInfo.size() - 1, pk);
             // check whether the pk fits within the ranges of min-max of any existing page
 //            for (int i = 0; i < (pagesID).size(); i++) {
@@ -155,9 +155,9 @@ System.out.println();
                 System.out.println(i);
                 if (i == -1) {
                     System.out.println("ur i is -1 ");
-                    i = pagesID.size()-1;
+                    i = pagesID.size() - 1;
                 }
-                System.out.println("the amazing searchKey " + i+" to insert: "+pk);
+                System.out.println("the amazing searchKey " + i + " to insert: " + pk);
                 // retrieve the info of the page we're standing at
                 Vector<Object> page = pagesInfo.get(i);
 
@@ -185,7 +185,7 @@ System.out.println();
                         Vector<Object> updatePage = p.addRow(v, index);
                         pagesInfo.remove(i);
                         pagesInfo.add(i, updatePage);
-                        System.out.println("inserted here!!!" + 1 + " " + pagesID.get(i) + " " + "and page count is" + " " + countRows+" "+v.get(index)+" "+ max);
+                        System.out.println("inserted here!!!" + 1 + " " + pagesID.get(i) + " " + "and page count is" + " " + countRows + " " + v.get(index) + " " + max);
 
                         // sort in the vector
                         p.sortI(index);
@@ -216,17 +216,17 @@ System.out.println();
                             Vector<Vector<Object>> r = p.getRows();
                             r.remove(p.getNumOfRows() - 1);
                             p.setRows(r);
-                            p.setNumOfRows(p.getNumOfRows()-1);
-                            p.setMax_pk_value(p.getRows().get(p.getNumOfRows()-1).get(index));
+                            p.setNumOfRows(p.getNumOfRows() - 1);
+                            p.setMax_pk_value(p.getRows().get(p.getNumOfRows() - 1).get(index));
                             // update the info in the original page as well (because it has been incremented but not decremented)
                             Vector<Object> updatePage = p.addRow(v, index);
-                            if (Trial.compare(v.get(index), p.getRows().get(p.getNumOfRows()-1).get(index)) > 0)
-                                p.setMax_pk_value(v.get(index));
-                            if (Trial.compare(p.getRows().get(p.getNumOfRows()-1).get(index),v.get(index)) > 0)
-                                p.setMin_pk_value(v.get(index));
-                            updatePage.set(0,(Integer)(updatePage.get(0))-1);
-                            updatePage.set(1,(p.getMin_pk_value()));
-                            updatePage.set(2,(p.getMax_pk_value()));
+//                            if (Trial.compare(v.get(index), p.getRows().get(p.getNumOfRows() - 1).get(index)) > 0)
+//                                p.setMax_pk_value(v.get(index));
+//                            if (Trial.compare(p.getRows().get(p.getNumOfRows() - 1).get(index), v.get(index)) > 0)
+//                                p.setMin_pk_value(v.get(index));
+                            updatePage.set(0, (Integer) (updatePage.get(0)));
+                            updatePage.set(1, (p.getMin_pk_value()));
+                            updatePage.set(2, (p.getMax_pk_value()));
 
                             pagesInfo.remove(i);
                             pagesInfo.add(i, updatePage);
@@ -271,7 +271,7 @@ System.out.println();
                                     o.sortI(index);
 
                                     if (ID == 2) System.out.println("OVERFLOW PAGE");
-                                    System.out.println("inserted here!!!" + 4 + " " + pagesID.get(i) + "and page count is" + " " + countRows+" "+v.get(index)+" "+ max);
+                                    System.out.println("inserted here!!!" + 4 + " " + pagesID.get(i) + "and page count is" + " " + countRows + " " + v.get(index) + " " + max);
                                     Vector<Vector<Object>> updatedOverflowInfoPages = updatePageOverflowInfo(p, o, j);
                                     p.setOverFlowInfo(updatedOverflowInfoPages);
                                     DBApp.serialize(o, tableName + "-" + pagesID.get(i) + "." + (ID + ""));
@@ -284,7 +284,7 @@ System.out.println();
 
                                 System.out.println("OVERFLOW PAGE");
                                 p.addOverflow(tableName, pagesID.get(i), v);
-                                System.out.println("inserted here!!!" + 5 + " " + pagesID.get(i) + "and page count is" + " " + countRows+" "+v.get(index)+" "+ max);
+                                System.out.println("inserted here!!!" + 5 + " " + pagesID.get(i) + "and page count is" + " " + countRows + " " + v.get(index) + " " + max);
 
                             }
                             DBApp.serialize(p, tableName + "-" + (pagesID.get(i) + ""));
@@ -295,7 +295,7 @@ System.out.println();
                     check the following page. If the following page has room, insert in the following page, otherwise,
                     create a new overflow page linked to the main page. */
                         else if ((i + 1) < pagesID.size()) {
-                            Vector<Object> page2 = pagesInfo.get(i+1);
+                            Vector<Object> page2 = pagesInfo.get(i + 1);
                             int countRows2 = (int) page2.get(0); // <"2,0,10000", >
                             Object min2 = page2.get(1);
                             Object max2 = page2.get(2);
@@ -309,24 +309,24 @@ System.out.println();
                                 Vector<Vector<Object>> rows_in_prevPage = p.getRows();
                                 Vector<Object> to_be_shifted = rows_in_prevPage.get(p.getNumOfRows() - 1);
 
-                                System.out.println("inserted here!!!" + 6 + " " + pagesID.get(i) + "and page count is" + " " + countRows+" "+v.get(index)+" "+ max);
+                                System.out.println("inserted here!!!" + 6 + " " + pagesID.get(i) + "and page count is" + " " + countRows + " " + v.get(index) + " " + max);
                                 Vector<Vector<Object>> r = p.getRows();
                                 r.remove(p.getNumOfRows() - 1);
                                 p.setRows(r);
+                                p.setNumOfRows(p.getNumOfRows() - 1);
+                                p.setMax_pk_value(p.getRows().get(p.getNumOfRows() - 1).get(index));
 
-                                p.setMax_pk_value(p.getRows().get(p.getNumOfRows()-1).get(index));
-                                p.setNumOfRows(p.getNumOfRows()-1);
                                 Vector<Object> updatePage = p.addRow(v, index);
                                 // I need to compare with the new ( after removing the last row)
-                                if (Trial.compare(v.get(index), p.getRows().get(p.getNumOfRows()-1).get(index)) > 0)
-                                    p.setMax_pk_value(v.get(index));
-                                if (Trial.compare(p.getRows().get(p.getNumOfRows()-1).get(index),v.get(index)) > 0)
-                                    p.setMin_pk_value(v.get(index));
-                                updatePage.set(0,(Integer)(updatePage.get(0))-1);
-                                updatePage.set(1,(p.getMin_pk_value()));
-                                updatePage.set(2,(p.getMax_pk_value()));
+//                                if (Trial.compare(v.get(index), p.getRows().get(p.getNumOfRows() - 1).get(index)) > 0)
+//                                    p.setMax_pk_value(v.get(index));
+//                                if (Trial.compare(p.getRows().get(p.getNumOfRows() - 1).get(index), v.get(index)) > 0)
+//                                    p.setMin_pk_value(v.get(index));
+                                updatePage.set(0, (Integer) (updatePage.get(0)));
+                                updatePage.set(1, (p.getMin_pk_value()));
+                                updatePage.set(2, (p.getMax_pk_value()));
 
-                                System.out.println("inserted here!!!" + 7 + " " + pagesID.get(i) + "and page count is" + " " + countRows+" "+v.get(index)+" "+ max);
+                                System.out.println("inserted here!!!" + 7 + " " + pagesID.get(i) + "and page count is" + " " + countRows + " " + v.get(index) + " " + max);
                                 pagesInfo.remove(i);
                                 pagesInfo.add(i, updatePage);
                                 //pagesInfo.setElementAt();
@@ -334,15 +334,15 @@ System.out.println();
                                 Vector<Object> updatePage2 = p2.addRow(to_be_shifted, index);
                                 // already done in addrow
 //                                // I need to compare with the added row
-                                if (Trial.compare(to_be_shifted.get(index), p2.getMax_pk_value()) > 0)
-                                    p2.setMax_pk_value(to_be_shifted.get(index));
-                                if (Trial.compare(p2.getMin_pk_value(),to_be_shifted.get(index)) > 0)
-                                    p2.setMin_pk_value(to_be_shifted.get(index));
-                                updatePage2.set(0,(Integer)(updatePage2.get(0)));
-                                updatePage2.set(1,(p2.getMin_pk_value()));
-                                updatePage2.set(2,(p2.getMax_pk_value()));
-                                pagesInfo.remove(i+1);
-                                pagesInfo.add(i+1, updatePage2);
+//                                if (Trial.compare(to_be_shifted.get(index), p2.getMax_pk_value()) > 0)
+//                                    p2.setMax_pk_value(to_be_shifted.get(index));
+//                                if (Trial.compare(p2.getMin_pk_value(), to_be_shifted.get(index)) > 0)
+//                                    p2.setMin_pk_value(to_be_shifted.get(index));
+                                updatePage2.set(0, (Integer) (updatePage2.get(0)));
+                                updatePage2.set(1, (p2.getMin_pk_value()));
+                                updatePage2.set(2, (p2.getMax_pk_value()));
+                                pagesInfo.remove(i + 1);
+                                pagesInfo.add(i + 1, updatePage2);
                                 p.sortI(index);
                                 p2.sortI(index);
                                 DBApp.serialize(p2, tableName + "-" + pagesID.get(i + 1));
@@ -351,8 +351,8 @@ System.out.println();
                             } else {
                                 //create an overflow page and insert into the new page
                                 System.out.println("OVERFLOW PAGE");
-                                p.addOverflow(tableName, pagesID.get(i), v);
-                                System.out.println("inserted here!!!" + 8 + " " + pagesID.get(i) + "and page count is" + " " + countRows+" "+v.get(index)+" "+ max);
+                                p.addOverflow(tableName, pagesID.get(i),v);
+                                System.out.println("inserted here!!!" + 8 + " " + pagesID.get(i) + "and page count is" + " " + countRows + " " + v.get(index) + " " + max);
                                 DBApp.serialize(p, tableName + "-" + (pagesID.get(i) + ""));
                                 break;
                             }
@@ -364,7 +364,7 @@ System.out.println();
                         Vector<Object> updatePage = p.addRow(v, index);
                         pagesInfo.remove(i);
                         pagesInfo.add(i, updatePage);
-                        System.out.println("inserted here!!!" + 9 + " " + pagesID.get(i) + "and page count is" + " " + countRows+" "+v.get(index)+" "+ max);
+                        System.out.println("inserted here!!!" + 9 + " " + pagesID.get(i) + "and page count is" + " " + countRows + " " + v.get(index) + " " + max);
                         p.sortI(index);
                         DBApp.serialize(p, tableName + "-" + pagesID.get(i));
                         break;
@@ -377,7 +377,7 @@ System.out.println();
                     Vector<Object> updatePage = p.addRow(v, index);
                     pagesInfo.remove(i);
                     pagesInfo.add(i, updatePage);
-                    System.out.println("inserted here!!!" + 10 + " " + pagesID.get(i) + "and page count is" + " " + countRows+" "+v.get(index)+" "+ max);
+                    System.out.println("inserted here!!!" + 10 + " " + pagesID.get(i) + "and page count is" + " " + countRows + " " + v.get(index) + " " + max);
                     p.sortI(index);
                     DBApp.serialize(p, tableName + "-" + pagesID.get(i));
                     break;
@@ -405,39 +405,33 @@ System.out.println();
     public int binarySearch(Vector<Vector<Object>> arr, int l, int r, Object x) {
         if (r >= l) {
             int mid = l + (r - l) / 2;
-
             // Creating an empty enumeration to store
             Enumeration enu = arr.get(mid).elements();
 
             System.out.println("The enumeration of values are:");
-
             // Displaying the Enumeration
             while (enu.hasMoreElements()) {
                 System.out.println(enu.nextElement());
             }
-
             // If the element is present at the
             // middle itself <numofPage, min, max>
-
             Comparable xnew = (Comparable) x;
             Comparable arr_mid_min = (Comparable) (arr.get(mid)).get(1);
             Comparable arr_mid_max = (Comparable) (arr.get(mid)).get(2);
-            if (xnew instanceof Date) {
-                if ((xnew.compareTo(arr_mid_min)) >= 0 && (arr_mid_max.compareTo(xnew)) >= 0)
-                    return mid;
-            } else if (Trial.compare(x, (arr.get(mid)).get(1)) >= 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0)
+//            if (xnew instanceof Date) {
+//                if ((xnew.compareTo(arr_mid_min)) >= 0 && (arr_mid_max.compareTo(xnew)) >= 0)
+//                    return mid;
+//            }
+            if ((mid==0 && Trial.compare((arr.get(mid)).get(2), x) >= 0)|| Trial.compare(x, (arr.get(mid)).get(1)) >= 0 && Trial.compare((arr.get(mid)).get(2), x) >= 0)
                 return mid;
-
             // If element is smaller than mid, then
             // it can only be present in left subarray
             if (Trial.compare(arr_mid_max, x) > 0)
                 return binarySearch(arr, l, mid - 1, x);
-
             // Else the element can only be present
             // in right subarray
             return binarySearch(arr, mid + 1, r, x);
         }
-
         // We reach here when element is not present
         // in array
         return -1;
@@ -453,6 +447,7 @@ System.out.println();
         int c = 0; // this is used to count the number of record deleted. ( the method delete returns boolean, so we count how many trues we have)
 
         if (pk_value != null) {
+//            System.out.println("CHECKING PAGE INFO SIZE!"+sear);
             int searchPage = binarySearch(pagesInfo, 0, pagesInfo.size() - 1, pk_value);
             Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(searchPage));
             boolean t = p.deleteRowFromPageB(pk_found, pk_value, index_value);
@@ -464,10 +459,10 @@ System.out.println();
             } else {
                 DBApp.serialize(p, tableName + "-" + pagesID.get(searchPage));
             }
-            if (p.getOverFlowInfo() == null) {
+            if (p.getOverFlowInfo().size()==0) {
                 if (c == 0) throw new DBAppException("No such record.");
             } else
-                deleteFromOverflowPage(pagesID.get(searchPage), index_value, pk_found, pk_value, c);
+                deleteFromOverflowPage(searchPage, index_value, pk_found, pk_value, c);
 
         }
         // linear search
@@ -481,10 +476,10 @@ System.out.println();
                 } else {
                     DBApp.serialize(p, tableName + "-" + pagesID.get(i));
                 }
-                if (p.getOverFlowInfo() == null) {
+                if (p.getOverFlowInfo().size()==0) {
                     if (c == 0) throw new DBAppException("No such record.");
                 } else
-                    deleteFromOverflowPage(pagesID.get(i), index_value, pk_found, pk_value, c);
+                    deleteFromOverflowPage(i, index_value, pk_found, pk_value, c);
             }
 
 
