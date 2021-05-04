@@ -139,13 +139,11 @@ public class Page implements java.io.Serializable {
         count++;
         Page p = new Page();
         p.setPk_index(index);
-//        System.out.println("OVERFLOW NEW SETTING PK:"+p.getPk_index());
         int n = p.addOverflowRow(v);
         Vector<Object> newPage = new Vector<Object>();
         newPage.add(count);
         newPage.add(n);
         overFlowInfo.add(newPage);
-       // System.out.println(tableName + " " + PageID + " " + count);
         DBApp.serialize(p, tableName + "-" + PageID + "." + count);
     }
 
@@ -162,14 +160,7 @@ public int addOverflowRow(Vector v) throws DBAppException {
     // used to sort within a page
     public int binarySearch(int l, int r, Object x) {
         // Creating an empty enumeration to store
-     /*   Enumeration enu = pks.elements();
 
-        System.out.println("The enumeration of values are:");
-
-        // Displaying the Enumeration
-        while (enu.hasMoreElements()) {
-            System.out.println(enu.nextElement());
-        }      */
         getPks();
         if (r >= l) {
             int mid = l + (r - l) / 2;
@@ -214,7 +205,6 @@ public int addOverflowRow(Vector v) throws DBAppException {
         if (found) {
             rows.remove(mid);
             this.numOfRows--;
-          //  System.out.print("this.numOfRows"+ this.numOfRows);
             if (rows.size() > 0) {
                 int last_index = rows.size() - 1;
                 max_pk_value = rows.get(last_index).get(pk_found);
@@ -226,7 +216,6 @@ public int addOverflowRow(Vector v) throws DBAppException {
     }
 
     public void updatePageAfterDelete(int pk_found) {
-//        System.out.println(pk_found);
         numOfRows--;
         if (rows.size() > 0) {
             int last_index = rows.size() - 1;
@@ -254,7 +243,6 @@ public int addOverflowRow(Vector v) throws DBAppException {
             }
             // if it fully matches the value sin index_value , remove from the page
             if (perfectMatch) {
-              //  System.out.println("Delete Check");
                 c++;
                 deletedRowsIndex.add(i);
             }
@@ -337,7 +325,6 @@ public int addOverflowRow(Vector v) throws DBAppException {
         if (mid == -1) return false;
         Vector<Object> row = rows.get(mid);
         for (int i = 0; i < index_value.size(); i++) {
-            System.out.println("UPDATED OVERFLOW2");
             int rowToUpdateIndex = (int) index_value.get(i).get(0);
             Object rowToUpdateValue = index_value.get(i).get(1);
             row.set(rowToUpdateIndex, rowToUpdateValue);
