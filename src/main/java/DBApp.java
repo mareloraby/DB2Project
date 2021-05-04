@@ -507,7 +507,7 @@ public class DBApp implements DBAppInterface {
 
         String strTableName = "Student";
         DBApp dbApp = new DBApp();
-//        Hashtable htblColNameValue = new Hashtable();
+       Hashtable htblColNameValue = new Hashtable();
 //
 //        Hashtable htblColNameType = new Hashtable();
 //        htblColNameType.put("id", "java.lang.Integer");
@@ -581,10 +581,9 @@ public class DBApp implements DBAppInterface {
 //        htblColNameValue.put("gpa", (0.88));
 //        dbApp.insertIntoTable(strTableName,htblColNameValue );
         //1-5  //6 -6 // 68
-//        htblColNameValue.clear();
-//        htblColNameValue.put("id", (1));
-//        dbApp.deleteFromTable(strTableName,htblColNameValue);
-      dbApp.getAllrows("students");
+      htblColNameValue.put("id", (3));
+        dbApp.deleteFromTable(strTableName,htblColNameValue);
+      dbApp.getAllrows(strTableName);
 
 
 

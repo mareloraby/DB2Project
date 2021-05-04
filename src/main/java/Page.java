@@ -11,6 +11,9 @@ public class Page implements java.io.Serializable {
     private Object min_pk_value;
     private Vector<Object> pks;
     private Vector<Vector<Object>> rows;
+    private Object max_pk_value;
+    private int numOfRows;
+    private int maxRows;
 
     public void setMin_pk_value(Object min_pk_value) {
         this.min_pk_value = min_pk_value;
@@ -48,8 +51,44 @@ public class Page implements java.io.Serializable {
         this.pk_index = pk_index;
     }
 
-    private Object max_pk_value;
-    private int numOfRows;
+
+
+    public void setOverFlow(Page overFlow) {
+        this.overFlow = overFlow;
+    }
+
+    public Vector<Vector<Object>> getRows() {
+        return rows;
+    }
+
+    public Page getOverFlow() {
+        return overFlow;
+    }
+
+    public Object getMin_pk_value() {
+        return min_pk_value;
+    }
+
+    public Object getMax_pk_value() {
+        return max_pk_value;
+    }
+
+    public int getNumOfRows() {
+        return numOfRows;
+    }
+
+    public int getMaxRows() {
+        return maxRows;
+    }
+
+    public void setNumOfRows(int numOfRows) {
+        this.numOfRows = numOfRows;
+    }
+
+
+    public void setRows(Vector<Vector<Object>> rows) {
+        this.rows = rows;
+    }
 
 
     public Page() {
@@ -83,7 +122,6 @@ public class Page implements java.io.Serializable {
         rows.add(v);
         pks.add(v.get(index));
         sortI(index);
-//        Collections.sort(pks);
         Object pk = v.get(index);
         if (Trial.compare(pk, max_pk_value) > 0)
             max_pk_value = pk;
@@ -101,13 +139,13 @@ public class Page implements java.io.Serializable {
         count++;
         Page p = new Page();
         p.setPk_index(index);
-        System.out.println("OVERFLOW NEW SETTING PK:"+p.getPk_index());
+//        System.out.println("OVERFLOW NEW SETTING PK:"+p.getPk_index());
         int n = p.addOverflowRow(v);
         Vector<Object> newPage = new Vector<Object>();
         newPage.add(count);
         newPage.add(n);
         overFlowInfo.add(newPage);
-        System.out.println(tableName + " " + PageID + " " + count);
+       // System.out.println(tableName + " " + PageID + " " + count);
         DBApp.serialize(p, tableName + "-" + PageID + "." + count);
     }
 
@@ -176,7 +214,7 @@ public int addOverflowRow(Vector v) throws DBAppException {
         if (found) {
             rows.remove(mid);
             this.numOfRows--;
-            System.out.print("this.numOfRows"+ this.numOfRows);
+          //  System.out.print("this.numOfRows"+ this.numOfRows);
             if (rows.size() > 0) {
                 int last_index = rows.size() - 1;
                 max_pk_value = rows.get(last_index).get(pk_found);
@@ -216,7 +254,7 @@ public int addOverflowRow(Vector v) throws DBAppException {
             }
             // if it fully matches the value sin index_value , remove from the page
             if (perfectMatch) {
-                System.out.println("Delete Check");
+              //  System.out.println("Delete Check");
                 c++;
                 deletedRowsIndex.add(i);
             }
@@ -244,45 +282,6 @@ public int addOverflowRow(Vector v) throws DBAppException {
 
     }
 
-    public void setOverFlow(Page overFlow) {
-        this.overFlow = overFlow;
-    }
-
-    public Vector<Vector<Object>> getRows() {
-        return rows;
-    }
-
-    public Page getOverFlow() {
-        return overFlow;
-    }
-
-    public Object getMin_pk_value() {
-        return min_pk_value;
-    }
-
-    public Object getMax_pk_value() {
-        return max_pk_value;
-    }
-
-    public int getNumOfRows() {
-        return numOfRows;
-    }
-
-    public int getMaxRows() {
-        return maxRows;
-    }
-
-    public void setNumOfRows(int numOfRows) {
-        this.numOfRows = numOfRows;
-    }
-
-    private int maxRows;
-
-
-    public void setRows(Vector<Vector<Object>> rows) {
-        this.rows = rows;
-    }
-
 
     /*
     page full -> access overflow pages -> add row in one of the overflow pages- >
@@ -295,6 +294,7 @@ public int addOverflowRow(Vector v) throws DBAppException {
 
 
     */
+
     // used with sortB to update info in the page
     public void updateRowInfo(Vector v, int index) {
         Vector<Object> info = new Vector<>();

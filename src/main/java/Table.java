@@ -379,6 +379,7 @@ public class Table implements java.io.Serializable {
         DBApp.serialize(p, tableName + "-" + count + "");
     }
 
+    //search for the correct page to insert to
     public int binarySearch(Vector<Vector<Object>> arr, int l, int r, Object x) {
         if (r >= l) {
             int mid = l + (r - l) / 2;
@@ -447,7 +448,7 @@ public class Table implements java.io.Serializable {
                 DBApp.serialize(p, tableName + "-" + pagesID.get(searchPage));
             }
             if (p.getOverFlowInfo().size() == 0) {
-                if (c == 0) throw new DBAppException("No such record.");
+                if (c == 0){} //throw new DBAppException("No such record.");
             } else
                 deleteFromOverflowPage(searchPage, index_value, pk_found, pk_value, c);
 
@@ -476,7 +477,7 @@ public class Table implements java.io.Serializable {
                     DBApp.serialize(p, tableName + "-" + pagesID.get(i));
                 }
                 if (p.getOverFlowInfo().size() == 0) {
-                    if (c == 0) throw new DBAppException("No such record.");
+                    if (c == 0) {} //throw new DBAppException("No such record.");
                 } else
                     deleteFromOverflowPage(i, index_value, pk_found, pk_value, c);
             }
@@ -522,7 +523,7 @@ public class Table implements java.io.Serializable {
                 }
                 DBApp.serialize(p, tableName + "-" + pagesID.get(pageID));
             }
-            if (c == 0) throw new DBAppException("No such record.");
+            if (c == 0) {}// throw new DBAppException("No such record.");
         }
     }
 
@@ -548,7 +549,6 @@ public class Table implements java.io.Serializable {
     private void updateInOverflowPage(Integer pageID, Vector<Vector> index_value, int pk_found, Object pk_value) throws DBAppException {
         if (pk_value != null) {
             Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(pageID));
-//        Page p = (Page) DBApp.deserialize(tableName + "/" + pagesID.get(pageID) + "." + overflowCount);
             System.out.println("UPDATED OVERFLOW");
             Vector<Vector<Object>> overflowPages = p.getOverFlowInfo();
             System.out.println(p.getOverFlowInfo().size());
