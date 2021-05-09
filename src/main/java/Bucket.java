@@ -18,6 +18,7 @@ public class Bucket implements java.io.Serializable {
 
     void insertIntoBucket(Object value, String pageName, int rowNumber){
         noOfEntries++;
+
         Vector <Object> entry = new Vector<>();
         entry.add(value);
         entry.add(pageName);

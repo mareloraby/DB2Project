@@ -397,6 +397,13 @@ public class DBApp implements DBAppInterface {
     public void createIndex(String tableName, String[] columnNames) throws DBAppException, IOException {
         String csvLine;
         BufferedReader csvReader = null;
+        ArrayList<String> colNames = new ArrayList<>();
+
+
+        ArrayList<String> AllTablesNames = getTableNames();
+
+        if (!AllTablesNames.contains(tableName))
+            throw new DBAppException("The table does not exist.");
 
         try {
              csvReader = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
@@ -410,6 +417,7 @@ public class DBApp implements DBAppInterface {
             String[] data = csvLine.split(",");
             if (data[0].equals(tableName)) {
 
+                colNames.add(data[1]);
                 for (int i = 0; i<columnNames.length; i++)
                 {
                     if (data[1].equals(columnNames[i])){
@@ -443,6 +451,14 @@ public class DBApp implements DBAppInterface {
         csvWriter.append(sb);
         csvWriter.close();
         csvReader.close();
+
+        for (int k=0;k<columnNames.length; k++) {
+            if (!colNames.contains(columnNames[k]))
+                throw new DBAppException("The table does not contain this column: " + columnNames[k]);
+        }
+
+        GridIndex GI = new GridIndex(tableName,columnNames);
+        serialize(GI, tableName+ "-GI");
 
 
     }
@@ -554,30 +570,30 @@ public class DBApp implements DBAppInterface {
 
     public static void main(String[] args) throws DBAppException, IOException {
 
-        String strTableName = "Student";
-        DBApp dbApp = new DBApp();
-       Hashtable htblColNameValue = new Hashtable();
-
-        Hashtable htblColNameType = new Hashtable();
-        htblColNameType.put("id", "java.lang.Integer");
-        htblColNameType.put("name", "java.lang.String");
-        htblColNameType.put("gpa", "java.lang.Double");
-
-        Hashtable htblColNameMin = new Hashtable();
-
-        htblColNameMin.put("id", "0");
-        htblColNameMin.put("name", "A");
-        htblColNameMin.put("gpa", "0.0");
-
-
-        Hashtable htblColNameMax = new Hashtable();
-
-        htblColNameMax.put("id", "99999999");
-        htblColNameMax.put("name", "zzzzzzzzzzzzzzzzzzzzzzzzzz");
-        htblColNameMax.put("gpa", "999.99");
-        dbApp.createTable(strTableName, "id", htblColNameType, htblColNameMin, htblColNameMax);
-        dbApp.createIndex(strTableName, new String[]{"gpa"});
+//        String strTableName = "Student";
+//        DBApp dbApp = new DBApp();
+//       Hashtable htblColNameValue = new Hashtable();
 //
+//        Hashtable htblColNameType = new Hashtable();
+//        htblColNameType.put("id", "java.lang.Integer");
+//        htblColNameType.put("name", "java.lang.String");
+//        htblColNameType.put("gpa", "java.lang.Double");
+//
+//        Hashtable htblColNameMin = new Hashtable();
+//
+//        htblColNameMin.put("id", "0");
+//        htblColNameMin.put("name", "A");
+//        htblColNameMin.put("gpa", "0.0");
+//
+//
+//        Hashtable htblColNameMax = new Hashtable();
+//
+//        htblColNameMax.put("id", "99999999");
+//        htblColNameMax.put("name", "zzzzzzzzzzzzzzzzzzzzzzzzzz");
+//        htblColNameMax.put("gpa", "999.99");
+//        dbApp.createTable(strTableName, "id", htblColNameType, htblColNameMin, htblColNameMax);
+//        dbApp.createIndex(strTableName, new String[]{"gpa"});
+////
 //
 //        htblColNameValue.put("id", (68));
 //        htblColNameValue.put("name", new String("Ahmed Noor"));
@@ -637,6 +653,9 @@ public class DBApp implements DBAppInterface {
 //        String strTableName = "Student";
 //        DBApp dbApp = new DBApp( );
 //        dbApp.createIndex( strTableName, new String[] {"gpa"} );
+
+
+        System.out.println(Trial.compare("z","A"));
 
 
     }

@@ -1,22 +1,65 @@
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Vector;
 
 public class GridIndex implements java.io.Serializable{
 
     //each cell points to only 1 buckets
     private static final long serialVersionUID = 1L;
+    private Vector<Vector<Object>> dimVals;
+    private Vector <String> bucketsinTable;
 
-    private ArrayList<ArrayList> cols;
+    //<x:<0,10,20,..>,y:<100,110,120,..>,<z>>
 
-    GridIndex(String tableName, String [] columnNames){
-//Array for each dimension
-//*divide range by 10 -> (max of col - min of col)/10 //floor or ceiling?
+    GridIndex(String tableName, String [] columnNames) throws IOException {
+        dimVals = new Vector<>();
+        int number_of_dimensions  = columnNames.length;
+
+        BufferedReader csvReader = null;
+        String csvLine;
+        try {
+            csvReader = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        boolean found =false;
+
+        while ((csvLine = csvReader.readLine()) != null) {
+
+            String[] data = csvLine.split(",");
+            if (data[0].equals(tableName)) {
+                found = true;
+                for (int i=0; i<columnNames.length;i++){
+                    if (data[1].equals(columnNames[i])){
+                        Object minofcol = data[5];
+                        Object maxofcol = data[6];
+
+                        double range =(Trial.compare(maxofcol,minofcol) +1)/10;
+                        Vector <Object> dimension= new Vector<>();
+                        for(int j=0; j<10;j++)
+                        {
+                            dimension.add(range);
+                            range+= range;
+                        }
+                        dimVals.add(dimension);
+
+                    }
+                }
 
 
+            }
+            else if (data[0] != tableName && found == true)
+                break;
 
-//    for (int i=0; i<columnNames.length; i++){
-//        cols.add(new ArrayList<Object>());
-//
-//    }
+
+        }
+        csvReader.close();
+
+
     }
 
 }
