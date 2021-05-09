@@ -112,6 +112,7 @@ public class DBApp implements DBAppInterface {
             }
             csvWriter.append(",");
             csvWriter.append("False"); //indexed
+
             csvWriter.append(",");
 
             String min = keysmin.nextElement();
@@ -310,7 +311,6 @@ public class DBApp implements DBAppInterface {
 
     }
 
-    //table columns:<gpa,id,date>
     @Override
     public void deleteFromTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException, IOException {
         /* 1. Search for the record to be deleted
@@ -394,7 +394,56 @@ public class DBApp implements DBAppInterface {
     }
 
     @Override
-    public void createIndex(String tableName, String[] columnNames) throws DBAppException {
+    public void createIndex(String tableName, String[] columnNames) throws DBAppException, IOException {
+        String csvLine;
+        BufferedReader csvReader = null;
+
+        try {
+             csvReader = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        StringBuilder sb = new StringBuilder();
+        while ((csvLine = csvReader.readLine()) != null) {
+
+            String[] data = csvLine.split(",");
+            if (data[0].equals(tableName)) {
+
+                for (int i = 0; i<columnNames.length; i++)
+                {
+                    if (data[1].equals(columnNames[i])){
+                        data[4] = "True";
+                        break;
+                    }
+                }
+                sb.append(data[0]);
+                for (int i = 1; i<data.length; i++) {
+                    sb.append(",");
+                    sb.append(data[i]);
+                }
+                sb.append("\n");
+
+            } else if (data[0] != tableName ){
+
+                sb.append(data[0]);
+                for (int i = 1; i<data.length; i++) {
+                    sb.append(",");
+                    sb.append(data[i]);
+                }
+                sb.append("\n");
+
+
+            }
+
+
+        }
+        FileWriter csvWriter = new FileWriter("src/main/resources/metadata.csv");
+
+        csvWriter.append(sb);
+        csvWriter.close();
+        csvReader.close();
+
 
     }
 
@@ -508,26 +557,26 @@ public class DBApp implements DBAppInterface {
         String strTableName = "Student";
         DBApp dbApp = new DBApp();
        Hashtable htblColNameValue = new Hashtable();
-//
-//        Hashtable htblColNameType = new Hashtable();
-//        htblColNameType.put("id", "java.lang.Integer");
-//        htblColNameType.put("name", "java.lang.String");
-//        htblColNameType.put("gpa", "java.lang.Double");
-//
-//        Hashtable htblColNameMin = new Hashtable();
-//
-//        htblColNameMin.put("id", "0");
-//        htblColNameMin.put("name", "A");
-//        htblColNameMin.put("gpa", "0.0");
-//
-//
-//        Hashtable htblColNameMax = new Hashtable();
-//
-//        htblColNameMax.put("id", "99999999");
-//        htblColNameMax.put("name", "zzzzzzzzzzzzzzzzzzzzzzzzzz");
-//        htblColNameMax.put("gpa", "999.99");
-//        dbApp.createTable(strTableName, "id", htblColNameType, htblColNameMin, htblColNameMax);
-//        dbApp.createIndex(strTableName, new String[]{"gpa"});
+
+        Hashtable htblColNameType = new Hashtable();
+        htblColNameType.put("id", "java.lang.Integer");
+        htblColNameType.put("name", "java.lang.String");
+        htblColNameType.put("gpa", "java.lang.Double");
+
+        Hashtable htblColNameMin = new Hashtable();
+
+        htblColNameMin.put("id", "0");
+        htblColNameMin.put("name", "A");
+        htblColNameMin.put("gpa", "0.0");
+
+
+        Hashtable htblColNameMax = new Hashtable();
+
+        htblColNameMax.put("id", "99999999");
+        htblColNameMax.put("name", "zzzzzzzzzzzzzzzzzzzzzzzzzz");
+        htblColNameMax.put("gpa", "999.99");
+        dbApp.createTable(strTableName, "id", htblColNameType, htblColNameMin, htblColNameMax);
+        dbApp.createIndex(strTableName, new String[]{"gpa"});
 //
 //
 //        htblColNameValue.put("id", (68));
@@ -581,10 +630,13 @@ public class DBApp implements DBAppInterface {
 //        htblColNameValue.put("gpa", (0.88));
 //        dbApp.insertIntoTable(strTableName,htblColNameValue );
         //1-5  //6 -6 // 68
-      htblColNameValue.put("id", (3));
-        dbApp.deleteFromTable(strTableName,htblColNameValue);
-      dbApp.getAllrows(strTableName);
+//      htblColNameValue.put("id", (3));
+//        dbApp.deleteFromTable(strTableName,htblColNameValue);
+//      dbApp.getAllrows(strTableName);
 
+//        String strTableName = "Student";
+//        DBApp dbApp = new DBApp( );
+//        dbApp.createIndex( strTableName, new String[] {"gpa"} );
 
 
     }
