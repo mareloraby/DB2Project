@@ -3,6 +3,7 @@ import java.util.ArrayList;
 public class GridIndex implements java.io.Serializable{
 
     //each cell points to only 1 buckets
+    private static final long serialVersionUID = 1L;
 
     private ArrayList<ArrayList> cols;
 
