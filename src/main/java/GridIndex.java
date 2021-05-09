@@ -62,7 +62,16 @@ public class GridIndex implements java.io.Serializable{
 
     }
 
+    private void addPagesValuesinIndex(){
+
+
+
+    }
+
+
 }
+
+
 
 //insert into page
 //dawwar 3al range fel grid index for each col
