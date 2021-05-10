@@ -59,17 +59,42 @@ public class GridIndex implements java.io.Serializable{
         }
         csvReader.close();
 
-
     }
 
-    private void addPagesValuesinIndex(){
-
-
-
+    public Vector<String> getBucketsinTable() {
+        return bucketsinTable;
     }
+
+    public void setBucketsinTable(Vector<String> bucketsinTable) {
+        this.bucketsinTable = bucketsinTable;
+    }
+
 
 
 }
+
+//Insert
+/*
+* insert 3adi in the right page
+* store the location
+* search in the grid cells to save the reference
+* check if there is a bucket for it
+* if not create a new one
+* if there is a bucket check if it's not full
+*
+*update position if insert shifts it
+*
+* */
+
+
+
+
+
+
+
+
+
+
 
 
 

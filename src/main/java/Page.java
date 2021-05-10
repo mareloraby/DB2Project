@@ -10,7 +10,9 @@ public class Page implements java.io.Serializable {
     private Vector<Vector<Object>> overFlowInfo; //stores ID and number of rows
     private Object min_pk_value;
     private Vector<Object> pks;
+
     private Vector<Vector<Object>> rows;
+
     private Object max_pk_value;
     private int numOfRows;
     private int maxRows;
