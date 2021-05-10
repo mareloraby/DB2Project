@@ -69,9 +69,22 @@ public class GridIndex implements java.io.Serializable{
         this.bucketsinTable = bucketsinTable;
     }
 
+    public void findCell(Vector<Object> row, String pageName)
+    {
+        Vector <Object> coordinates = new Vector<Object>();
 
+
+        for (int i=0; i<dimVals.size();i++){
+
+            //binary search to search for the greatest key value w less that or equal to v for each dimension
+
+
+
+            }
+    }
 
 }
+
 
 //Insert
 /*

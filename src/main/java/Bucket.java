@@ -10,7 +10,6 @@ public class Bucket implements java.io.Serializable {
 
 
 
-
     Bucket(){
         MaximumKeysCountinIndexBucket = DBApp.MaximumKeysCountinIndexBucket;
         addresses = new Vector<Vector<Object>>();
@@ -18,16 +17,15 @@ public class Bucket implements java.io.Serializable {
     }
 
 
-
-
-    void insertIntoBucket(Object value, String pageName, int rowNumber){
+    void insertIntoBucket(Object value, String pageName)
+    {//, int rowNumber){
 
         noOfEntries++;
 
         Vector <Object> entry = new Vector<>();
         entry.add(value);
         entry.add(pageName);
-        entry.add(rowNumber);
+        //entry.add(rowNumber);
 
         addresses.add(entry);
 

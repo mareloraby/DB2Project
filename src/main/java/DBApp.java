@@ -402,9 +402,10 @@ public class DBApp implements DBAppInterface {
 
         ArrayList<String> AllTablesNames = getTableNames();
 
-        if (!AllTablesNames.contains(tableName))
+        if (!AllTablesNames.contains(tableName)) {
             throw new DBAppException("The table does not exist.");
 
+        }
         try {
              csvReader = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
 
@@ -459,6 +460,12 @@ public class DBApp implements DBAppInterface {
 
         GridIndex GI = new GridIndex(tableName,columnNames);
         serialize(GI, tableName+ "-GI");
+
+
+        Table t = (Table) DBApp.deserialize(tableName);
+        t.setHasGrid(true);
+        serialize(t, tableName);
+
 
 
     }

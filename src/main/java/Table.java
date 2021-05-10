@@ -13,6 +13,9 @@ public class Table implements java.io.Serializable {
     private Vector<Integer> pagesID;
     private int maxRows;
 
+    private boolean hasGrid;
+
+
 
 
     public Table(String name) {
@@ -22,6 +25,8 @@ public class Table implements java.io.Serializable {
         pks = new Vector<Object>();
         tableName = name;
         count = 0;
+        hasGrid = false;
+
     }
 
 
@@ -170,6 +175,8 @@ public class Table implements java.io.Serializable {
                         Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
                         // after adding the new row, update the page info and add it into the pagesInfo Vector in the table.
                         Vector<Object> updatePage = p.addRow(v, index);
+
+
                         pagesInfo.remove(i);
                         pagesInfo.add(i, updatePage);
                         System.out.println("inserted here!!!" + 1 + " " + pagesID.get(i) + " " + "and page count is" + " " + countRows + " " + v.get(index) + " " + max);
@@ -568,6 +575,14 @@ public class Table implements java.io.Serializable {
                 if (countup == 0) throw new DBAppException("pk does not exist.");
             }
         }
+    }
+
+    public boolean isHasGrid() {
+        return hasGrid;
+    }
+
+    public void setHasGrid(boolean hasGrid) {
+        this.hasGrid = hasGrid;
     }
 
 
