@@ -216,10 +216,10 @@ public class DBApp implements DBAppInterface {
 
         Table t = (Table) DBApp.deserialize(tableName);
 
-        if(t.isHasGrid()){
-            t.insertIntoPageWithGI(row, pk_found);
-        }
-        else{
+        // check whether we have indices and choose the most reasonable index
+        if (t.isHasGrid()) {
+            t.insertIntoPageWithGI(row, pk_found, colNameValue);
+        } else {
             t.insertIntoPage(row, pk_found);
         }
         serialize(t, tableName);
@@ -410,14 +410,23 @@ public class DBApp implements DBAppInterface {
 
         if (!AllTablesNames.contains(tableName)) {
             throw new DBAppException("The table does not exist.");
-
         }
         try {
-             csvReader = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+            csvReader = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        Table t = (Table) DBApp.deserialize(tableName);
+         //name, age, gpa
+        Vector<GridIndex> gridIndices= t.getGridIndices();
+        for(int k=0; k<gridIndices.size(); k++){
+
+            if(Arrays.equals(gridIndices.get(k).getColNames(), columnNames)){
+                throw new DBAppException("There is already an existing index.");
+            }
+        }
+
         StringBuilder sb = new StringBuilder();
         while ((csvLine = csvReader.readLine()) != null) {
 
@@ -425,24 +434,23 @@ public class DBApp implements DBAppInterface {
             if (data[0].equals(tableName)) {
 
                 colNames.add(data[1]);
-                for (int i = 0; i<columnNames.length; i++)
-                {
-                    if (data[1].equals(columnNames[i])){
+                for (int i = 0; i < columnNames.length; i++) {
+                    if (data[1].equals(columnNames[i])) {
                         data[4] = "True";
                         break;
                     }
                 }
                 sb.append(data[0]);
-                for (int i = 1; i<data.length; i++) {
+                for (int i = 1; i < data.length; i++) {
                     sb.append(",");
                     sb.append(data[i]);
                 }
                 sb.append("\n");
 
-            } else if (data[0] != tableName ){
+            } else if (data[0] != tableName) {
 
                 sb.append(data[0]);
-                for (int i = 1; i<data.length; i++) {
+                for (int i = 1; i < data.length; i++) {
                     sb.append(",");
                     sb.append(data[i]);
                 }
@@ -459,19 +467,18 @@ public class DBApp implements DBAppInterface {
         csvWriter.close();
         csvReader.close();
 
-        for (int k=0;k<columnNames.length; k++) {
+        for (int k = 0; k < columnNames.length; k++) {
             if (!colNames.contains(columnNames[k]))
                 throw new DBAppException("The table does not contain this column: " + columnNames[k]);
         }
 
-        GridIndex GI = new GridIndex(tableName,columnNames);
-        serialize(GI, tableName+ "-GI");
-
-
-        Table t = (Table) DBApp.deserialize(tableName);
+        GridIndex GI = new GridIndex(tableName, columnNames);
+        serialize(GI, tableName + "-GI"+ (t.getGridIndices().size()));
+        Vector<GridIndex> indices = t.getGridIndices();
+        indices.add(GI);
+        t.setGridIndices(indices);
         t.setHasGrid(true);
         serialize(t, tableName);
-
 
 
     }
@@ -668,7 +675,7 @@ public class DBApp implements DBAppInterface {
 //        dbApp.createIndex( strTableName, new String[] {"gpa"} );
 
 
-        System.out.println(Trial.compare("z","A"));
+        System.out.println(Trial.compare("z", "A"));
 
 
     }

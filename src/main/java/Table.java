@@ -10,10 +10,13 @@ public class Table implements java.io.Serializable {
     private String tableName;
     private int count;
     private Vector<Vector<Object>> pagesInfo;
+
     private Vector<Object> pks;
     private Vector<Integer> pagesID;
     private int maxRows;
 
+
+    private Vector<GridIndex> gridIndices;
     private boolean hasGrid;
 
 
@@ -24,6 +27,7 @@ public class Table implements java.io.Serializable {
         pks = new Vector<Object>();
         tableName = name;
         count = 0;
+        gridIndices = new Vector<GridIndex>();
         hasGrid = false;
 
     }
@@ -31,6 +35,14 @@ public class Table implements java.io.Serializable {
 
     public int getCount() {
         return count;
+    }
+
+    public Vector<GridIndex> getGridIndices() {
+        return gridIndices;
+    }
+
+    public void setGridIndices(Vector<GridIndex> gridIndices) {
+        this.gridIndices = gridIndices;
     }
 
     //100-200, 300-400 (both are full and I want to insert 250)
@@ -190,6 +202,7 @@ public class Table implements java.io.Serializable {
                         // if pk is greater than max, add new page ( no overflow pages for the last page)
                         if (Page.compare(pk, max) > 0) {
                             addPage(v, index);
+
                             break;
                         }
                         // if pk is less than the max in the last page, create a new page
@@ -372,23 +385,34 @@ public class Table implements java.io.Serializable {
     2-call findcell */
 
     public void insertIntoGrid(Hashtable<String, Object> columnNameValues, String pageName, Object pk) {
-        GridIndex G = (GridIndex) DBApp.deserialize(tableName + "-GI");
-        String BucketName = G.findCell(columnNameValues, pageName, pk);
-        Bucket B;
-        if (G.getBucketsinTable().contains(BucketName))
-            B = (Bucket) DBApp.deserialize(BucketName);
-        else
-            B = G.addBucket(BucketName);
+        for(int i=0; i< gridIndices.size(); i++) {
 
-        B.insertIntoBucket(pk, pageName);
-        DBApp.serialize(B, BucketName);
+            GridIndex G = (GridIndex) DBApp.deserialize(tableName + "-GI"+i);
+            String BucketName = G.findCell(columnNameValues, pageName, pk);
+            Bucket B;
+            if (G.getBucketsinTable().contains(BucketName))
+                B = (Bucket) DBApp.deserialize(BucketName);
+            else
+                B = G.addBucket(BucketName);
 
+            B.insertIntoBucket(pk, pageName);
+            DBApp.serialize(B, BucketName); // Bucket
+            DBApp.serialize(G, tableName + "-GI"+i); // Grid
+        }
 
     }
 
+    // the new address , row ,pk
+    public void updateBucketAfterShiftingInInsert (){
+        /*
+        1-take the row
+        2-search in all grids for this row
+        3-update the reference name
+        */
+    }
 
 
-    public void insertIntoPageWithGI(Vector<Object> v, int index) throws DBAppException {
+    public void insertIntoPageWithGI(Vector<Object> v, int index, Hashtable<String, Object> colNameValues) throws DBAppException {
         checktablePage();
 
         // check if the page is full, if yes, go to the next page and check whether it has space
@@ -472,13 +496,14 @@ public class Table implements java.io.Serializable {
                         // sort in the vector
                         p.sortI(index);
                         DBApp.serialize(p, tableName + "-" + pagesID.get(i));
-
+                        insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i),pk);
                         break;
                         // In case we want to refer back to binary search in the page itself:
                     } else {
                         // if pk is greater than max, add new page ( no overflow pages for the last page)
                         if (Page.compare(pk, max) > 0) {
                             addPage(v, index);
+                            insertIntoGrid(colNameValues, tableName + "-" + count,pk);
                             break;
                         }
                         // if pk is less than the max in the last page, create a new page
@@ -504,12 +529,14 @@ public class Table implements java.io.Serializable {
                             pagesInfo.add(i, updatePage);
                             System.out.println("inserted here!!!" + 2 + " " + pagesID.get(i) + "and page count is" + " " + countRows);
                             p.sortI(index);
+
                             addPage(to_be_shifted, index);
                             for (int k = 0; k < pagesID.size(); k++) {
                                 System.out.print("All the pages available" + " " + pagesID.get(k));
                                 System.out.println();
                             }
-
+                            // SHIFTING HERE!
+                            insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i),pk);
                             DBApp.serialize(p, tableName + "-" + pagesID.get(i));
                             break;
                         }
@@ -551,6 +578,7 @@ public class Table implements java.io.Serializable {
                                     p.setOverFlowInfo(updatedOverflowInfoPages);
                                     DBApp.serialize(o, tableName + "-" + pagesID.get(i) + "." + (ID + ""));
                                     found_space = true;
+                                    insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i) + "." + (ID + ""),pk);
                                     break;
                                 }
                                 DBApp.serialize(o, tableName + "-" + pagesID.get(i) + "." + (ID + ""));
@@ -564,9 +592,12 @@ public class Table implements java.io.Serializable {
                                     pagesInfo.get(i).set(1, pk);
                                 }
                                 System.out.println("inserted here!!!" + 5 + " " + pagesID.get(i) + "and page count is" + " " + countRows + " " + v.get(index) + " " + max);
-
+                                int size= p.getOverFlowInfo().size()-1;
+                                int ID= (int) p.getOverFlowInfo().get(size).get(0);
+                                insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i) + "." + (ID + ""),pk);
                             }
                             DBApp.serialize(p, tableName + "-" + (pagesID.get(i) + ""));
+
                             break;
                         }
 
@@ -616,6 +647,8 @@ public class Table implements java.io.Serializable {
                                 p2.sortI(index);
                                 DBApp.serialize(p2, tableName + "-" + pagesID.get(i + 1));
                                 DBApp.serialize(p, tableName + "-" + pagesID.get(i));
+                                // SHIFTING HERE
+                                insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i),pk);
                                 break;
                             } else {
                                 //create an overflow page and insert into the new page
@@ -623,6 +656,10 @@ public class Table implements java.io.Serializable {
                                 p.addOverflow(tableName, pagesID.get(i), v, index);
                                 System.out.println("inserted here!!!" + 8 + " " + pagesID.get(i) + "and page count is" + " " + countRows + " " + v.get(index) + " " + max);
                                 DBApp.serialize(p, tableName + "-" + (pagesID.get(i) + ""));
+
+                                int size= p.getOverFlowInfo().size()-1;
+                                int ID= (int) p.getOverFlowInfo().get(size).get(0);
+                                insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i) + "." + (ID + ""),pk);
                                 break;
                             }
                         }
@@ -637,6 +674,8 @@ public class Table implements java.io.Serializable {
                         System.out.println("inserted here!!!" + 9 + " " + pagesID.get(i) + "and page count is" + " " + countRows + " " + v.get(index) + " " + max);
                         p.sortI(index);
                         DBApp.serialize(p, tableName + "-" + pagesID.get(i));
+
+                        insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i),pk);
                         break;
                     }
                     System.out.println("break here");
@@ -651,6 +690,7 @@ public class Table implements java.io.Serializable {
                     System.out.println("inserted here!!!" + 10 + " " + pagesID.get(i) + "and page count is" + " " + countRows + " " + v.get(index) + " " + max);
                     p.sortI(index);
                     DBApp.serialize(p, tableName + "-" + pagesID.get(i));
+                    insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i),pk);
                     break;
                 }
 

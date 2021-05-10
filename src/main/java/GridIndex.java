@@ -10,6 +10,7 @@ public class GridIndex implements java.io.Serializable {
 
     //each cell points to only 1 buckets
     private static final long serialVersionUID = 1L;
+
     private String[] colNames;
     private String tableName;
     private Vector<Vector<Object>> dimVals;
@@ -63,6 +64,10 @@ public class GridIndex implements java.io.Serializable {
         }
         csvReader.close();
 
+    }
+
+    public String[] getColNames() {
+        return colNames;
     }
 
     public Vector<String> getBucketsinTable() {
@@ -122,7 +127,7 @@ public class GridIndex implements java.io.Serializable {
     }
 
     public Bucket addBucket(String bucketName) {
-        Bucket B= new Bucket(bucketName);
+        Bucket B = new Bucket(bucketName);
         bucketsinTable.add(bucketName);
         return B;
     }
