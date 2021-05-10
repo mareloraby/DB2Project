@@ -215,7 +215,13 @@ public class DBApp implements DBAppInterface {
         }
 
         Table t = (Table) DBApp.deserialize(tableName);
-        t.insertIntoPage(row, pk_found);
+
+        if(t.isHasGrid()){
+            t.insertIntoPageWithGI(row, pk_found);
+        }
+        else{
+            t.insertIntoPage(row, pk_found);
+        }
         serialize(t, tableName);
 
         /*
