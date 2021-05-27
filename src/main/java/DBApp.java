@@ -404,6 +404,21 @@ public class DBApp implements DBAppInterface {
 
     }
 
+//    public GridIndex chooseIndex(Table t, String tableName, Hashtable<String, Object> colNameValue) {
+//        GridIndex G;
+//        int count=0;
+//        int size;
+//        for (int i = 0; i < t.getGridIndices().size(); i++) {
+//            G = (GridIndex) deserialize(tableName + "-GI" + i);
+//            String[] colNames = G.getColNames();
+////            for (Entry<String, Object> entry : colNameValue.entrySet())
+////                if (!colNames.contains(entry.getValue()))
+////                    return entry.getKey();
+////        }
+//
+//        return G;
+//    }
+
     @Override
     public void createIndex(String tableName, String[] columnNames) throws DBAppException, IOException {
         String csvLine;
@@ -423,11 +438,11 @@ public class DBApp implements DBAppInterface {
             e.printStackTrace();
         }
         Table t = (Table) DBApp.deserialize(tableName);
-         //name, age, gpa
-        Vector<GridIndex> gridIndices= t.getGridIndices();
-        for(int k=0; k<gridIndices.size(); k++){
+        //name, age, gpa
+        Vector<GridIndex> gridIndices = t.getGridIndices();
+        for (int k = 0; k < gridIndices.size(); k++) {
 
-            if(Arrays.equals(gridIndices.get(k).getColNames(), columnNames)){
+            if (Arrays.equals(gridIndices.get(k).getColNames(), columnNames)) {
                 throw new DBAppException("There is already an existing index.");
             }
         }
@@ -478,7 +493,7 @@ public class DBApp implements DBAppInterface {
         }
 
         GridIndex GI = new GridIndex(tableName, columnNames);
-        serialize(GI, tableName + "-GI"+ (t.getGridIndices().size()));
+        serialize(GI, tableName + "-GI" + (t.getGridIndices().size()));
         Vector<GridIndex> indices = t.getGridIndices();
         indices.add(GI);
         t.setGridIndices(indices);

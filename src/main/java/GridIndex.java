@@ -7,7 +7,6 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 public class GridIndex implements java.io.Serializable {
-
     //each cell points to only 1 buckets
     private static final long serialVersionUID = 1L;
     private String[] colNames; // columns in grid index
