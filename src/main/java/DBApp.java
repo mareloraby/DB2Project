@@ -156,6 +156,7 @@ public class DBApp implements DBAppInterface {
             throw new DBAppException("The table does not exist.");
 
         String csvLine;
+        // names of columns with the order
         ArrayList<String> colNames = new ArrayList<>();
         ArrayList<ArrayList<Object>> min_max = new ArrayList<>();
         ArrayList<String> colTypes = new ArrayList<>();
@@ -212,6 +213,7 @@ public class DBApp implements DBAppInterface {
                 throw new DBAppException("The inserted value is not of the right type. ");
 
             row.add(colNameValue.get(colNames.get(i)));
+            // <May, null, 9> we can add nulls
         }
 
         Table t = (Table) DBApp.deserialize(tableName);

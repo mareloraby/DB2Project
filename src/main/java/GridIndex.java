@@ -10,10 +10,12 @@ public class GridIndex implements java.io.Serializable {
 
     //each cell points to only 1 buckets
     private static final long serialVersionUID = 1L;
-
-    private String[] colNames;
+    private String[] colNames; // columns in grid index
     private String tableName;
     private Vector<Vector<Object>> dimVals;
+    // ranges with each cell containing the max of a range
+    // 0-10 -> 10; 11-20 -> 20  (dimvals:<X:<10, 20,30...> , Y:<100,200,300,400>, Z:<50,100,150>>) )
+    // 20 100 50 , 20 300 50 , 20 400 50, 20 10
     private Vector<String> bucketsinTable;
 
     //<x:<0,10,20,..>,y:<100,110,120,..>,<z>>
@@ -43,17 +45,19 @@ public class GridIndex implements java.io.Serializable {
                     if (data[1].equals(columnNames[i])) {
                         Object minofcol = data[5];
                         Object maxofcol = data[6];
-
+                        // 0-10 , 10-20, 20-30 => <10,20,30>
                         double range = (Trial.compare(maxofcol, minofcol) + 1) / 10;
+                        double valSofar= range;
                         Vector<Object> dimension = new Vector<>();
                         for (int j = 0; j < 10; j++) {
-                            dimension.add(range);
-                            range += range;
+                            dimension.add(valSofar);
+                            valSofar += range;
                         }
                         dimension.add(null); // to consider null values for each column
                         dimVals.add(dimension);
-
                     }
+
+                    //<name, age>  => <May, null>
                 }
 
 
@@ -111,14 +115,15 @@ public class GridIndex implements java.io.Serializable {
             } else
                 coordinates.add(10);
         }
-        String indices = "-";
 
+        StringBuilder indices= new StringBuilder();
+        indices.append("-");
         for (int i = 0; i < coordinates.size(); i++) {
             if (i == coordinates.size() - 1) {
-                indices += coordinates.get(i);
+                indices.append(coordinates.get(i));
             } else {
-                indices += coordinates.get(i);
-                indices += ',';
+                indices.append(coordinates.get(i));
+                indices.append(',');
             }
         }
 

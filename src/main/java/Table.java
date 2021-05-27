@@ -386,16 +386,17 @@ public class Table implements java.io.Serializable {
 
     public void insertIntoGrid(Hashtable<String, Object> columnNameValues, String pageName, Object pk) {
         for(int i=0; i< gridIndices.size(); i++) {
-
             GridIndex G = (GridIndex) DBApp.deserialize(tableName + "-GI"+i);
             String BucketName = G.findCell(columnNameValues, pageName, pk);
+
             Bucket B;
+            // check if the bucket already exists or not
             if (G.getBucketsinTable().contains(BucketName))
                 B = (Bucket) DBApp.deserialize(BucketName);
             else
                 B = G.addBucket(BucketName);
 
-            B.insertIntoBucket(pk, pageName);
+            B.insertIntoBucket(pk, pageName, columnNameValues,G);
             DBApp.serialize(B, BucketName); // Bucket
             DBApp.serialize(G, tableName + "-GI"+i); // Grid
         }
@@ -404,6 +405,9 @@ public class Table implements java.io.Serializable {
 
     // the new address , row ,pk
     public void updateBucketAfterShiftingInInsert (){
+        // delete the row
+        // insert
+
         /*
         1-take the row
         2-search in all grids for this row
