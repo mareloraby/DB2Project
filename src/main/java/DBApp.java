@@ -396,6 +396,9 @@ public class DBApp implements DBAppInterface {
         }
 
         Table t = (Table) DBApp.deserialize(tableName);
+        if (t.isHasGrid()) {
+            // choose index , delete from all indices
+        }
         t.deleteFromPage(index_value, pk_found, pk_value);
         serialize(t, tableName);
 
