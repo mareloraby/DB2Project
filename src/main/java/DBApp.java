@@ -404,20 +404,28 @@ public class DBApp implements DBAppInterface {
 
     }
 
-//    public GridIndex chooseIndex(Table t, String tableName, Hashtable<String, Object> colNameValue) {
-//        GridIndex G;
-//        int count=0;
-//        int size;
-//        for (int i = 0; i < t.getGridIndices().size(); i++) {
-//            G = (GridIndex) deserialize(tableName + "-GI" + i);
+    public GridIndex chooseIndex(Table t, String tableName, Hashtable<String, Object> colNameValue) {
+        GridIndex G;
+        int count=0;
+        int size;
+        for (int i = 0; i < t.getGridIndices().size(); i++) {
+            G = (GridIndex) deserialize(tableName + "-GI" + i);
+
+
+//            if (G.getColNames().length <= colNameValue.size()) {
+//            }
+        }
+
+
 //            String[] colNames = G.getColNames();
 ////            for (Entry<String, Object> entry : colNameValue.entrySet())
 ////                if (!colNames.contains(entry.getValue()))
 ////                    return entry.getKey();
-////        }
+////
 //
-//        return G;
-//    }
+        return G;
+   }
+
 
     @Override
     public void createIndex(String tableName, String[] columnNames) throws DBAppException, IOException {
