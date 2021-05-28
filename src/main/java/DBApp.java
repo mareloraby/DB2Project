@@ -399,9 +399,16 @@ public class DBApp implements DBAppInterface {
             }
         }
 
+
+        //query: <name = ali, age = 14, id = pk3>
+        // index: <name = ali, age = 14>
+
+        //<pk1,pageName,colname1,colname2,...>
+        //<pk2,pageName,colname1,colname2,...>
+
         Table t = (Table) DBApp.deserialize(tableName);
         if (t.isHasGrid()) {
-            GridIndex G = chooseIndex(t,tableName,colNameValue);
+            GridIndex G = chooseIndex(t, tableName, colNameValue);
 
             String BucketName = G.findCell(colNameValue);
 
@@ -413,25 +420,59 @@ public class DBApp implements DBAppInterface {
 
             //get address in current bucket  <pk,pageName,colname1,colname2,...>
             //   if (I have pk in hashtable:) bs in current bucket and its overflows, save row in vector
+            if (pk_value != null) { //if i have primary key
+                //do BS ON BUCKET AND OVERFLOW
+                boolean found2 = false;
+                int addressIdxInBucket = B.binarySearch(pk_value);
 
 
+                if (addressIdxInBucket == -1) { //if not found in bucket
+                    if (B.getOverflowBucketsInfo().size() > 0) {
 
-            //   else {linear search using current grid indices values in current bucket and its overflows
-            //          put each matching row in vector of vectors
-            //          }
-            //delete from table
-            //delete from all other indices using pk
+                        for (int i = 0; i < B.getOverflowBucketsInfo().size(); i++) {
+                            // get overflow bucket:
+                            Vector<Object> v = B.getOverflowBucketsInfo().get(i); // name and num of entries
+                            Bucket Overflow = (Bucket) deserialize(v.get(0) + "");
+                            int addressIdxInOv = Overflow.binarySearch(pk_value);
+                            if (addressIdxInOv != -1) {
+
+                                Vector<Object> address = Overflow.getAddresses().get(addressIdxInBucket); //row in bucket to vector
+                                String PageName = (String) address.get(1);
+                                Page p = (Page) deserialize(PageName);
+                                Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
+
+                                break;
+                            }
+                        }
+
+                    } else {
+                        found2 = false;
+                    }
+                } else {
+                    Vector<Object> address = B.getAddresses().get(addressIdxInBucket); //row in bucket to vector
+                    String PageName = (String) address.get(1);
+                    Page p = (Page) deserialize(PageName);
+                    //get row from page
+                    Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
+
+                    //delete from all indices
+                }
+
+                //   else {linear search using current grid indices values in current bucket and its overflows
+                //          put each matching row in vector of vectors
+                //          }
+                //delete from table
+                //delete from all other indices using pk
 
 
+                DBApp.serialize(B, BucketName); // Bucket
+                DBApp.serialize(G, tableName + "-GI" + G.getGridID()); // Grid
 
-
-            DBApp.serialize(B, BucketName); // Bucket
-            DBApp.serialize(G, tableName + "-GI"+G.getGridID()); // Grid
+            }
+            t.deleteFromPage(index_value, pk_found, pk_value);
+            serialize(t, tableName);
 
         }
-        t.deleteFromPage(index_value, pk_found, pk_value);
-        serialize(t, tableName);
-
     }
 
     public GridIndex chooseIndex(Table t, String tableName, Hashtable<String, Object> colNameValue) {

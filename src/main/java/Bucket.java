@@ -8,7 +8,9 @@ public class Bucket implements java.io.Serializable {
     private String BucketName;
     private int count;
     private int noOfEntries;
+
     private Vector<Vector<Object>> addresses; //bucket of entries // pk, pagename
+
     private Vector<Vector<Object>> overflowBucketsInfo;//
 
 
@@ -69,6 +71,7 @@ public class Bucket implements java.io.Serializable {
                         found = true;
                         Bucket o = (Bucket) DBApp.deserialize((String) v.get(0));
                         o.insertIntoOverflowBucket(value, pageName,columnNameValues, G);
+                        DBApp.serialize(o,o.BucketName);
                         Vector<Object> info = new Vector<Object>();
                         info.add(v.get(0));
                         info.add(1);
@@ -108,6 +111,50 @@ public class Bucket implements java.io.Serializable {
         overflowBucketsInfo.add(info);
 
     }
+    public int binarySearch( Object key){
+        int first=0;
+        int last= this.addresses.size()-1;
+        int mid = (first + last)/2;
+        while( first <= last ){
+            //if ( arr[mid] < key )
+            Object x = addresses.get(mid).get(0);
+            if ( Trial.compare(key, x )>0 ){
+
+                    first = mid + 1;
+            }else if ( Trial.compare(key, x ) == 0 ){
+                return mid;
+
+            }else{
+                last = mid - 1;
+            }
+            mid = (first + last)/2;
+        }
+            return -1;
+
+    }
+    public Vector<Vector<Object>> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(Vector<Vector<Object>> addresses) {
+        this.addresses = addresses;
+    }
+
+
+    public Vector<Vector<Object>> getOverflowBucketsInfo() {
+        return overflowBucketsInfo;
+    }
+
+    public void setOverflowBucketsInfo(Vector<Vector<Object>> overflowBucketsInfo) {
+        this.overflowBucketsInfo = overflowBucketsInfo;
+    }
+
+
+
+
+
+
+
 
 
 }

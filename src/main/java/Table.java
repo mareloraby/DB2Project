@@ -833,6 +833,7 @@ public class Table implements java.io.Serializable {
     }
 
 
+    public void deleteFromPageUsingIdx(){}
 
     public void deleteFromOverflowPage(int pageID, Vector<Vector> index_value, int pk_found, Object pk_value, int c) throws DBAppException {
         //   int c = 0;
@@ -870,16 +871,14 @@ public class Table implements java.io.Serializable {
                 DBApp.serialize(p, tableName + "-" + pagesID.get(pageID));
             }
             if (c == 0) {
-            }// throw new DBAppException("No such record.");
+            }
         }
     }
 
 
-    public void getRowUsingIndex(){
 
 
 
-    }
 
 
     public void updateInPage(Vector<Vector> index_value, int pk_found, Object pk_value) throws DBAppException {

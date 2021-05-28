@@ -164,15 +164,7 @@ public int addOverflowRow(Vector v) throws DBAppException {
     // used to sort within a page
     public int binarySearch(int l, int r, Object x) {
         // Creating an empty enumeration to store
-     /*   Enumeration enu = pks.elements();
 
-        System.out.println("The enumeration of values are:");
-
-        // Displaying the Enumeration
-        while (enu.hasMoreElements()) {
-            System.out.println(enu.nextElement());
-        }      */
-        getPks();
         if (r >= l) {
             int mid = l + (r - l) / 2;
             // If the element is present at the
@@ -346,6 +338,38 @@ public int addOverflowRow(Vector v) throws DBAppException {
         }
         rows.set(mid, row);
         return true;
+    }
+
+
+    public Vector<Object> deleteRowFromPageUsingIdxB(int pk_found, Object pk_value, Vector<Vector> index_value) throws DBAppException {
+
+        int mid = binarySearch(0, rows.size() - 1, pk_value);
+        if (mid == -1) return null;
+
+        Vector<Object> row = rows.get(mid);
+
+        boolean found = true;
+        for (int i = 0; i < index_value.size(); i++) {
+            int rowToDeleteIndex = (int) index_value.get(i).get(0);
+            Object rowToDeleteValue = index_value.get(i).get(1);
+            if (Trial.compare(rowToDeleteValue, row.get(rowToDeleteIndex)) == 0) {
+            } else {
+                found = false;
+            }
+
+        }
+        if (found) {
+            rows.remove(mid);
+            this.numOfRows--;
+
+            if (rows.size() > 0) {
+                int last_index = rows.size() - 1;
+                max_pk_value = rows.get(last_index).get(pk_found);
+                min_pk_value = rows.get(0).get(pk_found);
+            }
+            return row;
+        }
+        return null;
     }
 
     public static int compare(Object o1, Object o2) {
