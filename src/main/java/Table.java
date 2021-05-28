@@ -8,6 +8,7 @@ public class Table implements java.io.Serializable {
 
     private static final long serialVersionUID = 1L;
     private String tableName;
+    private int pk_index;
     private int count;
     private Vector<Vector<Object>> pagesInfo;
 
@@ -20,7 +21,8 @@ public class Table implements java.io.Serializable {
     private boolean hasGrid;
 
 
-    public Table(String name) {
+    public Table(String name, int pk_index) {
+        this.pk_index= pk_index;
         maxRows = DBApp.MaximumRowsCountinPage;
         pagesID = new Vector<Integer>();
         pagesInfo = new Vector<Vector<Object>>();
@@ -387,7 +389,7 @@ public class Table implements java.io.Serializable {
     public void insertIntoGrid(Hashtable<String, Object> columnNameValues, String pageName, Object pk) {
         for(int i=0; i< gridIndices.size(); i++) {
             GridIndex G = (GridIndex) DBApp.deserialize(tableName + "-GI"+i);
-            String BucketName = G.findCell(columnNameValues, pageName, pk);
+            String BucketName = G.findCell(columnNameValues);
 
             Bucket B;
             // check if the bucket already exists or not

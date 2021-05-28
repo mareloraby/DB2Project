@@ -7,8 +7,10 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 public class GridIndex implements java.io.Serializable {
+
     //each cell points to only 1 buckets
     private static final long serialVersionUID = 1L;
+    private String GridID;
     private String[] colNames; // columns in grid index
     private String tableName;
     private Vector<Vector<Object>> dimVals;
@@ -19,7 +21,8 @@ public class GridIndex implements java.io.Serializable {
 
     //<x:<0,10,20,..>,y:<100,110,120,..>,<z>>
 
-    GridIndex(String tableName, String[] columnNames) throws IOException {
+    GridIndex(String tableName, String[] columnNames, int name) throws IOException {
+        GridID = name + "";
         dimVals = new Vector<>();
         this.colNames = columnNames;
         this.tableName = tableName;
@@ -46,7 +49,7 @@ public class GridIndex implements java.io.Serializable {
                         Object maxofcol = data[6];
                         // 0-10 , 10-20, 20-30 => <10,20,30>
                         double range = (Trial.compare(maxofcol, minofcol) + 1) / 10;
-                        double valSofar= range;
+                        double valSofar = range;
                         Vector<Object> dimension = new Vector<>();
                         for (int j = 0; j < 10; j++) {
                             dimension.add(valSofar);
@@ -67,6 +70,14 @@ public class GridIndex implements java.io.Serializable {
         }
         csvReader.close();
 
+    }
+
+    public String getGridID() {
+        return GridID;
+    }
+
+    public void setGridID(String gridID) {
+        GridID = gridID;
     }
 
     public String[] getColNames() {
@@ -104,7 +115,7 @@ public class GridIndex implements java.io.Serializable {
     }
 
     // handle nulls ( add null to each dimension)
-    public String findCell(Hashtable<String, Object> colNameValues, String pageName, Object pk) {
+    public String findCell(Hashtable<String, Object> colNameValues) {
         Vector<Object> coordinates = new Vector<Object>(); //storing the index on the grid where the bucket placed
 
         for (int i = 0; i < dimVals.size(); i++) {
@@ -115,7 +126,7 @@ public class GridIndex implements java.io.Serializable {
                 coordinates.add(10);
         }
 
-        StringBuilder indices= new StringBuilder();
+        StringBuilder indices = new StringBuilder();
         indices.append("-");
         for (int i = 0; i < coordinates.size(); i++) {
             if (i == coordinates.size() - 1) {
