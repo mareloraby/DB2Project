@@ -145,11 +145,39 @@ public class DBApp implements DBAppInterface {
         }
         if (!ck_match)
             throw new DBAppException("Clustering Key entered doesn't match any colName.");
-        Table t = new Table(tableName,pk_index);
+        Table t = new Table(tableName, pk_index);
         serialize(t, tableName);
         csvWriter.close();
 
 
+    }
+
+    public ArrayList<String> getColNamesOfTable(String tableName) throws DBAppException, IOException {
+        String csvLine;
+        // names of columns with the order
+        ArrayList<String> colNames = new ArrayList<>();
+        BufferedReader csvReader = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+
+        int pk_found = -1;
+        boolean found = false;
+        int index = 0;
+        while ((csvLine = csvReader.readLine()) != null) {
+
+            String[] data = csvLine.split(",");
+            if (data[0].equals(tableName)) {
+                found = true;
+                colNames.add(data[1]);
+                if (data[3].equals("True") || data[3].equals("true")) {
+                    pk_found = index;
+                }
+                index++;
+
+            } else if (data[0] != tableName && found == true)
+                break;
+
+        }
+        csvReader.close();
+        return colNames;
     }
 
     // check whether types are valid
@@ -440,7 +468,7 @@ public class DBApp implements DBAppInterface {
                                 String PageName = (String) address.get(1);
                                 Page p = (Page) deserialize(PageName);
                                 Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
-
+                                t.updateTablePagesInfo(p, pk_value);
                                 break;
                             }
                         }
@@ -454,8 +482,30 @@ public class DBApp implements DBAppInterface {
                     Page p = (Page) deserialize(PageName);
                     //get row from page
                     Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
-
+                    t.updateTablePagesInfo(p, pk_value);
                     //delete from all indices
+                    for (int i = 0; i < t.getGridIndices().size(); i++) {
+                        GridIndex tempG = (GridIndex) deserialize(tableName + "-GI" + i);
+                        Hashtable<String, Object> colNameValuesGrid = new Hashtable<String, Object>();
+
+// this is used to construct the hashtable:
+                        String[] colNamesInGrid = G.getColNames(); //colName of the Grid
+                        ArrayList<String> colNamesTable = getColNamesOfTable(tableName);
+
+                        for (int j = 0; j < colNamesTable.size(); j++) {
+                            for (int k = 0; k < colNamesInGrid.length; k++) {
+                                if (colNamesTable.get(j).equals(colNamesInGrid[k])) {
+                                    colNameValuesGrid.put(colNamesInGrid[j], row.get(j));
+                                    break;
+                                }
+                            }
+
+                        }
+                        String BucketName1 = tempG.findCell(colNameValuesGrid);
+                        Bucket B1 = (Bucket) deserialize(BucketName);
+                        // search within the bucket for these hashtable valeus and remove it from the bucket CONTINUE HERE
+                        // i need to call find cell, find cell takes parameters inside hashtable
+                    }
                 }
 
                 //   else {linear search using current grid indices values in current bucket and its overflows
@@ -494,9 +544,8 @@ public class DBApp implements DBAppInterface {
                 G = tempG;
                 count = tempCount;
                 size = G.getColNames().length;
-            }
-            else{
-               serialize(tempG, tableName + "-GI" + i);
+            } else {
+                serialize(tempG, tableName + "-GI" + i);
             }
         }
         return G;
@@ -575,7 +624,7 @@ public class DBApp implements DBAppInterface {
                 throw new DBAppException("The table does not contain this column: " + columnNames[k]);
         }
 
-        GridIndex GI = new GridIndex(tableName, columnNames,(t.getGridIndices().size()));
+        GridIndex GI = new GridIndex(tableName, columnNames, (t.getGridIndices().size()));
         serialize(GI, tableName + "-GI" + (t.getGridIndices().size()));
         Vector<GridIndex> indices = t.getGridIndices();
         indices.add(GI);

@@ -879,6 +879,22 @@ public class Table implements java.io.Serializable {
 
 
 
+public void updateTablePagesInfo(Page p, Object pk_value){
+    int searchPage = binarySearch(pagesInfo, 0, pagesInfo.size() - 1, pk_value);
+        pks.remove(pk_value);
+        Vector<Object> updatePageInfo = new Vector<Object>();
+        updatePageInfo.add(p.getNumOfRows());
+        updatePageInfo.add(p.getMin_pk_value());
+        updatePageInfo.add(p.getMax_pk_value());
+        // how do we get the index of the page we want to delete
+        pagesInfo.set(searchPage, updatePageInfo);
+
+    if (p.getNumOfRows() == 0) {
+        removePage(p, searchPage);
+    } else {
+        DBApp.serialize(p, tableName + "-" + pagesID.get(searchPage));
+    }
+}
 
 
     public void updateInPage(Vector<Vector> index_value, int pk_found, Object pk_value) throws DBAppException {
