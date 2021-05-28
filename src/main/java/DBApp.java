@@ -81,6 +81,8 @@ public class DBApp implements DBAppInterface {
         }
 
         AllTablesNames.add(tableName);
+        int index = 0;
+        int pk_index = 0;
         boolean ck_match = false;
 
         Enumeration<String> keys = colNameType.keys();
@@ -106,6 +108,7 @@ public class DBApp implements DBAppInterface {
             csvWriter.append(",");
             if (clusteringKey.equals(colname)) {
                 csvWriter.append("True");
+                pk_index = index;
                 ck_match = true;
             } else {
                 csvWriter.append("False");
@@ -136,12 +139,13 @@ public class DBApp implements DBAppInterface {
 
             csvWriter.append(maxvalue);
             csvWriter.append("\n");
+            index++;
 
 
         }
         if (!ck_match)
             throw new DBAppException("Clustering Key entered doesn't match any colName.");
-        Table t = new Table(tableName);
+        Table t = new Table(tableName,pk_index);
         serialize(t, tableName);
         csvWriter.close();
 
@@ -397,7 +401,22 @@ public class DBApp implements DBAppInterface {
 
         Table t = (Table) DBApp.deserialize(tableName);
         if (t.isHasGrid()) {
-            // choose index , delete from all indices
+            GridIndex G = chooseIndex(t,tableName,colNameValue);
+
+            String BucketName = G.findCell(colNameValue);
+
+            Bucket B;
+            if (G.getBucketsinTable().contains(BucketName))
+                B = (Bucket) DBApp.deserialize(BucketName);
+            else
+                throw new DBAppException("Cannot find bucket");
+
+            //
+
+
+            DBApp.serialize(B, BucketName); // Bucket
+            DBApp.serialize(G, tableName + "-GI"+G.getGridID()); // Grid
+
         }
         t.deleteFromPage(index_value, pk_found, pk_value);
         serialize(t, tableName);
