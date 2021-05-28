@@ -411,7 +411,18 @@ public class DBApp implements DBAppInterface {
             else
                 throw new DBAppException("Cannot find bucket");
 
-            //
+            //get address in current bucket  <pk,pageName,colname1,colname2,...>
+            //   if (I have pk in hashtable:) bs in current bucket and its overflows, save row in vector
+
+
+
+            //   else {linear search using current grid indices values in current bucket and its overflows
+            //          put each matching row in vector of vectors
+            //          }
+            //delete from table
+            //delete from all other indices using pk
+
+
 
 
             DBApp.serialize(B, BucketName); // Bucket

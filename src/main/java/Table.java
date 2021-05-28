@@ -832,6 +832,8 @@ public class Table implements java.io.Serializable {
 
     }
 
+
+
     public void deleteFromOverflowPage(int pageID, Vector<Vector> index_value, int pk_found, Object pk_value, int c) throws DBAppException {
         //   int c = 0;
         if (pk_value != null) {
@@ -870,6 +872,13 @@ public class Table implements java.io.Serializable {
             if (c == 0) {
             }// throw new DBAppException("No such record.");
         }
+    }
+
+
+    public void getRowUsingIndex(){
+
+
+
     }
 
 
