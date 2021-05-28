@@ -405,27 +405,31 @@ public class DBApp implements DBAppInterface {
     }
 
     public GridIndex chooseIndex(Table t, String tableName, Hashtable<String, Object> colNameValue) {
-        GridIndex G;
-        int count=0;
-        int size;
+        GridIndex G = null;
+        int count = 0;
+        int size = (int) 10e6; //1,000,000
         for (int i = 0; i < t.getGridIndices().size(); i++) {
-            G = (GridIndex) deserialize(tableName + "-GI" + i);
+            GridIndex tempG = (GridIndex) deserialize(tableName + "-GI" + i);
+            String[] colNames = G.getColNames(); //colName of the Grid
 
-
-//            if (G.getColNames().length <= colNameValue.size()) {
-//            }
+            int tempSize = tempG.getColNames().length;
+            int tempCount = 0;
+            for (int j = 0; j < colNames.length; j++) {
+                if (colNameValue.contains(colNames[j])) {
+                    tempCount++;
+                }
+            }
+            if (tempCount > count || (tempCount == count && tempSize < size)) {
+                G = tempG;
+                count = tempCount;
+                size = G.getColNames().length;
+            }
+            else{
+               serialize(tempG, tableName + "-GI" + i);
+            }
         }
-
-
-//            String[] colNames = G.getColNames();
-////            for (Entry<String, Object> entry : colNameValue.entrySet())
-////                if (!colNames.contains(entry.getValue()))
-////                    return entry.getKey();
-////
-//
         return G;
-   }
-
+    }
 
     @Override
     public void createIndex(String tableName, String[] columnNames) throws DBAppException, IOException {
@@ -500,7 +504,7 @@ public class DBApp implements DBAppInterface {
                 throw new DBAppException("The table does not contain this column: " + columnNames[k]);
         }
 
-        GridIndex GI = new GridIndex(tableName, columnNames);
+        GridIndex GI = new GridIndex(tableName, columnNames,(t.getGridIndices().size()));
         serialize(GI, tableName + "-GI" + (t.getGridIndices().size()));
         Vector<GridIndex> indices = t.getGridIndices();
         indices.add(GI);
