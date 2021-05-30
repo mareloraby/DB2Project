@@ -329,6 +329,7 @@ public class DBApp implements DBAppInterface {
                 throw new DBAppException("The table does not contain this column.");
         // move from values array to values Vector
         // stores index with its value
+        //convert hashtable to vector<vector>
         Vector<Vector> index_value = new Vector<Vector>();
 
         for (int i = 0; i < colNames.size(); i++) {
@@ -506,11 +507,85 @@ public class DBApp implements DBAppInterface {
                     delete each row from all indixes; }
                 }
                  */
+                Vector<String> bNames = G.findAllBuckets(colNameValue, t);
+                for (int i = 0; i < bNames.size(); i++) {
+                    Bucket B = (Bucket) deserialize(bNames.get(i));
+                    // bucket -> addresses + colNames of GI
+                    // GI: < col1, col2, col3>
+                    // Bucket entry:  < pk, pageName, val1, val2, val3>
+                    // colNameValues: <<col1,A>,<col3,B>>
+
+
+                    // vector: < col1, col3>
+                    Vector<String> colNamesRequired = new Vector<String>();
+                    Enumeration<String> keys = colNameValue.keys();
+                    //iterate
+                    while (keys.hasMoreElements()) {
+                        colNamesRequired.add(keys.nextElement());
+                    }
+
+                    deleteRowsInBuckets(G, colNamesRequired, colNameValue, B, t, tableName, pk_found, index_value);
+                    for (int n = 0; n < B.getOverflowBucketsInfo().size(); n++) {
+                        Bucket O = (Bucket) deserialize(B.getOverflowBucketsInfo().get(0) + "");
+                        deleteRowsInBuckets(G, colNamesRequired, colNameValue, B, t, tableName, pk_found, index_value);
+                    }
+
+                }
+
+
             }
             t.deleteFromPage(index_value, pk_found, pk_value);
             serialize(t, tableName);
 
         }
+    }
+
+    public void deleteRowsInBuckets(GridIndex G, Vector<String> colNamesRequired, Hashtable<String, Object> colNameValue, Bucket B, Table t, String tableName, int pk_found, Vector<Vector> index_value) throws DBAppException, IOException {
+        Vector<Vector<Object>> entries_deleted = new Vector<Vector<Object>>();
+        String[] GI_colName = G.getColNames();
+        Vector<Vector<Object>> B_addresses = new Vector<Vector<Object>>();
+        for (int o = 0; o < B_addresses.size(); o++) {
+            // create new hash map using GI + Bucket entry -> <<col1, val1>,<col2, val2>,<col3,val3>>
+            Hashtable<String, Object> hs = new Hashtable<String, Object>();
+            for (int j = 2, k = 0; j < GI_colName.length; j++, k++) {
+                hs.put(GI_colName[k], B_addresses.get(o).get(j));
+            }
+
+
+            // checking if the required columns(where cond.) have the same value in the input hashtable and in the bucket entry
+            boolean found2 = true;
+            for (int z = 0; z < colNamesRequired.size(); z++) {
+                if (Trial.compare(hs.get(colNamesRequired.get(z)), colNameValue.get(colNamesRequired.get(z))) != 0) {
+                    found2 = false;
+                    break;
+                }
+            }
+            // add the rows to be deleted in the big vector.
+            if (found2) {
+                entries_deleted.add(B_addresses.get(o));
+                B_addresses.remove(B_addresses.get(o));
+            }
+        }
+
+        for (int p = 0; p < entries_deleted.size(); p++) {
+            deleteRowFromTableAndIndices(entries_deleted.get(p), B, t, G, tableName, pk_found, index_value);
+        }
+        serialize(B, B.getBucketName());
+    }
+
+    public void deleteRowFromTableAndIndices(Vector<Object> a, Bucket B, Table t, GridIndex G, String tableName, int pk_found, Vector<Vector> index_value) throws DBAppException, IOException {
+
+        Vector<Object> address = a; //row in bucket to vector
+        String PageName = (String) address.get(1);
+        Page p = (Page) deserialize(PageName);
+        //get row from page
+        Object pk_value = a.get(0);
+        Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
+        t.updateTablePagesInfo(p, pk_value);
+
+        //delete from all indices
+        deleteRowfromIndices(tableName, t, row, G, pk_value);
+
     }
 
     public void deleteRowfromIndices(String tableName, Table t, Vector<Object> row, GridIndex G, Object pk_value) throws DBAppException, IOException {

@@ -114,6 +114,42 @@ public class GridIndex implements java.io.Serializable {
         return ans;
     }
 
+    //  GI dimensions: X:<10,20,30>, Y:<40,50,60>, Z:<100,200,300>
+    // where x= 5 and Z= 100
+
+    //Buckets where index of X is 0 and Z is 0 --> 010, 000,020
+    // coordinates -> 0,-1,0
+    public Vector<String> findAllBuckets(Hashtable<String, Object> colNameValues, Table t) {
+        Vector<String> b = new Vector<String>();
+        Vector<Object> coordinates = new Vector<Object>();
+        // tableName-B-coordinates ( X:1, Y:0, Z:2) 1,0,2
+        for (int i = 0; i < dimVals.size(); i++) {
+            if (colNameValues.contains(colNames[i])) {
+                int index = bs_next(dimVals.get(i), dimVals.get(i).size() - 2, colNameValues.get(colNames[i]));
+                coordinates.add(index);
+            } else
+                coordinates.add(-1);
+        }
+        //Buckets where index of X is 0 and Z is 0 --> 010, 000,020
+        // coordinates -> 0,-1,0
+        for(int i=0;i<bucketsinTable.size(); i++){
+            String bName = bucketsinTable.get(i);
+            String[] split1= bName.split("-");
+            String[] split2= split1[2].split(",");
+            boolean found= true;
+            for(int j=0; j<split2.length; j++){
+                int cValue= (int)coordinates.get(j);
+               if(cValue!=-1 && cValue!=Integer.parseInt(split2[j])){
+                   found=false;
+                   break;
+               }
+            }
+            if(found){
+                b.add(bName); }
+        }
+        return b;
+    }
+
     // handle nulls ( add null to each dimension)
     public String findCell(Hashtable<String, Object> colNameValues) {
         Vector<Object> coordinates = new Vector<Object>(); //storing the index on the grid where the bucket placed

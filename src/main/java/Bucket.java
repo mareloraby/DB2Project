@@ -14,6 +14,14 @@ public class Bucket implements java.io.Serializable {
     private Vector<Vector<Object>> overflowBucketsInfo;//
 
 
+    public String getBucketName() {
+        return BucketName;
+    }
+
+    public void setBucketName(String bucketName) {
+        BucketName = bucketName;
+    }
+
     Bucket(String name) {
         BucketName = name;
         count = 0;
