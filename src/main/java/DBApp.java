@@ -438,23 +438,24 @@ public class DBApp implements DBAppInterface {
         if (t.isHasGrid()) {
             GridIndex G = chooseIndex(t, tableName, colNameValue);
 
-            String BucketName = G.findCell(colNameValue);
-
-            Bucket B;
-            if (G.getBucketsinTable().contains(BucketName))
-                B = (Bucket) DBApp.deserialize(BucketName);
-            else
-                throw new DBAppException("Cannot find bucket");
 
             //get address in current bucket  <pk,pageName,colname1,colname2,...>
             //   if (I have pk in hashtable:) bs in current bucket and its overflows, save row in vector
             if (pk_value != null) { //if i have primary key
                 //do BS ON BUCKET AND OVERFLOW
-                boolean found2 = false;
+                String BucketName = G.findCell(colNameValue);
+
+                Bucket B;
+                if (G.getBucketsinTable().contains(BucketName))
+                    B = (Bucket) DBApp.deserialize(BucketName);
+                else
+                    throw new DBAppException("Cannot find bucket");
+
                 int addressIdxInBucket = B.binarySearch(pk_value);
 
-
+                // check the overflows
                 if (addressIdxInBucket == -1) { //if not found in bucket
+
                     if (B.getOverflowBucketsInfo().size() > 0) {
 
                         for (int i = 0; i < B.getOverflowBucketsInfo().size(); i++) {
@@ -473,56 +474,70 @@ public class DBApp implements DBAppInterface {
                             }
                         }
 
-                    } else {
-                        found2 = false;
                     }
-                } else {
+                }
+
+                // ensure whether it is in the bucket or not
+                if (addressIdxInBucket != -1) {
                     Vector<Object> address = B.getAddresses().get(addressIdxInBucket); //row in bucket to vector
                     String PageName = (String) address.get(1);
                     Page p = (Page) deserialize(PageName);
                     //get row from page
                     Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
                     t.updateTablePagesInfo(p, pk_value);
+
                     //delete from all indices
-                    for (int i = 0; i < t.getGridIndices().size(); i++) {
-                        GridIndex tempG = (GridIndex) deserialize(tableName + "-GI" + i);
-                        Hashtable<String, Object> colNameValuesGrid = new Hashtable<String, Object>();
-
-// this is used to construct the hashtable:
-                        String[] colNamesInGrid = G.getColNames(); //colName of the Grid
-                        ArrayList<String> colNamesTable = getColNamesOfTable(tableName);
-
-                        for (int j = 0; j < colNamesTable.size(); j++) {
-                            for (int k = 0; k < colNamesInGrid.length; k++) {
-                                if (colNamesTable.get(j).equals(colNamesInGrid[k])) {
-                                    colNameValuesGrid.put(colNamesInGrid[j], row.get(j));
-                                    break;
-                                }
-                            }
-
-                        }
-                        String BucketName1 = tempG.findCell(colNameValuesGrid);
-                        Bucket B1 = (Bucket) deserialize(BucketName);
-                        // search within the bucket for these hashtable valeus and remove it from the bucket CONTINUE HERE
-                        // i need to call find cell, find cell takes parameters inside hashtable
-                    }
+                    deleteRowfromIndices(tableName, t, row, G, pk_value);
                 }
-
-                //   else {linear search using current grid indices values in current bucket and its overflows
-                //          put each matching row in vector of vectors
-                //          }
-                //delete from table
-                //delete from all other indices using pk
-
 
                 DBApp.serialize(B, BucketName); // Bucket
                 DBApp.serialize(G, tableName + "-GI" + G.getGridID()); // Grid
 
             }
+            // delete from all bucket ( pk is no longer the condition)
+            else {
+                /*
+                1- get all buckets satisfying the where condition
+                for loop( each Bucket){
+                get vector of vector of entries to be deleted
+
+                 for loop ( vector of vector of entries){
+                    delete from page + get row from the table
+                    delete each row from all indixes; }
+                }
+                 */
+            }
             t.deleteFromPage(index_value, pk_found, pk_value);
             serialize(t, tableName);
 
         }
+    }
+
+    public void deleteRowfromIndices(String tableName, Table t, Vector<Object> row, GridIndex G, Object pk_value) throws DBAppException, IOException {
+        for (int i = 0; i < t.getGridIndices().size(); i++) {
+            GridIndex tempG = (GridIndex) deserialize(tableName + "-GI" + i);
+            Hashtable<String, Object> colNameValuesGrid = new Hashtable<String, Object>();
+
+// this is used to construct the hashtable:
+            String[] colNamesInGrid = G.getColNames(); //colName of the Grid
+            ArrayList<String> colNamesTable = getColNamesOfTable(tableName);
+
+            for (int j = 0; j < colNamesTable.size(); j++) {
+                for (int k = 0; k < colNamesInGrid.length; k++) {
+                    if (colNamesTable.get(j).equals(colNamesInGrid[k])) {
+                        colNameValuesGrid.put(colNamesInGrid[j], row.get(j));
+                        break;
+                    }
+                }
+
+            }
+            String BucketName1 = tempG.findCell(colNameValuesGrid);
+            Bucket B1 = (Bucket) deserialize(BucketName1);// pk, pagename, value1, value2, ...
+            B1.deleteFromBucket(pk_value);
+            // search within the bucket for these hashtable valeus and remove it from the bucket CONTINUE HERE
+            // i need to call find cell, find cell takes parameters inside hashtable
+        }
+
     }
 
     public GridIndex chooseIndex(Table t, String tableName, Hashtable<String, Object> colNameValue) {

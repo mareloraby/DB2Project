@@ -53,7 +53,7 @@ public class Bucket implements java.io.Serializable {
             entry.add(value);
             entry.add(pageName);
             // adding the values of the index into addresses vector-> pk, pgName, name value, age value
-            for(int j=0; j<G.getColNames().length; j++){
+            for (int j = 0; j < G.getColNames().length; j++) {
                 entry.add(columnNameValues.get(G.getColNames()[j]));
             }
             int index = bs_next(addresses, addresses.size() - 2, value);
@@ -70,27 +70,51 @@ public class Bucket implements java.io.Serializable {
                     if (Trial.compare(MaximumKeysCountinIndexBucket, v.get(1)) > 0) {
                         found = true;
                         Bucket o = (Bucket) DBApp.deserialize((String) v.get(0));
-                        o.insertIntoOverflowBucket(value, pageName,columnNameValues, G);
-                        DBApp.serialize(o,o.BucketName);
+                        o.insertIntoOverflowBucket(value, pageName, columnNameValues, G);
+                        DBApp.serialize(o, o.BucketName);
                         Vector<Object> info = new Vector<Object>();
                         info.add(v.get(0));
                         info.add(1);
                         overflowBucketsInfo.set(i, info);
                     }
                 }
-                if (!found) createOverflowBucket(value, pageName,columnNameValues, G);
+                if (!found) createOverflowBucket(value, pageName, columnNameValues, G);
 
-            } else createOverflowBucket(value, pageName,columnNameValues, G);
+            } else createOverflowBucket(value, pageName, columnNameValues, G);
         }
 
     }
 
-    private void insertIntoOverflowBucket(Object value, String pageName,  Hashtable<String, Object> columnNameValues, GridIndex G) {
+    public void deleteFromBucket(Object pk_value) {
+        Vector<Object> row_to_be_deleted = binarySearchForDelete(pk_value);
+        if (row_to_be_deleted != null) {
+            addresses.remove(row_to_be_deleted);
+            // delete bucket in case it's empty.
+        } else {
+            for (int i = 0; i < overflowBucketsInfo.size(); i++) {
+                // get overflow bucket:
+                Vector<Object> v = overflowBucketsInfo.get(i); // name and num of entries
+
+                Bucket o = (Bucket) DBApp.deserialize((String) v.get(0));
+                Vector<Object> row_to_be_deleted2 = o.binarySearchForDelete(pk_value);
+                if (row_to_be_deleted2 != null) {
+                    o.getAddresses().remove(row_to_be_deleted2);
+                    DBApp.serialize(o, o.BucketName);
+                    break;
+                    // delete bucket in case it's empty.
+                }
+                DBApp.serialize(o, o.BucketName);
+            }
+        }
+    }
+
+
+    private void insertIntoOverflowBucket(Object value, String pageName, Hashtable<String, Object> columnNameValues, GridIndex G) {
         noOfEntries++;
         Vector<Object> entry = new Vector<>();
         entry.add(value);
         entry.add(pageName);
-        for(int j=0; j<G.getColNames().length; j++){
+        for (int j = 0; j < G.getColNames().length; j++) {
             entry.add(columnNameValues.get(G.getColNames()[j]));
         }
         int index = bs_next(addresses, addresses.size() - 2, value);
@@ -99,11 +123,11 @@ public class Bucket implements java.io.Serializable {
             addresses.add(index, entry);
     }
 
-    public void createOverflowBucket(Object pk, String pageName,Hashtable<String, Object> columnNameValues, GridIndex G) {
+    public void createOverflowBucket(Object pk, String pageName, Hashtable<String, Object> columnNameValues, GridIndex G) {
         count++;
         String overflowName = BucketName + "-" + count;
         Bucket B = new Bucket(overflowName);
-        B.insertIntoOverflowBucket(pk, pageName,columnNameValues,G);
+        B.insertIntoOverflowBucket(pk, pageName, columnNameValues, G);
         DBApp.serialize(B, overflowName);
         Vector<Object> info = new Vector<Object>();
         info.add(overflowName);
@@ -111,27 +135,51 @@ public class Bucket implements java.io.Serializable {
         overflowBucketsInfo.add(info);
 
     }
-    public int binarySearch( Object key){
-        int first=0;
-        int last= this.addresses.size()-1;
-        int mid = (first + last)/2;
-        while( first <= last ){
+
+    public Vector<Object> binarySearchForDelete(Object key) {
+        int first = 0;
+        int last = this.addresses.size() - 1;
+        int mid = (first + last) / 2;
+        while (first <= last) {
             //if ( arr[mid] < key )
             Object x = addresses.get(mid).get(0);
-            if ( Trial.compare(key, x )>0 ){
+            if (Trial.compare(key, x) > 0) {
 
-                    first = mid + 1;
-            }else if ( Trial.compare(key, x ) == 0 ){
-                return mid;
+                first = mid + 1;
+            } else if (Trial.compare(key, x) == 0) {
+                return addresses.get(mid);
 
-            }else{
+            } else {
                 last = mid - 1;
             }
-            mid = (first + last)/2;
+            mid = (first + last) / 2;
         }
-            return -1;
+        return null;
 
     }
+
+    public int binarySearch(Object key) {
+        int first = 0;
+        int last = this.addresses.size() - 1;
+        int mid = (first + last) / 2;
+        while (first <= last) {
+            //if ( arr[mid] < key )
+            Object x = addresses.get(mid).get(0);
+            if (Trial.compare(key, x) > 0) {
+
+                first = mid + 1;
+            } else if (Trial.compare(key, x) == 0) {
+                return mid;
+
+            } else {
+                last = mid - 1;
+            }
+            mid = (first + last) / 2;
+        }
+        return -1;
+
+    }
+
     public Vector<Vector<Object>> getAddresses() {
         return addresses;
     }
@@ -148,13 +196,6 @@ public class Bucket implements java.io.Serializable {
     public void setOverflowBucketsInfo(Vector<Vector<Object>> overflowBucketsInfo) {
         this.overflowBucketsInfo = overflowBucketsInfo;
     }
-
-
-
-
-
-
-
 
 
 }

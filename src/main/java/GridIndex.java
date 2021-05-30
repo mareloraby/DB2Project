@@ -136,7 +136,6 @@ public class GridIndex implements java.io.Serializable {
                 indices.append(',');
             }
         }
-
         String BucketName = tableName + "-B" + indices;
         return BucketName;
     }
