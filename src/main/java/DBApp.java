@@ -1,6 +1,10 @@
 import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
 import java.util.*;
 import java.util.Properties;
 import java.util.Map.Entry;
@@ -352,10 +356,26 @@ public class DBApp implements DBAppInterface {
             }
         }
 
-        Table t = (Table) DBApp.deserialize(tableName);
-        t.updateInPage(index_value, pk_found, parse(pkType, clusteringKeyValue));
-        serialize(t, tableName);
 
+
+
+        Table t = (Table) DBApp.deserialize(tableName);
+
+        if (t.isHasGrid())
+        {
+            t.updateInPagewithIndex();
+            //choose index
+            //find cell
+            //update values in entries of bucket if exists in index
+            //update in page
+            //(delete,insert) to update in all indices
+
+
+        }
+        else {
+            t.updateInPage(index_value, pk_found, parse(pkType, clusteringKeyValue));
+            serialize(t, tableName);
+    }
 
 
     }
@@ -642,7 +662,7 @@ public class DBApp implements DBAppInterface {
     }
 
 
-    public static void main(String[] args) throws DBAppException, IOException {
+    public static void main(String[] args) throws DBAppException, IOException, ParseException {
 
 //        String strTableName = "Student";
 //        DBApp dbApp = new DBApp();
@@ -729,10 +749,32 @@ public class DBApp implements DBAppInterface {
 //        dbApp.createIndex( strTableName, new String[] {"gpa"} );
 
 
-        System.out.println(Trial.compare("z", "A"));
+
+        // 46-3294 46-3547
+        String id1 = "43-0000";
+        String id2 = "99-9999";
+
+        //Strings
+
+
+        System.out.println(        getdifferencedate("1999-01-20","1234-04-13"));
+
+        System.out.println(20210331);
+
+
+
 
 
     }
+
+
+public static long getdifferencedate(String d1, String d2){
+    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    LocalDate date1 = LocalDate.parse(d1, dtf);
+    LocalDate date22 = LocalDate.parse(d2, dtf);
+    long daysBetween = ChronoUnit.DAYS.between(date1, (Temporal) date22);
+    return daysBetween;
+}
 
 
 }

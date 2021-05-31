@@ -1178,4 +1178,11 @@ public class Table implements java.io.Serializable {
         this.colNamesTable = colNamesTable;
     }
 
+    public void updateInPagewithIndex() {
+
+
+    }
+
+
+
 }
