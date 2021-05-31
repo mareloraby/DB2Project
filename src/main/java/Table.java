@@ -1,8 +1,6 @@
 import java.io.FileNotFoundException;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.io.IOException;
+import java.util.*;
 
 public class Table implements java.io.Serializable {
 
@@ -12,6 +10,8 @@ public class Table implements java.io.Serializable {
     private int count;
     private Vector<Vector<Object>> pagesInfo;
 
+
+    private ArrayList<String> colNamesTable;
     private Vector<Object> pks;
     private Vector<Integer> pagesID;
     private int maxRows;
@@ -22,7 +22,7 @@ public class Table implements java.io.Serializable {
 
 
     public Table(String name, int pk_index) {
-        this.pk_index= pk_index;
+        this.pk_index = pk_index;
         maxRows = DBApp.MaximumRowsCountinPage;
         pagesID = new Vector<Integer>();
         pagesInfo = new Vector<Vector<Object>>();
@@ -387,8 +387,8 @@ public class Table implements java.io.Serializable {
     2-call findcell */
 
     public void insertIntoGrid(Hashtable<String, Object> columnNameValues, String pageName, Object pk) {
-        for(int i=0; i< gridIndices.size(); i++) {
-            GridIndex G = (GridIndex) DBApp.deserialize(tableName + "-GI"+i);
+        for (int i = 0; i < gridIndices.size(); i++) {
+            GridIndex G = (GridIndex) DBApp.deserialize(tableName + "-GI" + i);
             String BucketName = G.findCell(columnNameValues);
 
             Bucket B;
@@ -398,18 +398,33 @@ public class Table implements java.io.Serializable {
             else
                 B = G.addBucket(BucketName);
 
-            B.insertIntoBucket(pk, pageName, columnNameValues,G);
+            B.insertIntoBucket(pk, pageName, columnNameValues, G);
             DBApp.serialize(B, BucketName); // Bucket
-            DBApp.serialize(G, tableName + "-GI"+i); // Grid
+            DBApp.serialize(G, tableName + "-GI" + i); // Grid
         }
 
     }
 
     // the new address , row ,pk
-    public void updateBucketAfterShiftingInInsert (){
+    public void updateBucketAfterShiftingInInsert(Vector<Object> row) throws DBAppException, IOException {
         // delete the row
         // insert
+        Hashtable<String, Object> colNameValueDummy = new Hashtable<String, Object>();
+        colNameValueDummy.put(colNamesTable.get(pk_index), row.get(pk_index));
+        Vector<Object> pkIndex_pk_Value = new Vector<>();
+        pkIndex_pk_Value.add(pk_index);
+        pkIndex_pk_Value.add(row.get(pk_index));
+        Vector<Vector> index_valueDummy = new Vector<>();
+        index_valueDummy.add(pkIndex_pk_Value);
 
+        deleteUsingIndex(colNameValueDummy, row.get(pk_index), pk_index, index_valueDummy);
+        Hashtable<String, Object> colNameValue = new Hashtable<String, Object>();
+        // <mai, 23>
+        //<name, age>
+        for (int i = 0; i < row.size(); i++) {
+            colNameValue.put(colNamesTable.get(i), row.get(i));
+        }
+        insertIntoPageWithGI(row, pk_index, colNameValue);
         /*
         1-take the row
         2-search in all grids for this row
@@ -418,7 +433,7 @@ public class Table implements java.io.Serializable {
     }
 
 
-    public void insertIntoPageWithGI(Vector<Object> v, int index, Hashtable<String, Object> colNameValues) throws DBAppException {
+    public void insertIntoPageWithGI(Vector<Object> v, int index, Hashtable<String, Object> colNameValues) throws DBAppException, IOException {
         checktablePage();
 
         // check if the page is full, if yes, go to the next page and check whether it has space
@@ -502,14 +517,14 @@ public class Table implements java.io.Serializable {
                         // sort in the vector
                         p.sortI(index);
                         DBApp.serialize(p, tableName + "-" + pagesID.get(i));
-                        insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i),pk);
+                        insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i), pk);
                         break;
                         // In case we want to refer back to binary search in the page itself:
                     } else {
                         // if pk is greater than max, add new page ( no overflow pages for the last page)
                         if (Page.compare(pk, max) > 0) {
                             addPage(v, index);
-                            insertIntoGrid(colNameValues, tableName + "-" + count,pk);
+                            insertIntoGrid(colNameValues, tableName + "-" + count, pk);
                             break;
                         }
                         // if pk is less than the max in the last page, create a new page
@@ -542,7 +557,8 @@ public class Table implements java.io.Serializable {
                                 System.out.println();
                             }
                             // SHIFTING HERE!
-                            insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i),pk);
+                            updateBucketAfterShiftingInInsert(to_be_shifted);
+                            insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i), pk);
                             DBApp.serialize(p, tableName + "-" + pagesID.get(i));
                             break;
                         }
@@ -584,7 +600,7 @@ public class Table implements java.io.Serializable {
                                     p.setOverFlowInfo(updatedOverflowInfoPages);
                                     DBApp.serialize(o, tableName + "-" + pagesID.get(i) + "." + (ID + ""));
                                     found_space = true;
-                                    insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i) + "." + (ID + ""),pk);
+                                    insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i) + "." + (ID + ""), pk);
                                     break;
                                 }
                                 DBApp.serialize(o, tableName + "-" + pagesID.get(i) + "." + (ID + ""));
@@ -598,9 +614,9 @@ public class Table implements java.io.Serializable {
                                     pagesInfo.get(i).set(1, pk);
                                 }
                                 System.out.println("inserted here!!!" + 5 + " " + pagesID.get(i) + "and page count is" + " " + countRows + " " + v.get(index) + " " + max);
-                                int size= p.getOverFlowInfo().size()-1;
-                                int ID= (int) p.getOverFlowInfo().get(size).get(0);
-                                insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i) + "." + (ID + ""),pk);
+                                int size = p.getOverFlowInfo().size() - 1;
+                                int ID = (int) p.getOverFlowInfo().get(size).get(0);
+                                insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i) + "." + (ID + ""), pk);
                             }
                             DBApp.serialize(p, tableName + "-" + (pagesID.get(i) + ""));
 
@@ -654,7 +670,8 @@ public class Table implements java.io.Serializable {
                                 DBApp.serialize(p2, tableName + "-" + pagesID.get(i + 1));
                                 DBApp.serialize(p, tableName + "-" + pagesID.get(i));
                                 // SHIFTING HERE
-                                insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i),pk);
+                                updateBucketAfterShiftingInInsert(to_be_shifted);
+                                insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i), pk);
                                 break;
                             } else {
                                 //create an overflow page and insert into the new page
@@ -663,9 +680,9 @@ public class Table implements java.io.Serializable {
                                 System.out.println("inserted here!!!" + 8 + " " + pagesID.get(i) + "and page count is" + " " + countRows + " " + v.get(index) + " " + max);
                                 DBApp.serialize(p, tableName + "-" + (pagesID.get(i) + ""));
 
-                                int size= p.getOverFlowInfo().size()-1;
-                                int ID= (int) p.getOverFlowInfo().get(size).get(0);
-                                insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i) + "." + (ID + ""),pk);
+                                int size = p.getOverFlowInfo().size() - 1;
+                                int ID = (int) p.getOverFlowInfo().get(size).get(0);
+                                insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i) + "." + (ID + ""), pk);
                                 break;
                             }
                         }
@@ -681,7 +698,7 @@ public class Table implements java.io.Serializable {
                         p.sortI(index);
                         DBApp.serialize(p, tableName + "-" + pagesID.get(i));
 
-                        insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i),pk);
+                        insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i), pk);
                         break;
                     }
                     System.out.println("break here");
@@ -696,7 +713,7 @@ public class Table implements java.io.Serializable {
                     System.out.println("inserted here!!!" + 10 + " " + pagesID.get(i) + "and page count is" + " " + countRows + " " + v.get(index) + " " + max);
                     p.sortI(index);
                     DBApp.serialize(p, tableName + "-" + pagesID.get(i));
-                    insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i),pk);
+                    insertIntoGrid(colNameValues, tableName + "-" + pagesID.get(i), pk);
                     break;
                 }
 
@@ -766,6 +783,209 @@ public class Table implements java.io.Serializable {
         pagesID.remove(deletePage);
     }
 
+    public GridIndex chooseIndex(String tableName, Hashtable<String, Object> colNameValue) {
+        GridIndex G = null;
+        int count = 0;
+        int size = (int) 10e6; //1,000,000
+        for (int i = 0; i < gridIndices.size(); i++) {
+            GridIndex tempG = (GridIndex) DBApp.deserialize(tableName + "-GI" + i);
+            String[] colNames = G.getColNames(); //colName of the Grid
+
+            int tempSize = tempG.getColNames().length;
+            int tempCount = 0;
+            for (int j = 0; j < colNames.length; j++) {
+                if (colNameValue.contains(colNames[j])) {
+                    tempCount++;
+                }
+            }
+            if (tempCount > count || (tempCount == count && tempSize < size)) {
+                G = tempG;
+                count = tempCount;
+                size = G.getColNames().length;
+            } else {
+                DBApp.serialize(tempG, tableName + "-GI" + i);
+            }
+        }
+        return G;
+    }
+
+    public void deleteUsingIndex(Hashtable<String, Object> colNameValue, Object pk_value, int pk_found, Vector<Vector> index_value) throws DBAppException, IOException {
+        GridIndex G = chooseIndex(tableName, colNameValue);
+
+
+        //get address in current bucket  <pk,pageName,colname1,colname2,...>
+        //   if (I have pk in hashtable:) bs in current bucket and its overflows, save row in vector
+        if (pk_value != null) { //if i have primary key
+            //do BS ON BUCKET AND OVERFLOW
+            String BucketName = G.findCell(colNameValue);
+
+            Bucket B;
+            if (G.getBucketsinTable().contains(BucketName))
+                B = (Bucket) DBApp.deserialize(BucketName);
+            else
+                throw new DBAppException("Cannot find bucket");
+
+            int addressIdxInBucket = B.binarySearch(pk_value);
+
+            // check the overflows
+            if (addressIdxInBucket == -1) { //if not found in bucket
+
+                if (B.getOverflowBucketsInfo().size() > 0) {
+
+                    for (int i = 0; i < B.getOverflowBucketsInfo().size(); i++) {
+                        // get overflow bucket:
+                        Vector<Object> v = B.getOverflowBucketsInfo().get(i); // name and num of entries
+                        Bucket Overflow = (Bucket) DBApp.deserialize(v.get(0) + "");
+                        int addressIdxInOv = Overflow.binarySearch(pk_value);
+                        if (addressIdxInOv != -1) {
+
+                            Vector<Object> address = Overflow.getAddresses().get(addressIdxInBucket); //row in bucket to vector
+                            String PageName = (String) address.get(1);
+                            Page p = (Page) DBApp.deserialize(PageName);
+                            Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
+                            updateTablePagesInfo(p, pk_value);
+                            break;
+                        }
+                    }
+
+                }
+            }
+
+            // ensure whether it is in the bucket or not
+            if (addressIdxInBucket != -1) {
+                Vector<Object> address = B.getAddresses().get(addressIdxInBucket); //row in bucket to vector
+                String PageName = (String) address.get(1);
+                Page p = (Page) DBApp.deserialize(PageName);
+                //get row from page
+                Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
+                updateTablePagesInfo(p, pk_value);
+
+                //delete from all indices
+                deleteRowfromIndices(tableName, row, G, pk_value);
+            }
+
+            DBApp.serialize(B, BucketName); // Bucket
+            DBApp.serialize(G, tableName + "-GI" + G.getGridID()); // Grid
+
+        }
+        // delete from all bucket ( pk is no longer the condition)
+        else {
+                /*
+                1- get all buckets satisfying the where condition
+                for loop( each Bucket){
+                get vector of vector of entries to be deleted
+
+                 for loop ( vector of vector of entries){
+                    delete from page + get row from the table
+                    delete each row from all indixes; }
+                }
+                 */
+            Vector<String> bNames = G.findAllBuckets(colNameValue);
+            for (int i = 0; i < bNames.size(); i++) {
+                Bucket B = (Bucket) DBApp.deserialize(bNames.get(i));
+                // bucket -> addresses + colNames of GI
+                // GI: < col1, col2, col3>
+                // Bucket entry:  < pk, pageName, val1, val2, val3>
+                // colNameValues: <<col1,A>,<col3,B>>
+
+
+                // vector: < col1, col3>
+                Vector<String> colNamesRequired = new Vector<String>();
+                Enumeration<String> keys = colNameValue.keys();
+                //iterate
+                while (keys.hasMoreElements()) {
+                    colNamesRequired.add(keys.nextElement());
+                }
+
+                deleteRowsInBuckets(G, colNamesRequired, colNameValue, B, pk_found, index_value);
+                for (int n = 0; n < B.getOverflowBucketsInfo().size(); n++) {
+                    Bucket O = (Bucket) DBApp.deserialize(B.getOverflowBucketsInfo().get(0) + "");
+                    deleteRowsInBuckets(G, colNamesRequired, colNameValue, B, pk_found, index_value);
+                }
+
+            }
+
+
+        }
+    }
+
+
+    public void deleteRowsInBuckets(GridIndex G, Vector<String> colNamesRequired, Hashtable<String, Object> colNameValue, Bucket B, int pk_found, Vector<Vector> index_value) throws DBAppException, IOException {
+        Vector<Vector<Object>> entries_deleted = new Vector<Vector<Object>>();
+        String[] GI_colName = G.getColNames();
+        Vector<Vector<Object>> B_addresses = new Vector<Vector<Object>>();
+        for (int o = 0; o < B_addresses.size(); o++) {
+            // create new hash map using GI + Bucket entry -> <<col1, val1>,<col2, val2>,<col3,val3>>
+            Hashtable<String, Object> hs = new Hashtable<String, Object>();
+            for (int j = 2, k = 0; j < GI_colName.length; j++, k++) {
+                hs.put(GI_colName[k], B_addresses.get(o).get(j));
+            }
+
+
+            // checking if the required columns(where cond.) have the same value in the input hashtable and in the bucket entry
+            boolean found2 = true;
+            for (int z = 0; z < colNamesRequired.size(); z++) {
+                if (Trial.compare(hs.get(colNamesRequired.get(z)), colNameValue.get(colNamesRequired.get(z))) != 0) {
+                    found2 = false;
+                    break;
+                }
+            }
+            // add the rows to be deleted in the big vector.
+            if (found2) {
+                entries_deleted.add(B_addresses.get(o));
+                B_addresses.remove(B_addresses.get(o));
+            }
+        }
+
+        for (int p = 0; p < entries_deleted.size(); p++) {
+            deleteRowFromTableAndIndices(entries_deleted.get(p), B, G, tableName, pk_found, index_value);
+        }
+        DBApp.serialize(B, B.getBucketName());
+    }
+
+    public void deleteRowFromTableAndIndices(Vector<Object> a, Bucket B, GridIndex G, String tableName, int pk_found, Vector<Vector> index_value) throws DBAppException, IOException {
+
+        Vector<Object> address = a; //row in bucket to vector
+        String PageName = (String) address.get(1);
+        Page p = (Page) DBApp.deserialize(PageName);
+        //get row from page
+        Object pk_value = a.get(0);
+        Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
+        updateTablePagesInfo(p, pk_value);
+
+        //delete from all indices
+        deleteRowfromIndices(tableName, row, G, pk_value);
+
+    }
+
+    public void deleteRowfromIndices(String tableName, Vector<Object> row, GridIndex G, Object pk_value) throws DBAppException, IOException {
+        for (int i = 0; i < gridIndices.size(); i++) {
+            GridIndex tempG = (GridIndex) DBApp.deserialize(tableName + "-GI" + i);
+            Hashtable<String, Object> colNameValuesGrid = new Hashtable<String, Object>();
+
+// this is used to construct the hashtable:
+            String[] colNamesInGrid = G.getColNames(); //colName of the Grid
+
+
+            for (int j = 0; j < colNamesTable.size(); j++) {
+                for (int k = 0; k < colNamesInGrid.length; k++) {
+                    if (colNamesTable.get(j).equals(colNamesInGrid[k])) {
+                        colNameValuesGrid.put(colNamesInGrid[j], row.get(j));
+                        break;
+                    }
+                }
+
+            }
+            String BucketName1 = tempG.findCell(colNameValuesGrid);
+            Bucket B1 = (Bucket) DBApp.deserialize(BucketName1);// pk, pagename, value1, value2, ...
+            B1.deleteFromBucket(pk_value);
+            // search within the bucket for these hashtable valeus and remove it from the bucket CONTINUE HERE
+            // i need to call find cell, find cell takes parameters inside hashtable
+        }
+
+    }
+
+
     public void deleteFromPage(Vector<Vector> index_value, int pk_found, Object pk_value) throws DBAppException {
         //binary search
         int c = 0; // this is used to count the number of record deleted. ( the method delete returns boolean, so we count how many trues we have)
@@ -833,7 +1053,8 @@ public class Table implements java.io.Serializable {
     }
 
 
-    public void deleteFromPageUsingIdx(){}
+    public void deleteFromPageUsingIdx() {
+    }
 
     public void deleteFromOverflowPage(int pageID, Vector<Vector> index_value, int pk_found, Object pk_value, int c) throws DBAppException {
         //   int c = 0;
@@ -876,11 +1097,8 @@ public class Table implements java.io.Serializable {
     }
 
 
-
-
-
-public void updateTablePagesInfo(Page p, Object pk_value){
-    int searchPage = binarySearch(pagesInfo, 0, pagesInfo.size() - 1, pk_value);
+    public void updateTablePagesInfo(Page p, Object pk_value) {
+        int searchPage = binarySearch(pagesInfo, 0, pagesInfo.size() - 1, pk_value);
         pks.remove(pk_value);
         Vector<Object> updatePageInfo = new Vector<Object>();
         updatePageInfo.add(p.getNumOfRows());
@@ -889,12 +1107,12 @@ public void updateTablePagesInfo(Page p, Object pk_value){
         // how do we get the index of the page we want to delete
         pagesInfo.set(searchPage, updatePageInfo);
 
-    if (p.getNumOfRows() == 0) {
-        removePage(p, searchPage);
-    } else {
-        DBApp.serialize(p, tableName + "-" + pagesID.get(searchPage));
+        if (p.getNumOfRows() == 0) {
+            removePage(p, searchPage);
+        } else {
+            DBApp.serialize(p, tableName + "-" + pagesID.get(searchPage));
+        }
     }
-}
 
 
     public void updateInPage(Vector<Vector> index_value, int pk_found, Object pk_value) throws DBAppException {
@@ -946,5 +1164,12 @@ public void updateTablePagesInfo(Page p, Object pk_value){
         this.hasGrid = hasGrid;
     }
 
+    public ArrayList<String> getColNamesTable() {
+        return colNamesTable;
+    }
+
+    public void setColNamesTable(ArrayList<String> colNamesTable) {
+        this.colNamesTable = colNamesTable;
+    }
 
 }

@@ -119,7 +119,7 @@ public class GridIndex implements java.io.Serializable {
 
     //Buckets where index of X is 0 and Z is 0 --> 010, 000,020
     // coordinates -> 0,-1,0
-    public Vector<String> findAllBuckets(Hashtable<String, Object> colNameValues, Table t) {
+    public Vector<String> findAllBuckets(Hashtable<String, Object> colNameValues) {
         Vector<String> b = new Vector<String>();
         Vector<Object> coordinates = new Vector<Object>();
         // tableName-B-coordinates ( X:1, Y:0, Z:2) 1,0,2
