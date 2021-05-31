@@ -25,16 +25,6 @@ public class Milestone2Tests {
         dbApp = null;
     }
 
-    @Test
-    @Order(2)
-    public void testRecordInsertions() throws Exception {
-        DBApp dbApp = new DBApp();
-        dbApp.init();
-        int limit = 500;
-
-        insertStudentRecords(dbApp, limit);
-        dbApp = null;
-    }
 
     @Test
     public void testCreateDateIndex() throws Exception {
@@ -116,18 +106,20 @@ public class Milestone2Tests {
         dbApp.createIndex(table, index);
         dbApp = null;
     }
-
+//
 //    @Test
 //    public void testSelectEmptyStudents() throws Exception{
 //        // Should return an empty iterator with no errors thrown
 //
 //        SQLTerm[] arrSQLTerms;
 //        arrSQLTerms = new SQLTerm[2];
+//        arrSQLTerms[0] = new SQLTerm();
 //        arrSQLTerms[0]._strTableName = "students";
 //        arrSQLTerms[0]._strColumnName= "first_name";
 //        arrSQLTerms[0]._strOperator = "=";
 //        arrSQLTerms[0]._objValue ="John";
 //
+//        arrSQLTerms[1] = new SQLTerm();
 //        arrSQLTerms[1]._strTableName = "students";
 //        arrSQLTerms[1]._strColumnName= "gpa";
 //        arrSQLTerms[1]._strOperator = "=";
@@ -140,7 +132,7 @@ public class Milestone2Tests {
 //        dbApp.init();
 //        Iterator resultSet = dbApp.selectFromTable(arrSQLTerms , strarrOperators);
 //    }
-
+//
 //    @Test
 //    public void testSelectActualStudentOR() throws Exception{
 //        // Should return a non-empty iterator with no errors thrown
@@ -179,12 +171,13 @@ public class Milestone2Tests {
 //
 //        SQLTerm[] arrSQLTerms;
 //        arrSQLTerms = new SQLTerm[2];
+//        arrSQLTerms[0] = new SQLTerm();
 //        arrSQLTerms[0]._strTableName = "students";
 //        arrSQLTerms[0]._strColumnName= "first_name";
 //        arrSQLTerms[0]._strOperator = "=";
 //        arrSQLTerms[0]._objValue =row.get("first_name");
 //
-//
+//        arrSQLTerms[1] = new SQLTerm();
 //        arrSQLTerms[1]._strTableName = "students";
 //        arrSQLTerms[1]._strColumnName= "gpa";
 //        arrSQLTerms[1]._strOperator = "<=";
@@ -197,7 +190,7 @@ public class Milestone2Tests {
 //        dbApp.init();
 //        Iterator resultSet = dbApp.selectFromTable(arrSQLTerms , strarrOperators);
 //    }
-
+//
 //    @Test
 //    public void testSelectActualStudentAND() throws Exception{
 //        // Should return a non-empty iterator with no errors thrown
@@ -236,12 +229,13 @@ public class Milestone2Tests {
 //
 //        SQLTerm[] arrSQLTerms;
 //        arrSQLTerms = new SQLTerm[2];
+//        arrSQLTerms[0] = new SQLTerm();
 //        arrSQLTerms[0]._strTableName = "students";
 //        arrSQLTerms[0]._strColumnName= "first_name";
 //        arrSQLTerms[0]._strOperator = "=";
 //        arrSQLTerms[0]._objValue =row.get("first_name");
 //
-//
+//        arrSQLTerms[1] = new SQLTerm();
 //        arrSQLTerms[1]._strTableName = "students";
 //        arrSQLTerms[1]._strColumnName= "gpa";
 //        arrSQLTerms[1]._strOperator = "=";
@@ -392,5 +386,17 @@ public class Milestone2Tests {
             }
         }
         studentsTable.close();
+    }
+
+
+
+    @Test
+    public void testRecordInsertions() throws Exception {
+        DBApp dbApp = new DBApp();
+        dbApp.init();
+        int limit = 500;
+
+        insertStudentRecords(dbApp, limit);
+        dbApp = null;
     }
 }

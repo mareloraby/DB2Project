@@ -143,8 +143,10 @@ public class DBApp implements DBAppInterface {
 
 
         }
-        if (!ck_match)
+        if (!ck_match) {
             throw new DBAppException("Clustering Key entered doesn't match any colName.");
+        }
+
         Table t = new Table(tableName, pk_index);
         t.setColNamesTable(getColNamesOfTable(tableName));
         serialize(t, tableName);
@@ -158,7 +160,7 @@ public class DBApp implements DBAppInterface {
         // names of columns with the order
         ArrayList<String> colNames = new ArrayList<>();
         BufferedReader csvReader = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
-
+        System.out.println("TABLE NAME HERE " + tableName);
         int pk_found = -1;
         boolean found = false;
         int index = 0;
@@ -168,6 +170,9 @@ public class DBApp implements DBAppInterface {
             if (data[0].equals(tableName)) {
                 found = true;
                 colNames.add(data[1]);
+
+                System.out.print("A NAME IS HERE"+ colNames.get(colNames.size()-1) );
+
                 if (data[3].equals("True") || data[3].equals("true")) {
                     pk_found = index;
                 }
@@ -350,6 +355,8 @@ public class DBApp implements DBAppInterface {
         Table t = (Table) DBApp.deserialize(tableName);
         t.updateInPage(index_value, pk_found, parse(pkType, clusteringKeyValue));
         serialize(t, tableName);
+
+
 
     }
 

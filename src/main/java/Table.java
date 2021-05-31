@@ -31,6 +31,7 @@ public class Table implements java.io.Serializable {
         count = 0;
         gridIndices = new Vector<GridIndex>();
         hasGrid = false;
+        colNamesTable= new ArrayList<String>();
 
     }
 
@@ -393,7 +394,8 @@ public class Table implements java.io.Serializable {
 
             Bucket B;
             // check if the bucket already exists or not
-            if (G.getBucketsinTable().contains(BucketName))
+
+            if ( G.getBucketsinTable().contains(BucketName))
                 B = (Bucket) DBApp.deserialize(BucketName);
             else
                 B = G.addBucket(BucketName);
@@ -410,7 +412,11 @@ public class Table implements java.io.Serializable {
         // delete the row
         // insert
         Hashtable<String, Object> colNameValueDummy = new Hashtable<String, Object>();
+        System.out.print("PRINT HEREE " + colNamesTable.size() + "," + row.size() );
         colNameValueDummy.put(colNamesTable.get(pk_index), row.get(pk_index));
+
+
+
         Vector<Object> pkIndex_pk_Value = new Vector<>();
         pkIndex_pk_Value.add(pk_index);
         pkIndex_pk_Value.add(row.get(pk_index));

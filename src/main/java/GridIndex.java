@@ -27,6 +27,7 @@ public class GridIndex implements java.io.Serializable {
         this.colNames = columnNames;
         this.tableName = tableName;
         int number_of_dimensions = columnNames.length;
+        bucketsinTable= new Vector<String>();
 
         BufferedReader csvReader = null;
         String csvLine;
