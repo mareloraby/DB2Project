@@ -25,6 +25,16 @@ public class Milestone2Tests {
         dbApp = null;
     }
 
+    @Test
+    @Order(2)
+    public void testRecordInsertions() throws Exception {
+        DBApp dbApp = new DBApp();
+        dbApp.init();
+        int limit = 500;
+
+        insertStudentRecords(dbApp, limit);
+        dbApp = null;
+    }
 
     @Test
     public void testCreateDateIndex() throws Exception {
@@ -386,17 +396,5 @@ public class Milestone2Tests {
             }
         }
         studentsTable.close();
-    }
-
-
-
-    @Test
-    public void testRecordInsertions() throws Exception {
-        DBApp dbApp = new DBApp();
-        dbApp.init();
-        int limit = 500;
-
-        insertStudentRecords(dbApp, limit);
-        dbApp = null;
     }
 }

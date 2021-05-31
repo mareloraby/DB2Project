@@ -795,7 +795,7 @@ public class Table implements java.io.Serializable {
         int size = (int) 10e6; //1,000,000
         for (int i = 0; i < gridIndices.size(); i++) {
             GridIndex tempG = (GridIndex) DBApp.deserialize(tableName + "-GI" + i);
-            String[] colNames = G.getColNames(); //colName of the Grid
+            String[] colNames = tempG.getColNames(); //colName of the Grid
 
             int tempSize = tempG.getColNames().length;
             int tempCount = 0;
@@ -845,7 +845,7 @@ public class Table implements java.io.Serializable {
                         int addressIdxInOv = Overflow.binarySearch(pk_value);
                         if (addressIdxInOv != -1) {
 
-                            Vector<Object> address = Overflow.getAddresses().get(addressIdxInBucket); //row in bucket to vector
+                            Vector<Object> address = Overflow.getAddresses().get(addressIdxInOv); //row in bucket to vector
                             String PageName = (String) address.get(1);
                             Page p = (Page) DBApp.deserialize(PageName);
                             Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);

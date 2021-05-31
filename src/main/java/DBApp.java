@@ -146,11 +146,11 @@ public class DBApp implements DBAppInterface {
         if (!ck_match) {
             throw new DBAppException("Clustering Key entered doesn't match any colName.");
         }
+        csvWriter.close();
 
         Table t = new Table(tableName, pk_index);
         t.setColNamesTable(getColNamesOfTable(tableName));
         serialize(t, tableName);
-        csvWriter.close();
 
 
     }
