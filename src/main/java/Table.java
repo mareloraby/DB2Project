@@ -843,6 +843,7 @@ public class Table implements java.io.Serializable {
                         Vector<Object> v = B.getOverflowBucketsInfo().get(i); // name and num of entries
                         Bucket Overflow = (Bucket) DBApp.deserialize(v.get(0) + "");
                         int addressIdxInOv = Overflow.binarySearch(pk_value);
+
                         if (addressIdxInOv != -1) {
 
                             Vector<Object> address = Overflow.getAddresses().get(addressIdxInOv); //row in bucket to vector
@@ -850,13 +851,15 @@ public class Table implements java.io.Serializable {
                             Page p = (Page) DBApp.deserialize(PageName);
                             Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
                             updateTablePagesInfo(p, pk_value);
+                            DBApp.serialize(p,PageName);
 
                             deleteRowfromIndices(tableName, row, G, pk_value);
 
 
-
+                            DBApp.serialize(Overflow,v.get(0) + "");
                             break;
                         }
+                        DBApp.serialize(Overflow,v.get(0) + "");
                     }
 
                 }
@@ -868,6 +871,7 @@ public class Table implements java.io.Serializable {
                 //get row from page
                 Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
                 updateTablePagesInfo(p, pk_value);
+                DBApp.serialize(p,PageName);
 
                 //delete from all indices
                 deleteRowfromIndices(tableName, row, G, pk_value);
@@ -1216,6 +1220,8 @@ public class Table implements java.io.Serializable {
                         Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
                         updateTablePagesInfo(p, pk_value);
                         deleteRowfromIndices(tableName, row, G, pk_value);
+                        DBApp.serialize(p,PageName);
+
 
                         //update row
                         for (int j = 0; j < index_value.size(); j++) { //<<1,Ahmad>,<2,16>>
@@ -1223,11 +1229,21 @@ public class Table implements java.io.Serializable {
                             Object rowToUpdateValue = index_value.get(j).get(1);
                             row.set(rowToUpdateIndex, rowToUpdateValue);
                         }
+                        DBApp.serialize(Overflow,v.get(0) + "");
+
 
                         //insert
                         insertIntoPageWithGI(row, pk_found,colNameValue);
+                        //ser
+                        DBApp.serialize(B, BucketName); // Bucket
+                        DBApp.serialize(G, tableName + "-GI" + G.getGridID()); // Grid
+
                         break;
                     }
+                    DBApp.serialize(Overflow,v.get(0) + "");
+                    //ser
+                    DBApp.serialize(B, BucketName); // Bucket
+                    DBApp.serialize(G, tableName + "-GI" + G.getGridID()); // Grid
                 }
 
             }
@@ -1241,7 +1257,7 @@ public class Table implements java.io.Serializable {
             //get row from page
             Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
             updateTablePagesInfo(p, pk_value);
-
+            DBApp.serialize(p,PageName);
             //delete from all indices
             deleteRowfromIndices(tableName, row, G, pk_value);
 
@@ -1255,6 +1271,11 @@ public class Table implements java.io.Serializable {
 
             //insert
             insertIntoPageWithGI(row, pk_found,colNameValue);
+
+            //ser
+            DBApp.serialize(B, BucketName); // Bucket
+            DBApp.serialize(G, tableName + "-GI" + G.getGridID()); // Grid
+
 
 
         }

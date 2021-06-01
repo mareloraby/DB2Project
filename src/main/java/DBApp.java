@@ -557,9 +557,99 @@ public class DBApp implements DBAppInterface {
     }
 
     @Override
-    public Iterator selectFromTable(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
+    public Iterator selectFromTable(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException { //OR AND XOR
+
+        /*
+        *sql1 sql2 sql3 ....
+
+        op1 op2 op3....
+
+        ((sql1 or sql2) and sql3) op3 sql4
+        *
+        *
+
+        //tree map null keys?
+
+        or  -->  all rows from both sql terms 0 1 1 1
+        and -->  satisfies both condition 0 0 0 1
+        xor -->  rows that satisfies 1 but not the other 0 1 1 0 (not in and but in or)
+
+        1) check operators in sql term
+        get suitable grid index
+        check within
+        *
+        *
+        * */
+
+//
+
+
+
+       String tablename=sqlTerms[0]._strTableName;
+//        String colname="";
+//        String opertor="";
+//        Object value = null;
+
+        Table t = (Table) deserialize(tablename);
+
+        for(int i = 0; i<sqlTerms.length; i++)
+        {
+
+            SQLTerm obj = sqlTerms[i];
+
+            String colname=obj._strColumnName;
+            String operator=obj._strOperator;
+            Object value = obj._objValue;
+
+            switch(operator){
+                case">": break;
+                case">=":break;
+                case"<": break;
+                case"<=":break;
+                case"!=":break;
+                case"=" :break;
+
+            }
+
+
+            //\
+            // choose best index
+            // get ranges
+            // .
+            //
+
+
+
+            //deser table
+            /*get grid index if exists
+            see which buckets w its overflows that satisfies condition
+            search in buckets
+            go to entries and return row
+            add row.toString() to vector
+            return vector
+            iterate over vector
+            * */
+
+
+
+
+
+
+
+
+
+        }
+
+
+
+
+
+
+
         return null;
     }
+
+
 
 
     private String checkColumnTypes(Hashtable<String, String> colNameType) //check if user entered correct type while creating table
@@ -653,14 +743,6 @@ public class DBApp implements DBAppInterface {
         return date;
     }
 
-
-    public static void getAllrows(String tableName) {
-        Table t = (Table) DBApp.deserialize(tableName);
-        t.printPages();
-        serialize(t, tableName);
-    }
-
-
     public static void main(String[] args) throws DBAppException, IOException, ParseException {
 
 //        String strTableName = "Student";
@@ -750,21 +832,38 @@ public class DBApp implements DBAppInterface {
 
 
         // 46-3294 46-3547
-        String id1 = "43-0000";
-        String id2 = "99-9999";
-
+//        String id1 = "43-0000";
+//        String id2 = "99-9999";
+//
         //Strings
+//
+//
+//        System.out.println(        getdifferencedate("1999-01-20","1234-04-13"));
+//
+//        System.out.println(20210331);
 
 
-        System.out.println(        getdifferencedate("1999-01-20","1234-04-13"));
-
-        System.out.println(20210331);
-
+//        Vector<String > list = new Vector<String>();
+//        Vector<Integer> v1 = new Vector<Integer>();
+//        v1.add(1);
+//        Vector<Integer> v2 = new Vector<Integer>();
+//        v2.add(2);
+//
+//        list.add(v1.toString());
+//        list.add(v2.toString());
+//
+//
+//        System.out.println("\nList: ");
+//        Iterator<String> iterator = list.iterator();
+//        while(iterator.hasNext()){
+//            System.out.println(iterator.next() + " ");
+//        }
 
 
 
 
     }
+
 
 
 public static long getdifferencedate(String d1, String d2){
