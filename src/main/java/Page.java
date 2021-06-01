@@ -331,7 +331,7 @@ public int addOverflowRow(Vector v) throws DBAppException {
         if (mid == -1) return false;
         Vector<Object> row = rows.get(mid);
         for (int i = 0; i < index_value.size(); i++) {
-            System.out.println("UPDATED OVERFLOW2");
+
             int rowToUpdateIndex = (int) index_value.get(i).get(0);
             Object rowToUpdateValue = index_value.get(i).get(1);
             row.set(rowToUpdateIndex, rowToUpdateValue);

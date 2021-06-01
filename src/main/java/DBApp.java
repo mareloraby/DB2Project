@@ -363,14 +363,13 @@ public class DBApp implements DBAppInterface {
 
         if (t.isHasGrid())
         {
-            t.updateInPagewithIndex();
-            //choose index
-            //find cell
+            t.updateInPagewithIndex(columnNameValue,clusteringKeyValue,pk_found,index_value);
+
+            //choose index done
+            //find cell done
             //update values in entries of bucket if exists in index
             //update in page
             //(delete,insert) to update in all indices
-
-
         }
         else {
             t.updateInPage(index_value, pk_found, parse(pkType, clusteringKeyValue));

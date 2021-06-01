@@ -481,7 +481,7 @@ public class Table implements java.io.Serializable {
             for (int m = 0; m < pagesID.size(); m++) {
                 System.out.print(pagesInfo.get(m).get(2) + " ");
             }
-            System.out.println();
+
             int searchPage = binarySearch(pagesInfo, 0, pagesInfo.size() - 1, pk);
             // check whether the pk fits within the ranges of min-max of any existing page
             int i = searchPage;
@@ -850,15 +850,18 @@ public class Table implements java.io.Serializable {
                             Page p = (Page) DBApp.deserialize(PageName);
                             Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
                             updateTablePagesInfo(p, pk_value);
+
+                            deleteRowfromIndices(tableName, row, G, pk_value);
+
+
+
                             break;
                         }
                     }
 
                 }
-            }
-
-            // ensure whether it is in the bucket or not
-            if (addressIdxInBucket != -1) {
+            } // ensure whether it is in the bucket or not
+            else if (addressIdxInBucket != -1) {
                 Vector<Object> address = B.getAddresses().get(addressIdxInBucket); //row in bucket to vector
                 String PageName = (String) address.get(1);
                 Page p = (Page) DBApp.deserialize(PageName);
@@ -1127,7 +1130,7 @@ public class Table implements java.io.Serializable {
         2- binary search on the pk_value
         3- update
          */
-        System.out.println(pk_value);
+
         int searchPage = binarySearch(pagesInfo, 0, pagesInfo.size() - 1, pk_value);
         if (searchPage == -1) throw new DBAppException("There is no existing record with the entered key value.");
         Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(searchPage));
@@ -1178,10 +1181,90 @@ public class Table implements java.io.Serializable {
         this.colNamesTable = colNamesTable;
     }
 
-    public void updateInPagewithIndex() {
+    public void updateInPagewithIndex(Hashtable<String, Object> colNameValue, Object pk_value, int pk_found, Vector<Vector> index_value) throws DBAppException, IOException {
+
+
+        GridIndex G = chooseIndex(tableName,colNameValue);
+        String BucketName = G.findCell(colNameValue);
+
+        Bucket B;
+
+
+        if (G.getBucketsinTable().contains(BucketName))
+            B = (Bucket) DBApp.deserialize(BucketName);
+        else
+            throw new DBAppException("Cannot find bucket");
+
+        int addressIdxInBucket = B.binarySearch(pk_value);
+
+        // check the overflows
+        if (addressIdxInBucket == -1) { //if not found in bucket
+
+            if (B.getOverflowBucketsInfo().size() > 0) {
+
+                for (int i = 0; i < B.getOverflowBucketsInfo().size(); i++) {
+                    // get overflow bucket:
+                    Vector<Object> v = B.getOverflowBucketsInfo().get(i); // name and num of entries
+                    Bucket Overflow = (Bucket) DBApp.deserialize(v.get(0) + "");
+                    int addressIdxInOv = Overflow.binarySearch(pk_value);
+                    if (addressIdxInOv != -1)
+                    {
+
+                        Vector<Object> address = Overflow.getAddresses().get(addressIdxInOv); //row in bucket to vector
+                        String PageName = (String) address.get(1);
+                        Page p = (Page) DBApp.deserialize(PageName);
+                        Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
+                        updateTablePagesInfo(p, pk_value);
+                        deleteRowfromIndices(tableName, row, G, pk_value);
+
+                        //update row
+                        for (int j = 0; j < index_value.size(); j++) { //<<1,Ahmad>,<2,16>>
+                            int rowToUpdateIndex = (int) index_value.get(j).get(0);
+                            Object rowToUpdateValue = index_value.get(j).get(1);
+                            row.set(rowToUpdateIndex, rowToUpdateValue);
+                        }
+
+                        //insert
+                        insertIntoPageWithGI(row, pk_found,colNameValue);
+                        break;
+                    }
+                }
+
+            }
+        }
+
+        // ensure whether it is in the bucket or not
+        else if (addressIdxInBucket != -1) {
+            Vector<Object> address = B.getAddresses().get(addressIdxInBucket); //row in bucket to vector
+            String PageName = (String) address.get(1);
+            Page p = (Page) DBApp.deserialize(PageName);
+            //get row from page
+            Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
+            updateTablePagesInfo(p, pk_value);
+
+            //delete from all indices
+            deleteRowfromIndices(tableName, row, G, pk_value);
+
+            //update row
+            for (int j = 0; j < index_value.size(); j++) { //<<1,Ahmad>,<2,16>>
+                int rowToUpdateIndex = (int) index_value.get(j).get(0);
+                Object rowToUpdateValue = index_value.get(j).get(1);
+                row.set(rowToUpdateIndex, rowToUpdateValue);
+            }
+
+
+            //insert
+            insertIntoPageWithGI(row, pk_found,colNameValue);
+
+
+        }
 
 
     }
+
+
+
+
 
 
 

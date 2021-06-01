@@ -7,4 +7,7 @@ public class SQLTerm {
     Object _objValue;
 
 
+
+
+
 }
