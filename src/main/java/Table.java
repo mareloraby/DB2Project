@@ -9,14 +9,10 @@ public class Table implements java.io.Serializable {
     private int pk_index;
     private int count;
     private Vector<Vector<Object>> pagesInfo;
-
-
     private ArrayList<String> colNamesTable;
     private Vector<Object> pks;
     private Vector<Integer> pagesID;
     private int maxRows;
-
-
     private Vector<GridIndex> gridIndices;
     private boolean hasGrid;
 
@@ -62,37 +58,41 @@ public class Table implements java.io.Serializable {
                 Vector<Object> temp = new Vector<Object>();
                 switch (operator) {
                     case ">":
-                        for (int j = 0;j< dimValCol.size(); j++) {
+                        for (int j = 0; j < dimValCol.size(); j++) {
                             if (Trial.compare(dimValCol.get(j), colNameValue.get(G.getColNames()[i])) > 0)
                                 temp.add(j);
                         }
                         break;
                     case ">=":
-                        for (int j = 0; j<dimValCol.size(); j++) {
+                        for (int j = 0; j < dimValCol.size(); j++) {
                             if (Trial.compare(dimValCol.get(j), colNameValue.get(G.getColNames()[i])) >= 0)
                                 temp.add(j);
                         }
                         break;
                     case "<":
-                        for (int j = 0; j<dimValCol.size(); j++) {
-                            if (Trial.compare(dimValCol.get(j), colNameValue.get(G.getColNames()[i])) < 0)
+                        for (int j = 0; j < dimValCol.size(); j++) {
+                            if (j < dimValCol.size() && Trial.compare(dimValCol.get(j), colNameValue.get(G.getColNames()[i])) < 0) {
                                 temp.add(j);
+//                                temp.add(j + 1);
+                            }
+
+
                         }
                         break;
                     case "<=":
-                        for (int j = 0; j<dimValCol.size(); j++) {
+                        for (int j = 0; j < dimValCol.size(); j++) {
                             if (Trial.compare(dimValCol.get(j), colNameValue.get(G.getColNames()[i])) <= 0)
                                 temp.add(j);
                         }
                         break;
                     case "!=":
-                        for (int j = 0;j< dimValCol.size(); j++) {
+                        for (int j = 0; j < dimValCol.size(); j++) {
                             if (Trial.compare(dimValCol.get(j), colNameValue.get(G.getColNames()[i])) != 0)
                                 temp.add(j);
                         }
                         break;
                     case "=":
-                        for (int j = 0; j<dimValCol.size(); j++) {
+                        for (int j = 0; j < dimValCol.size(); j++) {
                             if (Trial.compare(dimValCol.get(j), colNameValue.get(G.getColNames()[i])) == 0)
                                 temp.add(j);
                         }
@@ -101,14 +101,31 @@ public class Table implements java.io.Serializable {
                 }
 //                int index = bs_next(dimVals.get(i), dimVals.get(i).size() - 2, colNameValues.get(colNames[i]));
                 coordinates.add(temp);
-            } else{
-                Vector<Object> emptyDummy= new Vector<Object>();
-                coordinates.add(emptyDummy);}
+            } else {
+                Vector<Object> emptyDummy = new Vector<Object>();
+                coordinates.add(emptyDummy);
+            }
         }
-
-
-
-
+        Vector<Vector<String>> bucketNs = new Vector<Vector<String>>();
+        Vector<String> bucketsinTable = G.getBucketsinTable();
+        for (int k = 0; k < coordinates.size(); k++) {
+            Vector<String> temp = new Vector<String>();
+            Vector<Object> cValue = coordinates.get(k);
+            for (int i = 0; i < bucketsinTable.size(); i++) {
+                String bName = bucketsinTable.get(i);
+                String[] split1 = bName.split("-");
+                String[] split2 = split1[2].split(",");
+                boolean found = true;
+                if (cValue.size() != 0 && !cValue.contains(Integer.parseInt(split2[k]))) {
+                    found = false;
+                    break;
+                }
+                if (found) {
+                    temp.add(bName);
+                }
+            }
+            bucketNs.add(temp);
+        }
     }
 
 
