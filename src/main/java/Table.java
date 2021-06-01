@@ -31,7 +31,7 @@ public class Table implements java.io.Serializable {
         count = 0;
         gridIndices = new Vector<GridIndex>();
         hasGrid = false;
-        colNamesTable= new ArrayList<String>();
+        colNamesTable = new ArrayList<String>();
 
     }
 
@@ -47,6 +47,67 @@ public class Table implements java.io.Serializable {
     public void setGridIndices(Vector<GridIndex> gridIndices) {
         this.gridIndices = gridIndices;
     }
+
+    public void selectfromTable(Hashtable<String, Object> colNameValue, Hashtable<String, String> colNameOperator) {
+        GridIndex G = chooseIndex(tableName, colNameValue);
+        Vector<String> b = new Vector<String>();
+        Vector<Vector<Object>> coordinates = new Vector<Vector<Object>>();
+
+//        // tableName-B-coordinates ( X:1, Y:0, Z:2) 1,0,2
+        for (int i = 0; i < dimVals.size(); i++) {
+            if (colNameValues.containsKey(colNames[i])) {
+                String operator = colNameOperator.get(colNames[i]);
+                Vector<Object> dimValCol = dimVals.get(i);
+                Vector<Object> temp = new Vector<Object>();
+                switch (operator) {
+                    case ">":
+                        for (int j = 0; dimValCol.size(); j++) {
+                            if (Trial.compareTo(dimValCol.get(j), colNameValue.get(colNames[i])) > 0)
+                                temp.add(j);
+                        }
+                        break;
+                    case ">=":
+                        for (int j = 0; dimValCol.size(); j++) {
+                            if (Trial.compareTo(dimValCol.get(j), colNameValue.get(colNames[i])) >= 0)
+                                temp.add(j);
+                        }
+                        break;
+                    case "<":
+                        for (int j = 0; dimValCol.size(); j++) {
+                            if (Trial.compareTo(dimValCol.get(j), colNameValue.get(colNames[i])) < 0)
+                                temp.add(j);
+                        }
+                        break;
+                    case "<=":
+                        for (int j = 0; dimValCol.size(); j++) {
+                            if (Trial.compareTo(dimValCol.get(j), colNameValue.get(colNames[i])) <= 0)
+                                temp.add(j);
+                        }
+                        break;
+                    case "!=":
+                        for (int j = 0; dimValCol.size(); j++) {
+                            if (Trial.compareTo(dimValCol.get(j), colNameValue.get(colNames[i])) != 0)
+                                temp.add(j);
+                        }
+                        break;
+                    case "=":
+                        for (int j = 0; dimValCol.size(); j++) {
+                            if (Trial.compareTo(dimValCol.get(j), colNameValue.get(colNames[i])) == 0)
+                                temp.add(j);
+                        }
+                        break;
+
+                }
+//                int index = bs_next(dimVals.get(i), dimVals.get(i).size() - 2, colNameValues.get(colNames[i]));
+                coordinates.add(temp);
+            } else{
+                Vector<Object> emptyDummy= new Vector<Object>();
+                coordinates.add(emptyDummy);}
+        }
+
+
+    }
+
 
     //100-200, 300-400 (both are full and I want to insert 250)
     public Vector<Vector<Object>> updatePageOverflowInfo(Page p, Page o, int j) {
@@ -395,7 +456,7 @@ public class Table implements java.io.Serializable {
             Bucket B;
             // check if the bucket already exists or not
 
-            if ( G.getBucketsinTable().contains(BucketName))
+            if (G.getBucketsinTable().contains(BucketName))
                 B = (Bucket) DBApp.deserialize(BucketName);
             else
                 B = G.addBucket(BucketName);
@@ -412,9 +473,8 @@ public class Table implements java.io.Serializable {
         // delete the row
         // insert
         Hashtable<String, Object> colNameValueDummy = new Hashtable<String, Object>();
-        System.out.print("PRINT HEREE " + colNamesTable.size() + "," + row.size() );
+        System.out.print("PRINT HEREE " + colNamesTable.size() + "," + row.size());
         colNameValueDummy.put(colNamesTable.get(pk_index), row.get(pk_index));
-
 
 
         Vector<Object> pkIndex_pk_Value = new Vector<>();
@@ -800,7 +860,7 @@ public class Table implements java.io.Serializable {
             int tempSize = tempG.getColNames().length;
             int tempCount = 0;
             for (int j = 0; j < colNames.length; j++) {
-                if (colNameValue.contains(colNames[j])) {
+                if (colNameValue.containsKey(colNames[j])) {
                     tempCount++;
                 }
             }
@@ -851,15 +911,15 @@ public class Table implements java.io.Serializable {
                             Page p = (Page) DBApp.deserialize(PageName);
                             Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
                             updateTablePagesInfo(p, pk_value);
-                            DBApp.serialize(p,PageName);
+                            DBApp.serialize(p, PageName);
 
                             deleteRowfromIndices(tableName, row, G, pk_value);
 
 
-                            DBApp.serialize(Overflow,v.get(0) + "");
+                            DBApp.serialize(Overflow, v.get(0) + "");
                             break;
                         }
-                        DBApp.serialize(Overflow,v.get(0) + "");
+                        DBApp.serialize(Overflow, v.get(0) + "");
                     }
 
                 }
@@ -871,7 +931,7 @@ public class Table implements java.io.Serializable {
                 //get row from page
                 Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
                 updateTablePagesInfo(p, pk_value);
-                DBApp.serialize(p,PageName);
+                DBApp.serialize(p, PageName);
 
                 //delete from all indices
                 deleteRowfromIndices(tableName, row, G, pk_value);
@@ -1188,7 +1248,7 @@ public class Table implements java.io.Serializable {
     public void updateInPagewithIndex(Hashtable<String, Object> colNameValue, Object pk_value, int pk_found, Vector<Vector> index_value) throws DBAppException, IOException {
 
 
-        GridIndex G = chooseIndex(tableName,colNameValue);
+        GridIndex G = chooseIndex(tableName, colNameValue);
         String BucketName = G.findCell(colNameValue);
 
         Bucket B;
@@ -1211,8 +1271,7 @@ public class Table implements java.io.Serializable {
                     Vector<Object> v = B.getOverflowBucketsInfo().get(i); // name and num of entries
                     Bucket Overflow = (Bucket) DBApp.deserialize(v.get(0) + "");
                     int addressIdxInOv = Overflow.binarySearch(pk_value);
-                    if (addressIdxInOv != -1)
-                    {
+                    if (addressIdxInOv != -1) {
 
                         Vector<Object> address = Overflow.getAddresses().get(addressIdxInOv); //row in bucket to vector
                         String PageName = (String) address.get(1);
@@ -1220,7 +1279,7 @@ public class Table implements java.io.Serializable {
                         Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
                         updateTablePagesInfo(p, pk_value);
                         deleteRowfromIndices(tableName, row, G, pk_value);
-                        DBApp.serialize(p,PageName);
+                        DBApp.serialize(p, PageName);
 
 
                         //update row
@@ -1229,18 +1288,18 @@ public class Table implements java.io.Serializable {
                             Object rowToUpdateValue = index_value.get(j).get(1);
                             row.set(rowToUpdateIndex, rowToUpdateValue);
                         }
-                        DBApp.serialize(Overflow,v.get(0) + "");
+                        DBApp.serialize(Overflow, v.get(0) + "");
 
 
                         //insert
-                        insertIntoPageWithGI(row, pk_found,colNameValue);
+                        insertIntoPageWithGI(row, pk_found, colNameValue);
                         //ser
                         DBApp.serialize(B, BucketName); // Bucket
                         DBApp.serialize(G, tableName + "-GI" + G.getGridID()); // Grid
 
                         break;
                     }
-                    DBApp.serialize(Overflow,v.get(0) + "");
+                    DBApp.serialize(Overflow, v.get(0) + "");
                     //ser
                     DBApp.serialize(B, BucketName); // Bucket
                     DBApp.serialize(G, tableName + "-GI" + G.getGridID()); // Grid
@@ -1257,7 +1316,7 @@ public class Table implements java.io.Serializable {
             //get row from page
             Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
             updateTablePagesInfo(p, pk_value);
-            DBApp.serialize(p,PageName);
+            DBApp.serialize(p, PageName);
             //delete from all indices
             deleteRowfromIndices(tableName, row, G, pk_value);
 
@@ -1270,23 +1329,17 @@ public class Table implements java.io.Serializable {
 
 
             //insert
-            insertIntoPageWithGI(row, pk_found,colNameValue);
+            insertIntoPageWithGI(row, pk_found, colNameValue);
 
             //ser
             DBApp.serialize(B, BucketName); // Bucket
             DBApp.serialize(G, tableName + "-GI" + G.getGridID()); // Grid
 
 
-
         }
 
 
     }
-
-
-
-
-
 
 
 }

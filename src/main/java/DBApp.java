@@ -601,6 +601,12 @@ public class DBApp implements DBAppInterface {
             String operator=obj._strOperator;
             Object value = obj._objValue;
 
+
+            /*
+            * dimVals : only include the ones suitable
+            *
+            *
+            * */
             switch(operator){
                 case">": break;
                 case">=":break;
