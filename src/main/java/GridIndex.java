@@ -11,6 +11,9 @@ public class GridIndex implements java.io.Serializable {
     private String GridID;
     private String[] colNames; // columns in grid index
     private String tableName;
+
+
+
     private Vector<Vector<Object>> dimVals;
     // ranges with each cell containing the max of a range
     // 0-10 -> 10; 11-20 -> 20  (dimvals:<X:<10, 20,30...> , Y:<100,200,300,400>, Z:<50,100,150>>) )
@@ -109,8 +112,20 @@ public class GridIndex implements java.io.Serializable {
         GridID = gridID;
     }
 
+
     public String[] getColNames() {
         return colNames;
+    }
+    public void setColNames(String[] colNames) {
+        this.colNames = colNames;
+    }
+
+    public Vector<Vector<Object>> getDimVals() {
+        return dimVals;
+    }
+
+    public void setDimVals(Vector<Vector<Object>> dimVals) {
+        this.dimVals = dimVals;
     }
 
     public Vector<String> getBucketsinTable() {

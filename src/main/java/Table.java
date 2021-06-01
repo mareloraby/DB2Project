@@ -48,51 +48,52 @@ public class Table implements java.io.Serializable {
         this.gridIndices = gridIndices;
     }
 
+
     public void selectfromTable(Hashtable<String, Object> colNameValue, Hashtable<String, String> colNameOperator) {
         GridIndex G = chooseIndex(tableName, colNameValue);
         Vector<String> b = new Vector<String>();
         Vector<Vector<Object>> coordinates = new Vector<Vector<Object>>();
 
 //        // tableName-B-coordinates ( X:1, Y:0, Z:2) 1,0,2
-        for (int i = 0; i < dimVals.size(); i++) {
-            if (colNameValues.containsKey(colNames[i])) {
-                String operator = colNameOperator.get(colNames[i]);
-                Vector<Object> dimValCol = dimVals.get(i);
+        for (int i = 0; i < G.getDimVals().size(); i++) {
+            if (colNameValue.containsKey(G.getColNames()[i])) {
+                String operator = colNameOperator.get(G.getColNames()[i]);
+                Vector<Object> dimValCol = G.getDimVals().get(i);
                 Vector<Object> temp = new Vector<Object>();
                 switch (operator) {
                     case ">":
-                        for (int j = 0; dimValCol.size(); j++) {
-                            if (Trial.compareTo(dimValCol.get(j), colNameValue.get(colNames[i])) > 0)
+                        for (int j = 0;j< dimValCol.size(); j++) {
+                            if (Trial.compare(dimValCol.get(j), colNameValue.get(G.getColNames()[i])) > 0)
                                 temp.add(j);
                         }
                         break;
                     case ">=":
-                        for (int j = 0; dimValCol.size(); j++) {
-                            if (Trial.compareTo(dimValCol.get(j), colNameValue.get(colNames[i])) >= 0)
+                        for (int j = 0; j<dimValCol.size(); j++) {
+                            if (Trial.compare(dimValCol.get(j), colNameValue.get(G.getColNames()[i])) >= 0)
                                 temp.add(j);
                         }
                         break;
                     case "<":
-                        for (int j = 0; dimValCol.size(); j++) {
-                            if (Trial.compareTo(dimValCol.get(j), colNameValue.get(colNames[i])) < 0)
+                        for (int j = 0; j<dimValCol.size(); j++) {
+                            if (Trial.compare(dimValCol.get(j), colNameValue.get(G.getColNames()[i])) < 0)
                                 temp.add(j);
                         }
                         break;
                     case "<=":
-                        for (int j = 0; dimValCol.size(); j++) {
-                            if (Trial.compareTo(dimValCol.get(j), colNameValue.get(colNames[i])) <= 0)
+                        for (int j = 0; j<dimValCol.size(); j++) {
+                            if (Trial.compare(dimValCol.get(j), colNameValue.get(G.getColNames()[i])) <= 0)
                                 temp.add(j);
                         }
                         break;
                     case "!=":
-                        for (int j = 0; dimValCol.size(); j++) {
-                            if (Trial.compareTo(dimValCol.get(j), colNameValue.get(colNames[i])) != 0)
+                        for (int j = 0;j< dimValCol.size(); j++) {
+                            if (Trial.compare(dimValCol.get(j), colNameValue.get(G.getColNames()[i])) != 0)
                                 temp.add(j);
                         }
                         break;
                     case "=":
-                        for (int j = 0; dimValCol.size(); j++) {
-                            if (Trial.compareTo(dimValCol.get(j), colNameValue.get(colNames[i])) == 0)
+                        for (int j = 0; j<dimValCol.size(); j++) {
+                            if (Trial.compare(dimValCol.get(j), colNameValue.get(G.getColNames()[i])) == 0)
                                 temp.add(j);
                         }
                         break;
@@ -104,6 +105,8 @@ public class Table implements java.io.Serializable {
                 Vector<Object> emptyDummy= new Vector<Object>();
                 coordinates.add(emptyDummy);}
         }
+
+
 
 
     }
