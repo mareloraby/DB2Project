@@ -626,11 +626,33 @@ public class DBApp implements DBAppInterface {
 
     return res;}
 
-    private Vector<Vector<Object>> OR(Vector<Vector<Object>> returnedrows, Vector selectfromTable) {
+    private Vector<Vector<Object>> OR(Vector<Vector<Object>> returnedrows, Vector selectfromTable) { //present in either or both
 
         Iterator<Vector<Object>> i1 = returnedrows.iterator();
         Iterator<Vector<Object>> i2 = selectfromTable.iterator();
         Vector<Vector<Object>> res = new Vector<>();
+        Boolean added = false;
+
+        while(i1.hasNext()){
+            Vector<Object> row1 =(Vector<Object>) i1.next();
+
+            while(i2.hasNext()){
+                Vector<Object> row2 =(Vector<Object>) i2.next();
+                if(row1.equals(row2)){
+                    res.add(row1);
+                    break;
+                }else{
+
+                    res.add(row2);
+
+
+                }
+                res.add(row1);
+
+            }
+
+        }
+
 
 
 
@@ -644,7 +666,7 @@ public class DBApp implements DBAppInterface {
         while(i1.hasNext()){
             Vector<Object> row1 =(Vector<Object>) i1.next();
             while(i2.hasNext()){
-                Vector<Object> row2 =(Vector<Object>) i1.next();
+                Vector<Object> row2 =(Vector<Object>) i2.next();
 
                 if(row1.equals(row2)){
                     res.add(row1);
