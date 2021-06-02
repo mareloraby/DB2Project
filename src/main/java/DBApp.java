@@ -544,6 +544,7 @@ public class DBApp implements DBAppInterface {
         }
 
         GridIndex GI = new GridIndex(tableName, columnNames, (t.getGridIndices().size()));
+        t.rehomeAlreadyMadeRows(GI);
         serialize(GI, tableName + "-GI" + (t.getGridIndices().size()));
         Vector<GridIndex> indices = t.getGridIndices();
         indices.add(GI);

@@ -1635,4 +1635,99 @@ public class Table implements java.io.Serializable {
     }
 
 
+    public void rehomeAlreadyMadeRows(GridIndex GI){
+
+        for (int i = 0; i < (pagesID).size(); i++) {
+            Vector<Object> page = pagesInfo.get(i);
+            Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
+            Vector<Vector<Object>> rows = p.getRows();
+            // rows of page:
+            for (int j = 0; j < rows.size(); j++) { // rows in page
+                Vector<Object> row = rows.get(j);
+
+                Hashtable<String, Object>colNameValues = new Hashtable<>();
+
+                for (int k = 0; k < GI.getColNames().length; k++) {
+
+                    String key = GI.getColNames()[k];
+                    for(int e =0; e<colNamesTable.size();e++){
+
+                        if(key.equals(colNamesTable.get(e))){
+                            colNameValues.put(key,row.get(e));
+                            break;
+                        }
+                    }
+
+
+                }
+                String BucketName = GI.findCell(colNameValues);
+                Bucket B;
+                // check if the bucket already exists or not
+
+                if (GI.getBucketsinTable().contains(BucketName))
+                    B = (Bucket) DBApp.deserialize(BucketName);
+                else
+                    B = GI.addBucket(BucketName);
+
+                B.insertIntoBucket(row.get(pk_index), tableName + "-" + pagesID.get(i), colNameValues, GI);
+                DBApp.serialize(B, BucketName); // Bucket
+
+                DBApp.serialize(p,tableName + "-" + pagesID.get(i));
+
+
+
+
+            }
+
+            // check if this page has overflows:
+            if (p.getOverFlowInfo().size() != 0) {
+                Vector<Vector<Object>> overflowPagesInfo = p.getOverFlowInfo();
+                for (int k = 0; k < p.getOverFlowInfo().size(); k++) {
+                    Vector<Object> overflow = overflowPagesInfo.get(k);
+                    int ID = (int) overflow.get(0);
+                    Page o = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i) + "." + ID);
+                    Vector<Vector<Object>> rowsOverflow = o.getRows();
+
+                    for (int l = 0; l < o.getRows().size(); l++) {
+
+                        Vector<Object> row = o.getRows().get(l);
+
+                        Hashtable<String, Object>colNameValues = new Hashtable<>();
+
+                        for (int r = 0; r < GI.getColNames().length; r++) {
+
+                            String key = GI.getColNames()[r];
+                            for(int e =0; e<colNamesTable.size();e++){
+
+                                if(key.equals(colNamesTable.get(e))){
+                                    colNameValues.put(key,row.get(e));
+                                    break;
+                                }
+                            }
+
+
+                        }
+                        String BucketName = GI.findCell(colNameValues);
+                        Bucket B;
+                        // check if the bucket already exists or not
+
+                        if (GI.getBucketsinTable().contains(BucketName))
+                            B = (Bucket) DBApp.deserialize(BucketName);
+                        else
+                            B = GI.addBucket(BucketName);
+
+                        B.insertIntoBucket(row.get(pk_index), tableName + "-" + pagesID.get(i) + "." + ID, colNameValues, GI);
+                        DBApp.serialize(B, BucketName); // Bucket
+                        DBApp.serialize(o,tableName + "-" + pagesID.get(i) + "." + ID);
+
+
+
+
+                    }
+                }
+            }
+        }
+
+    }
+
 }
