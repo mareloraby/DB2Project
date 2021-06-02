@@ -1,7 +1,9 @@
 import java.io.*;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
@@ -857,10 +859,9 @@ public class DBApp implements DBAppInterface {
 
         System.out.println((new Date( (2000-1900), 1-1, 15)).toString());
         System.out.println((Date) doo);
+        System.out.println("Hello1".equals("Hello1"));
 
-//getdifferencedate("1999-01-20","1234-04-13")
-
-//        Vector<String > list = new Vector<String>();
+        //        Vector<String > list = new Vector<String>();
 //        Vector<Integer> v1 = new Vector<Integer>();
 //        v1.add(1);
 //        Vector<Integer> v2 = new Vector<Integer>();
@@ -884,11 +885,22 @@ public class DBApp implements DBAppInterface {
 
 
 public static long getdifferencedate(String d1, String d2){
-    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+   DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    //DateTimeFormatter dtf = DateTimeFormatter.ofPattern("E MMM dd HH:mm:ss Z yyyy");
     LocalDate date1 = LocalDate.parse(d1, dtf);
     LocalDate date22 = LocalDate.parse(d2, dtf);
     long daysBetween = ChronoUnit.DAYS.between(date1, (Temporal) date22);
     return daysBetween;
+}
+
+public static String getLD(String d){
+    String input  = d +"";
+    DateTimeFormatter f = DateTimeFormatter.ofPattern( "E MMM dd HH:mm:ss z uuuu" ).withLocale( Locale.US );
+
+    ZonedDateTime zdt = ZonedDateTime.parse( input , f );
+    LocalDate ld = zdt.toLocalDate();
+    return ld +"";
+
 }
 
 
