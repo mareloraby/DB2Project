@@ -54,7 +54,6 @@ public class Page implements java.io.Serializable {
     }
 
 
-
     public void setOverFlow(Page overFlow) {
         this.overFlow = overFlow;
     }
@@ -147,12 +146,12 @@ public class Page implements java.io.Serializable {
         newPage.add(count);
         newPage.add(n);
         overFlowInfo.add(newPage);
-       // System.out.println(tableName + " " + PageID + " " + count);
+        // System.out.println(tableName + " " + PageID + " " + count);
         DBApp.serialize(p, tableName + "-" + PageID + "." + count);
     }
 
     // add a row to an overflow page
-public int addOverflowRow(Vector v) throws DBAppException {
+    public int addOverflowRow(Vector v) throws DBAppException {
         numOfRows++;
         rows.add(v);
 //        pks.add(v.get(index));
@@ -208,7 +207,7 @@ public int addOverflowRow(Vector v) throws DBAppException {
         if (found) {
             rows.remove(mid);
             this.numOfRows--;
-          //  System.out.print("this.numOfRows"+ this.numOfRows);
+            //  System.out.print("this.numOfRows"+ this.numOfRows);
             if (rows.size() > 0) {
                 int last_index = rows.size() - 1;
                 max_pk_value = rows.get(last_index).get(pk_found);
@@ -230,7 +229,7 @@ public int addOverflowRow(Vector v) throws DBAppException {
     }
 
     public Vector<Object> deleteRowFromPageL(int pk_found, Vector<Vector> index_value) {
-        Vector<Object> removed_pks= new Vector<Object>();
+        Vector<Object> removed_pks = new Vector<Object>();
         Vector<Integer> deletedRowsIndex = new Vector<Integer>();
         int c = 0;
         for (int i = 0; i < rows.size(); i++) {
@@ -248,7 +247,7 @@ public int addOverflowRow(Vector v) throws DBAppException {
             }
             // if it fully matches the value sin index_value , remove from the page
             if (perfectMatch) {
-              //  System.out.println("Delete Check");
+                //  System.out.println("Delete Check");
                 c++;
                 deletedRowsIndex.add(i);
             }
@@ -257,10 +256,8 @@ public int addOverflowRow(Vector v) throws DBAppException {
         else {
 
 
-
-
 // index in rows is shifted so we loop
-            for (int i = deletedRowsIndex.size()-1; i>=0; i--){
+            for (int i = deletedRowsIndex.size() - 1; i >= 0; i--) {
                 Vector<Object> removed = rows.get(deletedRowsIndex.get(i));//henaaaa
                 // values of pk of rows that will be removed is added here:
                 removed_pks.add(rows.get(deletedRowsIndex.get(i)).get(pk_found));
@@ -302,7 +299,6 @@ public int addOverflowRow(Vector v) throws DBAppException {
         info.add(min_pk_value);
         info.add(max_pk_value);
     }
-
 
 
     public void sortI(int index) {
@@ -377,8 +373,6 @@ public int addOverflowRow(Vector v) throws DBAppException {
         return (((Comparable) o1).compareTo((Comparable) o2));
 
     }
-
-
 
 
 }

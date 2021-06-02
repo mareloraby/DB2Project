@@ -61,8 +61,6 @@ public class GridIndex implements java.io.Serializable {
                         double range;
                         if (data[2] == "java.lang.Double") {
                             range = Double.parseDouble(data[6]) - Double.parseDouble(data[5]);
-                            ;
-
                         } else if (data[2] == "java.util.Date") {
                             range = DBApp.getdifferencedate(data[5], data[6]) / 10;
                         } else if (data[2] == "java.lang.String" && data[5].contains("-")) {
