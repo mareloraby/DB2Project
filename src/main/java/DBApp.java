@@ -570,48 +570,51 @@ public class DBApp implements DBAppInterface {
 
         Table t = (Table) deserialize(tablename);
 
-        Vector<Vector<Object>> returnedrows = new Vector<Vector<Object>>();
+            Vector<Vector<Object>> returnedrows = new Vector<Vector<Object>>();
 
-        Hashtable htVal = new Hashtable<>();
-        htVal.put(colname, value);
-        Hashtable htOp = new Hashtable<>();
-        htOp.put(colname, operator);
+            Hashtable htVal = new Hashtable<>();
+            htVal.put(colname, value);
+            Hashtable htOp = new Hashtable<>();
+            htOp.put(colname, operator);
 
-        returnedrows = t.selectfromTable(htVal, htOp);
+            returnedrows = t.selectfromTable(htVal, htOp);
 
-        int index = 1;
-        while (index != sqlTerms.length) {
-            htVal = new Hashtable<>();
-            htOp = new Hashtable<>();
-            htVal.put(sqlTerms[index]._strColumnName, sqlTerms[index]._objValue);
-            htOp.put(sqlTerms[index]._strColumnName, sqlTerms[index]._strOperator);
+            int index = 1;
+            while (index != sqlTerms.length) {
+                htVal = new Hashtable<>();
+                htOp = new Hashtable<>();
+                htVal.put(sqlTerms[index]._strColumnName, sqlTerms[index]._objValue);
+                htOp.put(sqlTerms[index]._strColumnName, sqlTerms[index]._strOperator);
 
-            switch (arrayOperators[index - 1]) {
-                case "AND":
-                    returnedrows = AND(returnedrows, t.selectfromTable(htVal, htOp));
-                    break;
+                switch (arrayOperators[index - 1]) {
+                    case "AND":
+                        returnedrows = AND(returnedrows, t.selectfromTable(htVal, htOp));
+                        break;
 
-                case "OR":
-                    returnedrows = OR(returnedrows, t.selectfromTable(htVal, htOp));
-                    break;
+                    case "OR":
+                        returnedrows = OR(returnedrows, t.selectfromTable(htVal, htOp));
+                        break;
 
-                case "XOR":
-                    returnedrows = XOR(returnedrows, t.selectfromTable(htVal, htOp));
-                    break;
+                    case "XOR":
+                        returnedrows = XOR(returnedrows, t.selectfromTable(htVal, htOp));
+                        break;
+                }
+                index++;
             }
-            index++;
-        }
-        Vector<String> v = new Vector<String>();
 
-        Iterator<Vector<Object>> Itreturned = returnedrows.iterator();
-        for (int i = 0; i < returnedrows.size(); i++) {
-            v.add(returnedrows.get(i).toString());
-        }
+            Vector<String> v = new Vector<String>();
+
+            Iterator<Vector<Object>> Itreturned = returnedrows.iterator();
+            for (int i = 0; i < returnedrows.size(); i++) {
+                v.add(returnedrows.get(i).toString());
+            }
         Iterator<String> IS = v.iterator();
-        System.out.println("PRINT RESULTS");
-        while (IS.hasNext()) {
-            System.out.println(IS.next());
-        }
+            System.out.println("PRINT RESULTS");
+            while (IS.hasNext()) {
+                System.out.println(IS.next());
+            }
+
+        serialize(t, tablename);
         return IS;
     }
 
