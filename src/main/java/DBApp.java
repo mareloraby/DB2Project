@@ -561,103 +561,100 @@ public class DBApp implements DBAppInterface {
     @Override
     public Iterator selectFromTable(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException { //OR AND XOR
 
-        /*
-        *sql1 sql2 sql3 ....
 
-        op1 op2 op3....
 
-        ((sql1 or sql2) and sql3) op3 sql4
-        *
-        *
 
-        //tree map null keys?
-
-        or  -->  all rows from both sql terms 0 1 1 1
-        and -->  satisfies both condition 0 0 0 1
-        xor -->  rows that satisfies 1 but not the other 0 1 1 0 (not in and but in or)
-
-        1) check operators in sql term
-        get suitable grid index
-        check within
-        *
-        *
-        * */
-
+        if(sqlTerms.length==0)throw new DBAppException("There are no sql terms to search for");
+        if(arrayOperators.length!=sqlTerms.length-1)throw new DBAppException("Number of operators should be equal to number of SQL Terms minus 1");
+//        String[] out = new String[sqlTerms.length + arrayOperators.length];
+//        int j = 0;
+//        for (int i = 0; i < sqlTerms.length; i++) {
+//                out[j++] = ""+ i;
+//
+//            if (i < arrayOperators.length) {
+//                out[j++] = arrayOperators[i];
+//            }
+//        }
 //
 
-
-
-       String tablename=sqlTerms[0]._strTableName;
-//        String colname="";
-//        String opertor="";
-//        Object value = null;
+        SQLTerm sq = sqlTerms[0];
+        String tablename=sq._strTableName;
+        String colname= sq._strColumnName;
+        String operator= sq._strOperator;
+        Object value =  sq._objValue;
 
         Table t = (Table) deserialize(tablename);
 
-        for(int i = 0; i<sqlTerms.length; i++)
-        {
+        Vector<Vector<Object>> returnedrows = new Vector<Vector<Object>>();
 
-            SQLTerm obj = sqlTerms[i];
+        Hashtable htVal = new Hashtable<>();
+        htVal.put(colname, value);
+        Hashtable htOp = new Hashtable<>();
+        htOp.put(colname, operator);
 
-            String colname=obj._strColumnName;
-            String operator=obj._strOperator;
-            Object value = obj._objValue;
+        returnedrows = t.selectfromTable(htVal,htOp);
 
 
-            /*
-            * dimVals : only include the ones suitable
-            *
-            *
-            * */
-            switch(operator){
-                case">": break;
-                case">=":break;
-                case"<": break;
-                case"<=":break;
-                case"!=":break;
-                case"=" :break;
+        int index = 1;
+        while(index != sqlTerms.length){
 
+            htVal.put(sqlTerms[index]._strColumnName, sqlTerms[index]._objValue);
+            htOp.put(sqlTerms[index]._strColumnName, sqlTerms[index]._strOperator);
+
+            switch(arrayOperators[index-1]){
+                case"AND": returnedrows = AND(returnedrows,t.selectfromTable(htVal,htOp)); break;
+
+                case"OR":returnedrows = OR(returnedrows,t.selectfromTable(htVal,htOp)); break;
+
+                case"XOR":returnedrows = XOR(returnedrows,t.selectfromTable(htVal,htOp)); break;
             }
-
-
-            //\
-            // choose best index
-            // get ranges
-            // .
-            //
-
-
-
-            //deser table
-            /*get grid index if exists
-            see which buckets w its overflows that satisfies condition
-            search in buckets
-            go to entries and return row
-            add row.toString() to vector
-            return vector
-            iterate over vector
-            * */
-
-
-
-
-
-
-
+            index++;
 
 
         }
 
+        Iterator<Vector<Object>> Itreturned = returnedrows.iterator();
+
+    return Itreturned;
+        }
+
+    private Vector<Vector<Object>> XOR(Vector<Vector<Object>> returnedrows, Vector selectfromTable) {
+
+        Iterator<Vector<Object>> i1 = returnedrows.iterator();
+        Iterator<Vector<Object>> i2 = selectfromTable.iterator();
+        Vector<Vector<Object>> res = new Vector<>();
+
+    return res;}
+
+    private Vector<Vector<Object>> OR(Vector<Vector<Object>> returnedrows, Vector selectfromTable) {
+
+        Iterator<Vector<Object>> i1 = returnedrows.iterator();
+        Iterator<Vector<Object>> i2 = selectfromTable.iterator();
+        Vector<Vector<Object>> res = new Vector<>();
 
 
 
-
-
-
-        return null;
+        return res;
     }
 
+    private Vector<Vector<Object>> AND(Vector<Vector<Object>> returnedrows, Vector<Vector<Object>> selectfromTable) { //values in both
+        Iterator<Vector<Object>> i1 = returnedrows.iterator();
+        Iterator<Vector<Object>> i2 = selectfromTable.iterator();
+        Vector<Vector<Object>> res = new Vector<>();
+        while(i1.hasNext()){
+            Vector<Object> row1 =(Vector<Object>) i1.next();
+            while(i2.hasNext()){
+                Vector<Object> row2 =(Vector<Object>) i1.next();
 
+                if(row1.equals(row2)){
+                    res.add(row1);
+                    break;
+                }
+            }
+
+        }
+        return res;
+    }
 
 
     private String checkColumnTypes(Hashtable<String, String> colNameType) //check if user entered correct type while creating table
@@ -857,9 +854,9 @@ public class DBApp implements DBAppInterface {
         Object doo = parse("java.util.Date","1999-01-20");
         //System.out.println( (doo instanceof String)    );
 
-        System.out.println((new Date( (2000-1900), 1-1, 15)).toString());
-        System.out.println((Date) doo);
-        System.out.println("Hello1".equals("Hello1"));
+//        System.out.println((new Date( (2000-1900), 1-1, 15)).toString());
+//        System.out.println((Date) doo);
+//        System.out.println("Hello1".equals("Hello1"));
 
         //        Vector<String > list = new Vector<String>();
 //        Vector<Integer> v1 = new Vector<Integer>();
@@ -876,6 +873,25 @@ public class DBApp implements DBAppInterface {
 //        while(iterator.hasNext()){
 //            System.out.println(iterator.next() + " ");
 //        }
+
+//
+//        Vector<Object> v1 = new Vector<Object>();
+//        v1.add(1);
+//        v1.add("hello");
+//        v1.add(parseDate("2018-2-2"));
+//        v1.add(2.9);
+//        Vector<Object> v2 = new Vector<Object>();
+//        v2.add(1);
+//        v2.add("hello");
+//        v2.add(parseDate("2018-2-2"));
+//        v2.add(1.9);
+//
+//        System.out.println(v1.equals(v2));
+//
+
+
+
+
 
 
 

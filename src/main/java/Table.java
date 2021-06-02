@@ -2,6 +2,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
+@SuppressWarnings({"ForLoopReplaceableByForEach", "rawtypes", "unused"})
 public class Table implements java.io.Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -45,16 +46,18 @@ public class Table implements java.io.Serializable {
     }
 
 
-    public void selectfromTable(Hashtable<String, Object> colNameValue, Hashtable<String, String> colNameOperator) {
-        GridIndex G = chooseIndex(tableName, colNameValue);
+    public Vector<Vector<Object>> selectfromTable(Hashtable<String, Object> colNameValue, Hashtable<String, String> colNameOperator ) {
+        GridIndex G = chooseIndex(tableName, colNameValue); // best index : age , name , gpa --> name , age
         Vector<String> b = new Vector<String>();
         Vector<Vector<Object>> coordinates = new Vector<Vector<Object>>();
 
-//        // tableName-B-coordinates ( X:1, Y:0, Z:2) 1,0,2
-        for (int i = 0; i < G.getDimVals().length; i++) {
+
+        String OP = new String();
+        for (int i = 0; i < G.getDimVals().length; i++) { // name = ahmed ,age
             if (colNameValue.containsKey(G.getColNames()[i])) {
                 String operator = colNameOperator.get(G.getColNames()[i]);
-                Vector<Object> dimValCol = G.getDimVals()[i];
+                OP = operator;
+                Vector<Object> dimValCol = G.getDimVals()[i]; // ""
                 Vector<Object> temp = new Vector<Object>();
                 switch (operator) {
                     case ">":
@@ -92,7 +95,7 @@ public class Table implements java.io.Serializable {
                         }
                         break;
                     case "=":
-                        for (int j = 0; j < dimValCol.size(); j++) {
+                        for (int j = 0; j < dimValCol.size(); j++) { // name
                             if (Trial.compare(dimValCol.get(j), colNameValue.get(G.getColNames()[i])) == 0)
                                 temp.add(j);
                         }
@@ -106,10 +109,11 @@ public class Table implements java.io.Serializable {
                 coordinates.add(emptyDummy);
             }
         }
-        Vector<Vector<String>> bucketNs = new Vector<Vector<String>>();
+
+        Vector<String> bucketNs = new Vector<String>();
         Vector<String> bucketsinTable = G.getBucketsinTable();
         for (int k = 0; k < coordinates.size(); k++) {
-            Vector<String> temp = new Vector<String>();
+            //   Vector<String> temp = new Vector<String>();
             Vector<Object> cValue = coordinates.get(k);
             for (int i = 0; i < bucketsinTable.size(); i++) {
                 String bName = bucketsinTable.get(i);
@@ -121,11 +125,96 @@ public class Table implements java.io.Serializable {
                     break;
                 }
                 if (found) {
-                    temp.add(bName);
+                    bucketNs.add(bName);
                 }
             }
-            bucketNs.add(temp);
         }
+        // <<Bname>,<>>
+        Vector<String> pname = new Vector<String>();
+
+        for(int i=0; i<bucketNs.size(); i++){
+            //   Vector<String> BN =  bucketNs.get(i);
+            // for(int j =0; j<BN.size(); j++){
+            String Bucket = bucketNs.get(i);
+            Bucket b1 = (Bucket) DBApp.deserialize(Bucket);
+            for(int k=0; k< b1.getAddresses().size(); k++){
+                String page = (String) b1.getAddresses().get(k).get(1);
+                if(!pname.contains(page))
+                    pname.add(page);
+            }
+            DBApp.serialize(b1, b1.getBucketName());
+            // }
+        }
+
+        int index =0;
+        String key = new String();
+        for(int j=0; j<colNamesTable.size(); j++){
+            if((colNameValue.containsKey(colNamesTable.get(j)))){
+                index = j;
+                key = colNamesTable.get(j);
+            }
+        }
+
+
+
+        Vector<Vector<Object>> rows = new Vector<Vector<Object>>();
+
+
+
+        for(int i=0; i<pname.size(); i++){
+            //for(int i=0; i<pname.get(x).size(); i++){
+            Page p = (Page) DBApp.deserialize(pname.get(i));
+            for(int k=0; k<p.getRows().size(); k++){
+                Vector<Object> v = p.getRows().get(k);
+                switch (OP){
+                    case ">":
+                        if(Trial.compare(v.get(index),colNameValue.get(key)) > 0){
+                            rows.add(v);
+                        }
+                        break;
+                    case ">=":
+                        if(Trial.compare(v.get(index),colNameValue.get(key)) >= 0){
+                            rows.add(v);
+                        }
+                        break;
+                    case "<":
+                        if(Trial.compare(v.get(index),colNameValue.get(key)) < 0){
+                            rows.add(v);
+                        }
+                        break;
+                    case "<=":
+                        if(Trial.compare(v.get(index),colNameValue.get(key)) <= 0){
+                            rows.add(v);
+                        }
+                        break;
+                    case "!=":
+                        if(Trial.compare(v.get(index),colNameValue.get(key)) != 0){
+                            rows.add(v);
+                        }
+                        break;
+                    case "=":
+                        if(Trial.compare(v.get(index),colNameValue.get(key)) == 0){
+                            rows.add(v);
+                        }
+                        break;
+
+                }
+
+            }
+            DBApp.serialize(p, pname.get(i));
+            //
+            // row
+            // hashtable --> colname --> Allcolnames
+            // value --> rows in page
+            //
+            // > 15
+
+        }
+
+        //Iterator<Vector<Object>> itrows = rows.iterator();
+
+        return rows;
+
     }
 
 
@@ -905,9 +994,11 @@ public class Table implements java.io.Serializable {
         if (pk_value != null) { //if i have primary key
             //do BS ON BUCKET AND OVERFLOW
             String BucketName = G.findCell(colNameValue);
+            System.out.println("BUCKNAME " + BucketName);
 
             Bucket B;
             if (G.getBucketsinTable().contains(BucketName))
+
                 B = (Bucket) DBApp.deserialize(BucketName);
             else
                 throw new DBAppException("Cannot find bucket");
