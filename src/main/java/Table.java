@@ -51,10 +51,10 @@ public class Table implements java.io.Serializable {
         Vector<Vector<Object>> coordinates = new Vector<Vector<Object>>();
 
 //        // tableName-B-coordinates ( X:1, Y:0, Z:2) 1,0,2
-        for (int i = 0; i < G.getDimVals().size(); i++) {
+        for (int i = 0; i < G.getDimVals().length; i++) {
             if (colNameValue.containsKey(G.getColNames()[i])) {
                 String operator = colNameOperator.get(G.getColNames()[i]);
-                Vector<Object> dimValCol = G.getDimVals().get(i);
+                Vector<Object> dimValCol = G.getDimVals()[i];
                 Vector<Object> temp = new Vector<Object>();
                 switch (operator) {
                     case ">":

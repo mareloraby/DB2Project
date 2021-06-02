@@ -368,7 +368,7 @@ public class Milestone2Tests {
     private void insertStudentRecords(DBApp dbApp, int limit) throws Exception {
         BufferedReader studentsTable = new BufferedReader(new FileReader("src/main/resources/students_table.csv"));
         String record;
-        int c = limit;
+        int c =limit;
         if (limit == -1) {
             c = 1;
         }

@@ -13,8 +13,7 @@ public class GridIndex implements java.io.Serializable {
     private String tableName;
 
 
-
-    private Vector<Vector<Object>> dimVals;
+    private Vector<Object>[] dimVals;
     // ranges with each cell containing the max of a range
     // 0-10 -> 10; 11-20 -> 20  (dimvals:<X:<10, 20,30...> , Y:<100,200,300,400>, Z:<50,100,150>>) )
     // 20 100 50 , 20 300 50 , 20 400 50, 20 10
@@ -27,7 +26,7 @@ public class GridIndex implements java.io.Serializable {
 
     GridIndex(String tableName, String[] columnNames, int name) throws IOException {
         GridID = name + "";
-        dimVals = new Vector<>();
+        dimVals = new Vector[columnNames.length];
         this.colNames = columnNames;
         this.tableName = tableName;
         int number_of_dimensions = columnNames.length;
@@ -53,7 +52,7 @@ public class GridIndex implements java.io.Serializable {
 
                     if (data[1].equals(columnNames[i])) {
                         Object minofcol = DBApp.parse(data[2], data[5]);
-                        Object maxofcol =  DBApp.parse(data[2], data[6]);
+                        Object maxofcol = DBApp.parse(data[2], data[6]);
 
                         minOfcols[i] = (minofcol);
 
@@ -61,20 +60,20 @@ public class GridIndex implements java.io.Serializable {
                         // 0-10 , 10-20, 20-30 => <10,20,30>
 
                         double range;
-                        if (data[2] == "java.lang.Double") {
+                        if (data[2].equals("java.lang.Double")) {
                             range = Double.parseDouble(data[6]) - Double.parseDouble(data[5]);
                             ;
 
-                        } else if (data[2] == "java.util.Date") {
-                            range = DBApp.getdifferencedate(DBApp.getLD(data[5]), DBApp.getLD(data[6]));
-                        } else if (data[2] == "java.lang.String" && data[5].contains("-")) {
+                        } else if (data[2].equals("java.util.Date")) {
+                            range = DBApp.getdifferencedate((data[5]), (data[6]));
+                        } else if (data[2].equals("java.lang.String") && data[5].contains("-")) {
                             range = Integer.parseInt(data[6].replace("-", "")) - Integer.parseInt(data[5].replace("-", ""));
 
                         } else {
-                            range = (Trial.compare(maxofcol, minofcol) + 1);
+                            range = (Trial.compare(maxofcol, minofcol));
                         }
 
-                        range = range / 10;
+                        range = (range) / 10;
                         double valSofar = range;
                         Vector<Object> dimension = new Vector<>();
                         for (int j = 0; j < 10; j++) {
@@ -82,14 +81,14 @@ public class GridIndex implements java.io.Serializable {
                             valSofar += range;
                         }
                         dimension.add(null); // to consider null values for each column
-                        dimVals.add(dimension);
+                        dimVals[i]=(dimension);
 
 
                     }
                 }
 
 
-            } else if (data[0] != tableName && found == true)
+            } else if (!data[0].equals(tableName) && found == true)
                 break;
 
 
@@ -118,15 +117,16 @@ public class GridIndex implements java.io.Serializable {
     public String[] getColNames() {
         return colNames;
     }
+
     public void setColNames(String[] colNames) {
         this.colNames = colNames;
     }
 
-    public Vector<Vector<Object>> getDimVals() {
+    public Vector<Object>[] getDimVals() {
         return dimVals;
     }
 
-    public void setDimVals(Vector<Vector<Object>> dimVals) {
+    public void setDimVals(Vector<Object>[] dimVals) {
         this.dimVals = dimVals;
     }
 
@@ -141,7 +141,7 @@ public class GridIndex implements java.io.Serializable {
     private static int bs_next(Vector<Object> arr, int last, Object target) {
         int start = 0, end = last;
 
-        int ans = -1;
+        int ans = 99;
         while (start <= end) {
             int mid = (start + end) / 2;
 
@@ -170,27 +170,24 @@ public class GridIndex implements java.io.Serializable {
         Vector<Object> coordinates = new Vector<Object>();
 
 
-
-
         // tableName-B-coordinates ( X:1, Y:0, Z:2) 1,0,2
-        for (int i = 0; i < dimVals.size(); i++) {
+        for (int i = 0; i < dimVals.length; i++) {
             if (colNameValues.containsKey(colNames[i])) {
 
                 Object val = colNameValues.get(colNames[i]);
                 double rangeVal;
                 if (val instanceof Double) {
-                    rangeVal = (Double)val - (Double)minOfcols[i];
+                    rangeVal = (Double) val - (Double) minOfcols[i];
                 } else if (val instanceof Date) {
-                    rangeVal = DBApp.getdifferencedate(DBApp.getLD(minOfcols[i]+""), DBApp.getLD(val+"")) ;
-                } else if (val instanceof String && ((String)val).contains("-")) {
+                    rangeVal = DBApp.getdifferencedate(DBApp.getLD(minOfcols[i] + ""), DBApp.getLD(val + ""));
+                } else if (val instanceof String && ((String) val).contains("-")) {
                     rangeVal = Integer.parseInt((val.toString()).replace("-", "")) - Integer.parseInt((minOfcols[i].toString()).replace("-", ""));
 
                 } else {
-                    rangeVal = (Trial.compare(val, minOfcols[i]) + 1);
+                    rangeVal = (Trial.compare(val, minOfcols[i]));
                 }
 
-                int index = bs_next(dimVals.get(i), dimVals.get(i).size() - 2, rangeVal);
-
+                int index = bs_next(dimVals[i], dimVals[i].size() - 2, rangeVal);
 
 
                 coordinates.add(index);
@@ -224,7 +221,7 @@ public class GridIndex implements java.io.Serializable {
     public String findCell(Hashtable<String, Object> colNameValues) {
         Vector<Object> coordinates = new Vector<Object>(); //storing the index on the grid where the bucket placed
 
-        for (int i = 0; i < dimVals.size(); i++) {
+        for (int i = 0; i < dimVals.length; i++) {
             if (colNameValues.containsKey(colNames[i])) {
 
 
@@ -233,12 +230,12 @@ public class GridIndex implements java.io.Serializable {
                 double rangeVal;
 
                 if (val instanceof Double) {
-                    rangeVal = (Double)val - (Double)minOfcols[i];
+                    rangeVal = (Double) val - (Double) minOfcols[i];
                 } else if (val instanceof Date) {
-                    rangeVal = DBApp.getdifferencedate(DBApp.getLD(minOfcols[i]+""), DBApp.getLD(val+"")) ;
-                } else if (val instanceof String && ((String)val).contains("-")) { //id
+                    rangeVal = DBApp.getdifferencedate(DBApp.getLD(minOfcols[i] + ""), DBApp.getLD(val + ""));
+                } else if (val instanceof String && ((String) val).contains("-")) { //id
                     String tem1 = (String) val;
-                    String tem2 = ""+(minOfcols[i]);
+                    String tem2 = "" + (minOfcols[i]);
                     System.out.println(tem2);
 
                     System.out.println(Arrays.toString(colNames));
@@ -247,12 +244,13 @@ public class GridIndex implements java.io.Serializable {
                     rangeVal = Integer.parseInt(tem1.replace("-", "")) - Integer.parseInt(tem2.replace("-", ""));
 
                 } else {
-                    rangeVal = (Trial.compare(val, minOfcols[i]) + 1);
+                    rangeVal = (Trial.compare(val, minOfcols[i]));
                 }
 
-                System.out.println("RANGEVAL HERE");
-                System.out.println(rangeVal+" " + colNames[i]);
-                int index = bs_next(dimVals.get(i), dimVals.get(i).size() - 2, rangeVal);
+                System.out.println("RANGEVAL 9898HERE");
+                System.out.println(rangeVal + " " + colNames[i]);
+                System.out.println("dimVals for " + colNames[i] + " " + dimVals[i].toString());
+                int index = bs_next(dimVals[i], dimVals[i].size() - 2, rangeVal);
 
                 coordinates.add(index);
             } else
@@ -261,15 +259,23 @@ public class GridIndex implements java.io.Serializable {
 
         StringBuilder indices = new StringBuilder();
         indices.append("-");
+        System.out.println("PLENGTH " + coordinates.size() + " " + colNames.length + " " + indices);
         for (int i = 0; i < coordinates.size(); i++) {
+            System.out.println("Pname " + colNames[i]);
             if (i == coordinates.size() - 1) {
                 indices.append(coordinates.get(i));
+                System.out.println(i + "  fprint indices " + indices);
             } else {
                 indices.append(coordinates.get(i));
+
+                System.out.println(i + "  fprint indices " + indices + " jj" + coordinates.get(i));
                 indices.append(',');
+                System.out.println(i + "  fprint indices " + indices);
             }
+            System.out.println(coordinates.size() + " " + i + "  print indices " + indices);
         }
         String BucketName = tableName + "-B" + indices;
+        System.out.println(BucketName + " BNAME HERE");
         return BucketName;
     }
 
