@@ -177,7 +177,7 @@ public class DBApp implements DBAppInterface {
                 found = true;
                 colNames.add(data[1]);
 
-                System.out.print("A NAME IS HERE"+ colNames.get(colNames.size()-1) );
+                System.out.print("A NAME IS HERE" + colNames.get(colNames.size() - 1));
 
                 if (data[3].equals("True") || data[3].equals("true")) {
                     pk_found = index;
@@ -359,24 +359,20 @@ public class DBApp implements DBAppInterface {
         }
 
 
-
-
         Table t = (Table) DBApp.deserialize(tableName);
 
-        if (t.isHasGrid())
-        {
-            t.updateInPagewithIndex(columnNameValue,clusteringKeyValue,pk_found,index_value);
+        if (t.isHasGrid()) {
+            t.updateInPagewithIndex(columnNameValue, clusteringKeyValue, pk_found, index_value);
 
             //choose index done
             //find cell done
             //update values in entries of bucket if exists in index
             //update in page
             //(delete,insert) to update in all indices
-        }
-        else {
+        } else {
             t.updateInPage(index_value, pk_found, parse(pkType, clusteringKeyValue));
             serialize(t, tableName);
-    }
+        }
 
 
     }
@@ -466,7 +462,7 @@ public class DBApp implements DBAppInterface {
 
         Table t = (Table) DBApp.deserialize(tableName);
         if (t.isHasGrid()) {
-            t.deleteUsingIndex(colNameValue,pk_value,pk_found,index_value);
+            t.deleteUsingIndex(colNameValue, pk_value, pk_found, index_value);
         } else
             t.deleteFromPage(index_value, pk_found, pk_value);
 
@@ -562,15 +558,15 @@ public class DBApp implements DBAppInterface {
     public Iterator selectFromTable(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException { //OR AND XOR
 
 
-
-        if(sqlTerms.length==0)throw new DBAppException("There are no sql terms to search for");
-        if(arrayOperators.length!=sqlTerms.length-1)throw new DBAppException("Number of operators should be equal to number of SQL Terms minus 1");
+        if (sqlTerms.length == 0) throw new DBAppException("There are no sql terms to search for");
+        if (arrayOperators.length != sqlTerms.length - 1)
+            throw new DBAppException("Number of operators should be equal to number of SQL Terms minus 1");
 
         SQLTerm sq = sqlTerms[0];
-        String tablename=sq._strTableName;
-        String colname= sq._strColumnName;
-        String operator= sq._strOperator;
-        Object value =  sq._objValue;
+        String tablename = sq._strTableName;
+        String colname = sq._strColumnName;
+        String operator = sq._strOperator;
+        Object value = sq._objValue;
 
         Table t = (Table) deserialize(tablename);
 
@@ -581,33 +577,39 @@ public class DBApp implements DBAppInterface {
         Hashtable htOp = new Hashtable<>();
         htOp.put(colname, operator);
 
-        returnedrows = t.selectfromTable(htVal,htOp);
-
+        returnedrows = t.selectfromTable(htVal, htOp);
 
         int index = 1;
-        while(index != sqlTerms.length){
-
+        while (index != sqlTerms.length) {
+            htVal = new Hashtable<>();
+            htOp = new Hashtable<>();
             htVal.put(sqlTerms[index]._strColumnName, sqlTerms[index]._objValue);
             htOp.put(sqlTerms[index]._strColumnName, sqlTerms[index]._strOperator);
 
-            switch(arrayOperators[index-1]){
-                case"AND": returnedrows = AND(returnedrows,t.selectfromTable(htVal,htOp)); break;
+            switch (arrayOperators[index - 1]) {
+                case "AND":
+                    returnedrows = AND(returnedrows, t.selectfromTable(htVal, htOp));
+                    break;
 
-                case"OR":returnedrows = OR(returnedrows,t.selectfromTable(htVal,htOp)); break;
+                case "OR":
+                    returnedrows = OR(returnedrows, t.selectfromTable(htVal, htOp));
+                    break;
 
-                case"XOR":returnedrows = XOR(returnedrows,t.selectfromTable(htVal,htOp)); break;
+                case "XOR":
+                    returnedrows = XOR(returnedrows, t.selectfromTable(htVal, htOp));
+                    break;
             }
             index++;
         }
-        Vector<String>  v = new Vector<String>();
+        Vector<String> v = new Vector<String>();
 
         Iterator<Vector<Object>> Itreturned = returnedrows.iterator();
-        for(int i=0; i<returnedrows.size(); i++){
+        for (int i = 0; i < returnedrows.size(); i++) {
             v.add(returnedrows.get(i).toString());
         }
         Iterator<String> IS = v.iterator();
         System.out.println("PRINT RESULTS");
-        while(IS.hasNext()){
+        while (IS.hasNext()) {
             System.out.println(IS.next());
         }
         return IS;
@@ -619,17 +621,17 @@ public class DBApp implements DBAppInterface {
         Iterator<Vector<Object>> i2 = selectfromTable.iterator();
         Vector<Vector<Object>> res = new Vector<Vector<Object>>();
 
-        while(i1.hasNext()){
+        while (i1.hasNext()) {
             Vector<Object> row1 = (Vector<Object>) i1.next();
-            if(!(selectfromTable.contains(row1))){
+            if (!(selectfromTable.contains(row1))) {
                 res.add(row1);
             }
 
         }
 
-        while(i2.hasNext()){
+        while (i2.hasNext()) {
             Vector<Object> row2 = (Vector<Object>) i2.next();
-            if(!(returnedrows.contains(row2))){
+            if (!(returnedrows.contains(row2))) {
                 res.add(row2);
             }
         }
@@ -643,24 +645,34 @@ public class DBApp implements DBAppInterface {
         Iterator<Vector<Object>> i2 = selectfromTable.iterator();
         Vector<Vector<Object>> res = new Vector<Vector<Object>>();
 
-
-        while(i1.hasNext()){
-
-            Vector<Object> row1 =(Vector<Object>) i1.next();
-
-            while(i2.hasNext()){
-                Vector<Object> row2 =(Vector<Object>) i2.next();
-                if(row1.equals(row2)){
-                    res.add(row1);
-                    break;
-                }else{
-                    res.add(row2);
-                    if(!(res.contains(row1)))
-                        res.add(row1);
-                }
-            }
+        while (i1.hasNext()) {
+            Vector<Object> row1 = (Vector<Object>) i1.next();
+            res.add(row1);
 
         }
+        while (i2.hasNext()) {
+            Vector<Object> row1 = (Vector<Object>) i2.next();
+            if (!res.contains(row1))
+                res.add(row1);
+
+        }
+
+//        while(i1.hasNext()){
+//
+//            Vector<Object> row1 =(Vector<Object>) i1.next();
+//            while(i2.hasNext()){
+//                Vector<Object> row2 =(Vector<Object>) i2.next();
+//                if(row1.equals(row2)){
+//                    res.add(row1);
+//                    break;
+//                }else{
+//                    res.add(row2);
+//                    if(!(res.contains(row1)))
+//                        res.add(row1);
+//                }
+//            }
+//
+//        }
         return res;
     }
 
@@ -668,12 +680,12 @@ public class DBApp implements DBAppInterface {
         Iterator<Vector<Object>> i1 = returnedrows.iterator();
         Iterator<Vector<Object>> i2 = selectfromTable.iterator();
         Vector<Vector<Object>> res = new Vector<Vector<Object>>();
-        while(i1.hasNext()){
-            Vector<Object> row1 =(Vector<Object>) i1.next();
-            while(i2.hasNext()){
-                Vector<Object> row2 =(Vector<Object>) i2.next();
+        while (i1.hasNext()) {
+            Vector<Object> row1 = (Vector<Object>) i1.next();
+            while (i2.hasNext()) {
+                Vector<Object> row2 = (Vector<Object>) i2.next();
 
-                if(row1.equals(row2)){
+                if (row1.equals(row2)) {
                     res.add(row1);
                     break;
                 }
@@ -682,7 +694,6 @@ public class DBApp implements DBAppInterface {
         }
         return res;
     }
-
 
 
     private String checkColumnTypes(Hashtable<String, String> colNameType) //check if user entered correct type while creating table
@@ -863,7 +874,6 @@ public class DBApp implements DBAppInterface {
 //        dbApp.createIndex( strTableName, new String[] {"gpa"} );
 
 
-
         // 46-3294 46-3547
 //        String id1 = "43-0000";
 //        String id2 = "99-9999";
@@ -879,10 +889,10 @@ public class DBApp implements DBAppInterface {
 //            rowsreturned = rowsreturned op sql2
 
 
-        Object doo = parse("java.util.Date","1999-01-20");
+        Object doo = parse("java.util.Date", "1999-01-20");
         //System.out.println( (doo instanceof String)    );
 
-        System.out.println((new Date( (2000-1900), 1-1, 15)).toString());
+        System.out.println((new Date((2000 - 1900), 1 - 1, 15)).toString());
         System.out.println((Date) doo);
         System.out.println("Hello1".equals("Hello1"));
 
@@ -903,30 +913,27 @@ public class DBApp implements DBAppInterface {
 //        }
 
 
-
-
     }
 
 
+    public static long getdifferencedate(String d1, String d2) {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        //DateTimeFormatter dtf = DateTimeFormatter.ofPattern("E MMM dd HH:mm:ss Z yyyy");
+        LocalDate date1 = LocalDate.parse(d1, dtf);
+        LocalDate date22 = LocalDate.parse(d2, dtf);
+        long daysBetween = ChronoUnit.DAYS.between(date1, (Temporal) date22);
+        return daysBetween;
+    }
 
-public static long getdifferencedate(String d1, String d2){
-   DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    //DateTimeFormatter dtf = DateTimeFormatter.ofPattern("E MMM dd HH:mm:ss Z yyyy");
-    LocalDate date1 = LocalDate.parse(d1, dtf);
-    LocalDate date22 = LocalDate.parse(d2, dtf);
-    long daysBetween = ChronoUnit.DAYS.between(date1, (Temporal) date22);
-    return daysBetween;
-}
+    public static String getLD(String d) {
+        String input = d + "";
+        DateTimeFormatter f = DateTimeFormatter.ofPattern("E MMM dd HH:mm:ss z uuuu").withLocale(Locale.US);
 
-public static String getLD(String d){
-    String input  = d +"";
-    DateTimeFormatter f = DateTimeFormatter.ofPattern( "E MMM dd HH:mm:ss z uuuu" ).withLocale( Locale.US );
+        ZonedDateTime zdt = ZonedDateTime.parse(input, f);
+        LocalDate ld = zdt.toLocalDate();
+        return ld + "";
 
-    ZonedDateTime zdt = ZonedDateTime.parse( input , f );
-    LocalDate ld = zdt.toLocalDate();
-    return ld +"";
-
-}
+    }
 
 
 }

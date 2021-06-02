@@ -123,7 +123,7 @@ public class Milestone2Tests {
         arrSQLTerms[1]._strTableName = "students";
         arrSQLTerms[1]._strColumnName= "gpa";
         arrSQLTerms[1]._strOperator = "=";
-        arrSQLTerms[1]._objValue = new Double(0.7);
+        arrSQLTerms[1]._objValue = 0.7;
 
         String[]strarrOperators = new String[1];
         strarrOperators[0] = "AND";
@@ -176,13 +176,13 @@ public class Milestone2Tests {
         arrSQLTerms[0]._strColumnName= "first_name";
         arrSQLTerms[0]._strOperator = "=";
         arrSQLTerms[0]._objValue =row.get("first_name");
-
+System.out.println("print tests :) "+ row.get("first_name"));
         arrSQLTerms[1] = new SQLTerm();
         arrSQLTerms[1]._strTableName = "students";
         arrSQLTerms[1]._strColumnName= "gpa";
         arrSQLTerms[1]._strOperator = "<=";
         arrSQLTerms[1]._objValue = row.get("gpa");
-
+        System.out.println("print tests :) "+ row.get("gpa"));
         String[]strarrOperators = new String[1];
         strarrOperators[0] = "OR";
 

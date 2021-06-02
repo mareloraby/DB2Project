@@ -176,7 +176,9 @@ public class Table implements java.io.Serializable {
             //for(int i=0; i<pname.get(x).size(); i++){
             Page p = (Page) DBApp.deserialize(pname.get(i));
             for (int k = 0; k < p.getRows().size(); k++) {
+
                 Vector<Object> v = p.getRows().get(k);
+//                System.out.println("firstname string check "+OP+" "+ v.get(index)+" "+ colNameValue.get(key)+"  "+ key);
                 switch (OP) {
                     case ">":
                         if (Trial.compare(v.get(index), colNameValue.get(key)) > 0) {
@@ -204,7 +206,9 @@ public class Table implements java.io.Serializable {
                         }
                         break;
                     case "=":
+//                        System.out.println("firstname string check "+v.get(index)+" "+ colNameValue.get(key));
                         if (Trial.compare(v.get(index), colNameValue.get(key)) == 0) {
+                            System.out.println("firstname string check "+v.get(index)+" "+ colNameValue.get(key));
                             rows.add(v);
                         }
                         break;
@@ -215,6 +219,7 @@ public class Table implements java.io.Serializable {
             DBApp.serialize(p, pname.get(i));
 
         }
+        DBApp.serialize(G, tableName+"-GI"+G.getGridID());
         System.out.println(rows.size() + "   rows printed");
         return rows;
 
