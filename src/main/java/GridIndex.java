@@ -259,7 +259,7 @@ public class GridIndex implements java.io.Serializable {
 
         StringBuilder indices = new StringBuilder();
         indices.append("-");
-        System.out.println("PLENGTH " + coordinates.size() + " " + colNames.length + " " + indices);
+        System.out.println("PLENGTH " + coordinates.size() + " " + colNames.length + " " + Arrays.toString(colNames));
         for (int i = 0; i < coordinates.size(); i++) {
             System.out.println("Pname " + colNames[i]);
             if (i == coordinates.size() - 1) {

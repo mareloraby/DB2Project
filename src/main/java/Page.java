@@ -340,20 +340,20 @@ public class Page implements java.io.Serializable {
     public Vector<Object> deleteRowFromPageUsingIdxB(int pk_found, Object pk_value, Vector<Vector> index_value) throws DBAppException {
 
         int mid = binarySearch(0, rows.size() - 1, pk_value);
+        System.out.println("it is null "+ mid);
         if (mid == -1) return null;
 
         Vector<Object> row = rows.get(mid);
 
         boolean found = true;
-        for (int i = 0; i < index_value.size(); i++) {
-            int rowToDeleteIndex = (int) index_value.get(i).get(0);
-            Object rowToDeleteValue = index_value.get(i).get(1);
-            if (Trial.compare(rowToDeleteValue, row.get(rowToDeleteIndex)) == 0) {
-            } else {
-                found = false;
-            }
-
-        }
+//        for (int i = 0; i < index_value.size(); i++) {
+//            int rowToDeleteIndex = (int) index_value.get(i).get(0);
+//            Object rowToDeleteValue = index_value.get(i).get(1);
+//            if (Trial.compare(rowToDeleteValue, row.get(rowToDeleteIndex)) != 0) {
+//            found=false;
+//            }
+//
+//        }
         if (found) {
             rows.remove(mid);
             this.numOfRows--;

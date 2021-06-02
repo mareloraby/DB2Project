@@ -561,102 +561,127 @@ public class DBApp implements DBAppInterface {
     @Override
     public Iterator selectFromTable(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException { //OR AND XOR
 
-        /*
-        *sql1 sql2 sql3 ....
-
-        op1 op2 op3....
-
-        ((sql1 or sql2) and sql3) op3 sql4
-        *
-        *
-
-        //tree map null keys?
-
-        or  -->  all rows from both sql terms 0 1 1 1
-        and -->  satisfies both condition 0 0 0 1
-        xor -->  rows that satisfies 1 but not the other 0 1 1 0 (not in and but in or)
-
-        1) check operators in sql term
-        get suitable grid index
-        check within
-        *
-        *
-        * */
-
-//
 
 
+        if(sqlTerms.length==0)throw new DBAppException("There are no sql terms to search for");
+        if(arrayOperators.length!=sqlTerms.length-1)throw new DBAppException("Number of operators should be equal to number of SQL Terms minus 1");
 
-       String tablename=sqlTerms[0]._strTableName;
-//        String colname="";
-//        String opertor="";
-//        Object value = null;
+        SQLTerm sq = sqlTerms[0];
+        String tablename=sq._strTableName;
+        String colname= sq._strColumnName;
+        String operator= sq._strOperator;
+        Object value =  sq._objValue;
 
         Table t = (Table) deserialize(tablename);
 
-        for(int i = 0; i<sqlTerms.length; i++)
-        {
+        Vector<Vector<Object>> returnedrows = new Vector<Vector<Object>>();
 
-            SQLTerm obj = sqlTerms[i];
+        Hashtable htVal = new Hashtable<>();
+        htVal.put(colname, value);
+        Hashtable htOp = new Hashtable<>();
+        htOp.put(colname, operator);
 
-            String colname=obj._strColumnName;
-            String operator=obj._strOperator;
-            Object value = obj._objValue;
+        returnedrows = t.selectfromTable(htVal,htOp);
 
 
-            /*
-            * dimVals : only include the ones suitable
-            *
-            *
-            * */
-            switch(operator){
-                case">": break;
-                case">=":break;
-                case"<": break;
-                case"<=":break;
-                case"!=":break;
-                case"=" :break;
+        int index = 1;
+        while(index != sqlTerms.length){
 
+            htVal.put(sqlTerms[index]._strColumnName, sqlTerms[index]._objValue);
+            htOp.put(sqlTerms[index]._strColumnName, sqlTerms[index]._strOperator);
+
+            switch(arrayOperators[index-1]){
+                case"AND": returnedrows = AND(returnedrows,t.selectfromTable(htVal,htOp)); break;
+
+                case"OR":returnedrows = OR(returnedrows,t.selectfromTable(htVal,htOp)); break;
+
+                case"XOR":returnedrows = XOR(returnedrows,t.selectfromTable(htVal,htOp)); break;
             }
+            index++;
+        }
+        Vector<String>  v = new Vector<String>();
 
+        Iterator<Vector<Object>> Itreturned = returnedrows.iterator();
+        for(int i=0; i<returnedrows.size(); i++){
+            v.add(returnedrows.get(i).toString());
+        }
+        Iterator<String> IS = v.iterator();
+        System.out.println("PRINT RESULTS");
+        while(IS.hasNext()){
+            System.out.println(IS.next());
+        }
+        return IS;
+    }
 
-            //\
-            // choose best index
-            // get ranges
-            // .
-            //
+    private Vector<Vector<Object>> XOR(Vector<Vector<Object>> returnedrows, Vector<Vector<Object>> selectfromTable) {
 
+        Iterator<Vector<Object>> i1 = returnedrows.iterator();
+        Iterator<Vector<Object>> i2 = selectfromTable.iterator();
+        Vector<Vector<Object>> res = new Vector<Vector<Object>>();
 
-
-            //deser table
-            /*get grid index if exists
-            see which buckets w its overflows that satisfies condition
-            search in buckets
-            go to entries and return row
-            add row.toString() to vector
-            return vector
-            iterate over vector
-            * */
-
-
-
-
-
-
-
-
+        while(i1.hasNext()){
+            Vector<Object> row1 = (Vector<Object>) i1.next();
+            if(!(selectfromTable.contains(row1))){
+                res.add(row1);
+            }
 
         }
 
+        while(i2.hasNext()){
+            Vector<Object> row2 = (Vector<Object>) i2.next();
+            if(!(returnedrows.contains(row2))){
+                res.add(row2);
+            }
+        }
 
-
-
-
-
-
-        return null;
+        return res;
     }
 
+    private Vector<Vector<Object>> OR(Vector<Vector<Object>> returnedrows, Vector<Vector<Object>> selectfromTable) { //present in either or both
+
+        Iterator<Vector<Object>> i1 = returnedrows.iterator();
+        Iterator<Vector<Object>> i2 = selectfromTable.iterator();
+        Vector<Vector<Object>> res = new Vector<Vector<Object>>();
+
+
+        while(i1.hasNext()){
+
+            Vector<Object> row1 =(Vector<Object>) i1.next();
+
+            while(i2.hasNext()){
+                Vector<Object> row2 =(Vector<Object>) i2.next();
+                if(row1.equals(row2)){
+                    res.add(row1);
+                    break;
+                }else{
+                    res.add(row2);
+                    if(!(res.contains(row1)))
+                        res.add(row1);
+                }
+            }
+
+        }
+        return res;
+    }
+
+    private Vector<Vector<Object>> AND(Vector<Vector<Object>> returnedrows, Vector<Vector<Object>> selectfromTable) { //values in both
+        Iterator<Vector<Object>> i1 = returnedrows.iterator();
+        Iterator<Vector<Object>> i2 = selectfromTable.iterator();
+        Vector<Vector<Object>> res = new Vector<Vector<Object>>();
+        while(i1.hasNext()){
+            Vector<Object> row1 =(Vector<Object>) i1.next();
+            while(i2.hasNext()){
+                Vector<Object> row2 =(Vector<Object>) i2.next();
+
+                if(row1.equals(row2)){
+                    res.add(row1);
+                    break;
+                }
+            }
+
+        }
+        return res;
+    }
 
 
 
