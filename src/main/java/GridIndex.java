@@ -62,7 +62,7 @@ public class GridIndex implements java.io.Serializable {
                         if (data[2] == "java.lang.Double") {
                             range = Double.parseDouble(data[6]) - Double.parseDouble(data[5]);
                         } else if (data[2] == "java.util.Date") {
-                            range = DBApp.getdifferencedate(data[5], data[6]) / 10;
+                            range = DBApp.getdifferencedate(data[5], data[6]) ;
                         } else if (data[2] == "java.lang.String" && data[5].contains("-")) {
                             range = Integer.parseInt(data[6].replace("-", "")) - Integer.parseInt(data[5].replace("-", ""));
 
@@ -214,8 +214,19 @@ public class GridIndex implements java.io.Serializable {
 //
 //
 //                }
+                double rangeVal;
+                if (val instanceof Double) {
+                    rangeVal = (Double)val - (Double)minOfcols.get(i);
+                } else if (val instanceof Date) {
+                    rangeVal = DBApp.getdifferencedate(minOfcols.get(i).toString(), val.toString()) ;
+                } else if (val instanceof String && ((String)val).contains("-")) {
+                    rangeVal = Integer.parseInt(((String)val).replace("-", "")) - Integer.parseInt(((String)minOfcols.get(i)).replace("-", ""));
 
-                int index = bs_next(dimVals.get(i), dimVals.get(i).size() - 2, val);
+                } else {
+                    rangeVal = (Trial.compare(val, minOfcols.get(i)) + 1);
+                }
+
+                int index = bs_next(dimVals.get(i), dimVals.get(i).size() - 2, rangeVal);
                 coordinates.add(index);
             } else
                 coordinates.add(10);
