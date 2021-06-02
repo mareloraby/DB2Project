@@ -472,7 +472,8 @@ public class Table implements java.io.Serializable {
         for (int i = 0; i < gridIndices.size(); i++) {
             GridIndex G = (GridIndex) DBApp.deserialize(tableName + "-GI" + i);
             String BucketName = G.findCell(columnNameValues);
-
+            System.out.println("ARRAY PRINTER HERE");
+            System.out.println(Arrays.toString(G.getColNames()));
             Bucket B;
             // check if the bucket already exists or not
 
@@ -1063,7 +1064,10 @@ public class Table implements java.io.Serializable {
             for (int j = 0; j < colNamesTable.size(); j++) {
                 for (int k = 0; k < colNamesInGrid.length; k++) {
                     if (colNamesTable.get(j).equals(colNamesInGrid[k])) {
-                        colNameValuesGrid.put(colNamesInGrid[j], row.get(j));
+
+                        System.out.println("ROW PRINTED HERE");
+                        System.out.println(row.toString());
+                        colNameValuesGrid.put(colNamesInGrid[k], row.get(j));
                         break;
                     }
                 }
