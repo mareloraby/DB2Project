@@ -844,10 +844,21 @@ public class DBApp implements DBAppInterface {
         //Strings
 //
 //
-//        System.out.println(        getdifferencedate("1999-01-20","1234-04-13"));
-//
-//        System.out.println(20210331);
 
+
+//
+//        Vector<Vector> rowsreturned --> sql1;
+//        while(op! empty)
+//            rowsreturned = rowsreturned op sql2
+
+
+        Object doo = parse("java.util.Date","1999-01-20");
+        //System.out.println( (doo instanceof String)    );
+
+        System.out.println((new Date( (2000-1900), 1-1, 15)).toString());
+        System.out.println((Date) doo);
+
+//getdifferencedate("1999-01-20","1234-04-13")
 
 //        Vector<String > list = new Vector<String>();
 //        Vector<Integer> v1 = new Vector<Integer>();

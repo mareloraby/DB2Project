@@ -25,16 +25,6 @@ public class Milestone2Tests {
         dbApp = null;
     }
 
-    @Test
-    @Order(2)
-    public void testRecordInsertions() throws Exception {
-        DBApp dbApp = new DBApp();
-        dbApp.init();
-        int limit = 500;
-
-        insertStudentRecords(dbApp, limit);
-        dbApp = null;
-    }
 
     @Test
     public void testCreateDateIndex() throws Exception {
@@ -362,6 +352,19 @@ public class Milestone2Tests {
         dbApp.createTable(tableName, "pc_id", htblColNameType, minValues, maxValues);
     }
 
+
+    @Test
+
+    public void testRecordInsertions() throws Exception {
+        DBApp dbApp = new DBApp();
+        dbApp.init();
+        int limit = 500;
+
+        insertStudentRecords(dbApp, limit);
+        dbApp = null;
+    }
+
+
     private void insertStudentRecords(DBApp dbApp, int limit) throws Exception {
         BufferedReader studentsTable = new BufferedReader(new FileReader("src/main/resources/students_table.csv"));
         String record;
@@ -397,4 +400,7 @@ public class Milestone2Tests {
         }
         studentsTable.close();
     }
+
+
+
 }
