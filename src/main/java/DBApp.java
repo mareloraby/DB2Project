@@ -184,7 +184,7 @@ public class DBApp implements DBAppInterface {
                 }
                 index++;
 
-            } else if (data[0] != tableName && found == true)
+            } else if (!data[0].equals(tableName) && found == true)
                 break;
 
         }
@@ -231,7 +231,7 @@ public class DBApp implements DBAppInterface {
                 index++;
 
 
-            } else if (data[0] != tableName && found == true)
+            } else if (!data[0].equals(tableName) && found == true)
                 break;
 
         }
@@ -522,7 +522,7 @@ public class DBApp implements DBAppInterface {
                 }
                 sb.append("\n");
 
-            } else if (data[0] != tableName) {
+            } else if (!data[0].equals(tableName)) {
 
                 sb.append(data[0]);
                 for (int i = 1; i < data.length; i++) {
