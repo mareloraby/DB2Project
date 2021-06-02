@@ -1584,6 +1584,8 @@ public class Table implements java.io.Serializable {
                         DBApp.serialize(Overflow, v.get(0) + "");
 
 
+                        B.getAddresses().remove(addressIdxInOv);
+                        B.setAddresses(B.getAddresses());
                         //insert
                         insertIntoPageWithGI(row, pk_found, colNameValue);
                         //ser
@@ -1620,6 +1622,8 @@ public class Table implements java.io.Serializable {
                 row.set(rowToUpdateIndex, rowToUpdateValue);
             }
 
+            B.getAddresses().remove(addressIdxInBucket);
+            B.setAddresses(B.getAddresses());
 
             //insert
             insertIntoPageWithGI(row, pk_found, colNameValue);
