@@ -108,10 +108,24 @@ public class Table implements java.io.Serializable {
                         }
                         break;
                     case "=":
-                        for (int j = 0; j < dimValCol.size() - 1; j++) { // name
-                            if (Trial.compare(dimValCol.get(j), rangeVal) == 0)
+                        System.out.println("here plz");
+
+                        for (int j = 0; j < dimValCol.size() - 2; j++) { // name
+                            if (j==0 && (Trial.compare(dimValCol.get(j), rangeVal) >= 0) )
+                            {
                                 temp.add(j);
+                                System.out.println("here plz3");
+
+                            }
+                            else if ((Trial.compare(dimValCol.get(j), rangeVal) < 0) && (Trial.compare(dimValCol.get(j+1), rangeVal) >= 0))
+                            {
+                                System.out.println("here plz4");
+
+                                temp.add(j + 1);
+                            }
+
                         }
+
                         break;
 
                 }
@@ -138,6 +152,7 @@ public class Table implements java.io.Serializable {
                     break;
                 }
                 if (found) {
+
                     bucketNs.add(bName);
                 }
             }
