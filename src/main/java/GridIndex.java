@@ -21,7 +21,7 @@ public class GridIndex implements java.io.Serializable {
     private Vector<String> bucketsinTable;
 
 
-    private Vector<Object> minOfcols;
+    private Object[] minOfcols;
 
     //<x:<0,10,20,..>,y:<100,110,120,..>,<z>>
 
@@ -32,7 +32,7 @@ public class GridIndex implements java.io.Serializable {
         this.tableName = tableName;
         int number_of_dimensions = columnNames.length;
         bucketsinTable = new Vector<String>();
-        minOfcols = new Vector<Object>();
+        minOfcols = new Object[colNames.length];
 
         BufferedReader csvReader = null;
         String csvLine;
@@ -50,11 +50,13 @@ public class GridIndex implements java.io.Serializable {
             if (data[0].equals(tableName)) {
                 found = true;
                 for (int i = 0; i < columnNames.length; i++) {
+
                     if (data[1].equals(columnNames[i])) {
                         Object minofcol = DBApp.parse(data[2], data[5]);
                         Object maxofcol =  DBApp.parse(data[2], data[6]);
 
-                        minOfcols.add(minofcol);
+                        minOfcols[i] = (minofcol);
+
 
                         // 0-10 , 10-20, 20-30 => <10,20,30>
 
@@ -64,7 +66,7 @@ public class GridIndex implements java.io.Serializable {
                             ;
 
                         } else if (data[2] == "java.util.Date") {
-                            range = DBApp.getdifferencedate(data[5], data[6]);
+                            range = DBApp.getdifferencedate(DBApp.getLD(data[5]), DBApp.getLD(data[6]));
                         } else if (data[2] == "java.lang.String" && data[5].contains("-")) {
                             range = Integer.parseInt(data[6].replace("-", "")) - Integer.parseInt(data[5].replace("-", ""));
 
@@ -177,14 +179,14 @@ public class GridIndex implements java.io.Serializable {
                 Object val = colNameValues.get(colNames[i]);
                 double rangeVal;
                 if (val instanceof Double) {
-                    rangeVal = (Double)val - (Double)minOfcols.get(i);
+                    rangeVal = (Double)val - (Double)minOfcols[i];
                 } else if (val instanceof Date) {
-                    rangeVal = DBApp.getdifferencedate(minOfcols.get(i).toString(), val.toString()) ;
+                    rangeVal = DBApp.getdifferencedate(DBApp.getLD(minOfcols[i]+""), DBApp.getLD(val+"")) ;
                 } else if (val instanceof String && ((String)val).contains("-")) {
-                    rangeVal = Integer.parseInt(((String)val).replace("-", "")) - Integer.parseInt(((String)minOfcols.get(i)).replace("-", ""));
+                    rangeVal = Integer.parseInt((val.toString()).replace("-", "")) - Integer.parseInt((minOfcols[i].toString()).replace("-", ""));
 
                 } else {
-                    rangeVal = (Trial.compare(val, minOfcols.get(i)) + 1);
+                    rangeVal = (Trial.compare(val, minOfcols[i]) + 1);
                 }
 
                 int index = bs_next(dimVals.get(i), dimVals.get(i).size() - 2, rangeVal);
@@ -231,14 +233,21 @@ public class GridIndex implements java.io.Serializable {
                 double rangeVal;
 
                 if (val instanceof Double) {
-                    rangeVal = (Double)val - (Double)minOfcols.get(i);
+                    rangeVal = (Double)val - (Double)minOfcols[i];
                 } else if (val instanceof Date) {
-                    rangeVal = DBApp.getdifferencedate(minOfcols.get(i).toString(), val.toString()) ;
-                } else if (val instanceof String && ((String)val).contains("-")) {
-                    rangeVal = Integer.parseInt(((String)val).replace("-", "")) - Integer.parseInt(((String)minOfcols.get(i)).replace("-", ""));
+                    rangeVal = DBApp.getdifferencedate(DBApp.getLD(minOfcols[i]+""), DBApp.getLD(val+"")) ;
+                } else if (val instanceof String && ((String)val).contains("-")) { //id
+                    String tem1 = (String) val;
+                    String tem2 = ""+(minOfcols[i]);
+                    System.out.println(tem2);
+
+                    System.out.println(Arrays.toString(colNames));
+                    System.out.println(minOfcols.toString());
+
+                    rangeVal = Integer.parseInt(tem1.replace("-", "")) - Integer.parseInt(tem2.replace("-", ""));
 
                 } else {
-                    rangeVal = (Trial.compare(val, minOfcols.get(i)) + 1);
+                    rangeVal = (Trial.compare(val, minOfcols[i]) + 1);
                 }
 
                 System.out.println("RANGEVAL HERE");
@@ -270,11 +279,11 @@ public class GridIndex implements java.io.Serializable {
         return B;
     }
 
-    public Vector<Object> getMinOfcols() {
+    public Object[] getMinOfcols() {
         return minOfcols;
     }
 
-    public void setMinOfcols(Vector<Object> minOfcols) {
+    public void setMinOfcols(Object[] minOfcols) {
         this.minOfcols = minOfcols;
     }
 
