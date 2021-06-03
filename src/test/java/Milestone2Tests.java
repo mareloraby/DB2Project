@@ -25,6 +25,16 @@ public class Milestone2Tests {
         dbApp = null;
     }
 
+    @Test
+    @Order(2)
+    public void testRecordInsertions() throws Exception {
+        DBApp dbApp = new DBApp();
+        dbApp.init();
+        int limit = 500;
+
+        insertStudentRecords(dbApp, limit);
+        dbApp = null;
+    }
 
     @Test
     public void testCreateDateIndex() throws Exception {
@@ -98,7 +108,6 @@ public class Milestone2Tests {
 
 
     @Test
-    @Order(2)
     public void testCreateStringStringIndex() throws Exception {
         DBApp dbApp = new DBApp();
         dbApp.init();
@@ -124,7 +133,7 @@ public class Milestone2Tests {
         arrSQLTerms[1]._strTableName = "students";
         arrSQLTerms[1]._strColumnName= "gpa";
         arrSQLTerms[1]._strOperator = "=";
-        arrSQLTerms[1]._objValue = 0.7;
+        arrSQLTerms[1]._objValue = ( Double)(0.7);
 
         String[]strarrOperators = new String[1];
         strarrOperators[0] = "AND";
@@ -177,13 +186,13 @@ public class Milestone2Tests {
         arrSQLTerms[0]._strColumnName= "first_name";
         arrSQLTerms[0]._strOperator = "=";
         arrSQLTerms[0]._objValue =row.get("first_name");
-System.out.println("print tests :) "+ row.get("first_name"));
+
         arrSQLTerms[1] = new SQLTerm();
         arrSQLTerms[1]._strTableName = "students";
         arrSQLTerms[1]._strColumnName= "gpa";
         arrSQLTerms[1]._strOperator = "<=";
         arrSQLTerms[1]._objValue = row.get("gpa");
-        System.out.println("print tests :) "+ row.get("gpa"));
+
         String[]strarrOperators = new String[1];
         strarrOperators[0] = "OR";
 
@@ -235,13 +244,13 @@ System.out.println("print tests :) "+ row.get("first_name"));
         arrSQLTerms[0]._strColumnName= "first_name";
         arrSQLTerms[0]._strOperator = "=";
         arrSQLTerms[0]._objValue =row.get("first_name");
-System.out.println(row.get("first_name"));
+
         arrSQLTerms[1] = new SQLTerm();
         arrSQLTerms[1]._strTableName = "students";
         arrSQLTerms[1]._strColumnName= "gpa";
         arrSQLTerms[1]._strOperator = "=";
         arrSQLTerms[1]._objValue = row.get("gpa");
-        System.out.println(row.get("gpa"));
+
         String[]strarrOperators = new String[1];
         strarrOperators[0] = "AND";
 // select * from Student where name = “John Noor” or gpa = 1.5;
@@ -353,22 +362,10 @@ System.out.println(row.get("first_name"));
         dbApp.createTable(tableName, "pc_id", htblColNameType, minValues, maxValues);
     }
 
-
-    @Test
-    public void testRecordInsertions() throws Exception {
-        DBApp dbApp = new DBApp();
-        dbApp.init();
-        int limit = 500;
-
-        insertStudentRecords(dbApp, limit);
-        dbApp = null;
-    }
-
-
     private void insertStudentRecords(DBApp dbApp, int limit) throws Exception {
         BufferedReader studentsTable = new BufferedReader(new FileReader("src/main/resources/students_table.csv"));
         String record;
-        int c =limit;
+        int c = limit;
         if (limit == -1) {
             c = 1;
         }
@@ -400,7 +397,4 @@ System.out.println(row.get("first_name"));
         }
         studentsTable.close();
     }
-
-
-
 }

@@ -47,18 +47,6 @@ public class DBApp implements DBAppInterface {
 
     }
 
-    public ArrayList<String> getTableNames() throws IOException {
-        String row;
-        ArrayList<String> names = new ArrayList<>();
-        BufferedReader csvReader = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
-        while ((row = csvReader.readLine()) != null) {
-            String[] data = row.split(",");
-            names.add(data[0]);
-        }
-        csvReader.close();
-        return names;
-    }
-
     @Override
     public void createTable(String tableName, String clusteringKey, Hashtable<String, String> colNameType, Hashtable<String, String> colNameMin, Hashtable<String, String> colNameMax) throws DBAppException, IOException {
         FileWriter csvWriter = new FileWriter("src/main/resources/metadata.csv", true);
@@ -161,38 +149,6 @@ public class DBApp implements DBAppInterface {
 
     }
 
-    public ArrayList<String> getColNamesOfTable(String tableName) throws DBAppException, IOException {
-        String csvLine;
-        // names of columns with the order
-        ArrayList<String> colNames = new ArrayList<>();
-        BufferedReader csvReader = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
-        System.out.println("TABLE NAME HERE " + tableName);
-        int pk_found = -1;
-        boolean found = false;
-        int index = 0;
-        while ((csvLine = csvReader.readLine()) != null) {
-
-            String[] data = csvLine.split(",");
-            if (data[0].equals(tableName)) {
-                found = true;
-                colNames.add(data[1]);
-
-                System.out.print("A NAME IS HERE" + colNames.get(colNames.size() - 1));
-
-                if (data[3].equals("True") || data[3].equals("true")) {
-                    pk_found = index;
-                }
-                index++;
-
-            } else if (!data[0].equals(tableName) && found == true)
-                break;
-
-        }
-        csvReader.close();
-        return colNames;
-    }
-
-    // check whether types are valid
     @Override
     public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException, IOException {
         ArrayList<String> AllTablesNames = getTableNames();
@@ -281,7 +237,6 @@ public class DBApp implements DBAppInterface {
         - insert :)
          */
     }
-
 
     @Override
     public void updateTable(String tableName, String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException, IOException {
@@ -469,7 +424,6 @@ public class DBApp implements DBAppInterface {
         serialize(t, tableName);
     }
 
-
     @Override
     public void createIndex(String tableName, String[] columnNames) throws DBAppException, IOException {
         String csvLine;
@@ -612,14 +566,14 @@ public class DBApp implements DBAppInterface {
             v.add(returnedrows.get(i).toString());
         }
         Iterator<String> IS = v.iterator();
-        System.out.println("PRINT RESULTS");
-        while (IS.hasNext()) {
-            System.out.println(IS.next());
-        }
 
         serialize(t, tablename);
         return IS;
     }
+
+
+
+    /*HELPER METHODS*/
 
     private Vector<Vector<Object>> XOR(Vector<Vector<Object>> returnedrows, Vector<Vector<Object>> selectfromTable) {
 
@@ -701,6 +655,46 @@ public class DBApp implements DBAppInterface {
         return res;
     }
 
+    public ArrayList<String> getTableNames() throws IOException {
+        String row;
+        ArrayList<String> names = new ArrayList<>();
+        BufferedReader csvReader = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+        while ((row = csvReader.readLine()) != null) {
+            String[] data = row.split(",");
+            names.add(data[0]);
+        }
+        csvReader.close();
+        return names;
+    }
+
+    public ArrayList<String> getColNamesOfTable(String tableName) throws DBAppException, IOException {
+        String csvLine;
+        // names of columns with the order
+        ArrayList<String> colNames = new ArrayList<>();
+        BufferedReader csvReader = new BufferedReader(new FileReader("src/main/resources/metadata.csv"));
+        int pk_found = -1;
+        boolean found = false;
+        int index = 0;
+        while ((csvLine = csvReader.readLine()) != null) {
+
+            String[] data = csvLine.split(",");
+            if (data[0].equals(tableName)) {
+                found = true;
+                colNames.add(data[1]);
+
+
+                if (data[3].equals("True") || data[3].equals("true")) {
+                    pk_found = index;
+                }
+                index++;
+
+            } else if (!data[0].equals(tableName) && found == true)
+                break;
+
+        }
+        csvReader.close();
+        return colNames;
+    }
 
     private String checkColumnTypes(Hashtable<String, String> colNameType) //check if user entered correct type while creating table
     {
@@ -717,44 +711,6 @@ public class DBApp implements DBAppInterface {
         return null;
     }
 
-    public static void serialize(Object e, String fileName) {
-        try {
-            FileOutputStream fileOut =
-                    new FileOutputStream("src/main/resources/data/" + fileName + ".class");
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-            out.writeObject(e);
-            out.close();
-            fileOut.close();
-            System.out.println("Serialized data is saved in " + fileName + ".class");
-        } catch (IOException i) {
-            i.printStackTrace();
-        }
-
-    }
-
-    public static Object deserialize(String fileName) {
-        try {
-            FileInputStream fileIn = new FileInputStream("src/main/resources/data/" + fileName + ".class");
-            ObjectInputStream in = new ObjectInputStream(fileIn);
-            Object e = in.readObject();
-            in.close();
-            fileIn.close();
-            System.out.println("deserialized data from " + fileName + ".class");
-
-            return e;
-        } catch (IOException i) {
-            i.printStackTrace();
-            return null;
-        } catch (ClassNotFoundException c) {
-            System.out.println("not found");
-            c.printStackTrace();
-            return null;
-        }
-
-
-    }
-
-
     public int getPropValues(String string) throws IOException {
         Properties prop = new Properties();
         FileInputStream inputStream = new FileInputStream("src/main/resources/DBApp.config");
@@ -762,7 +718,6 @@ public class DBApp implements DBAppInterface {
 
         return Integer.parseInt(prop.getProperty(string));
     }
-
 
     public static Object parse(String keytype, String strClusteringKey) {
         if (keytype.equals(types[0]))  // Integer
@@ -793,138 +748,8 @@ public class DBApp implements DBAppInterface {
         return date;
     }
 
-    public static void main(String[] args) throws DBAppException, IOException, ParseException {
-
-//        String strTableName = "Student";
-//        DBApp dbApp = new DBApp();
-//       Hashtable htblColNameValue = new Hashtable();
-//
-//        Hashtable htblColNameType = new Hashtable();
-//        htblColNameType.put("id", "java.lang.Integer");
-//        htblColNameType.put("name", "java.lang.String");
-//        htblColNameType.put("gpa", "java.lang.Double");
-//
-//        Hashtable htblColNameMin = new Hashtable();
-//
-//        htblColNameMin.put("id", "0");
-//        htblColNameMin.put("name", "A");
-//        htblColNameMin.put("gpa", "0.0");
-//
-//
-//        Hashtable htblColNameMax = new Hashtable();
-//
-//        htblColNameMax.put("id", "99999999");
-//        htblColNameMax.put("name", "zzzzzzzzzzzzzzzzzzzzzzzzzz");
-//        htblColNameMax.put("gpa", "999.99");
-//        dbApp.createTable(strTableName, "id", htblColNameType, htblColNameMin, htblColNameMax);
-//        dbApp.createIndex(strTableName, new String[]{"gpa"});
-////
-//
-//        htblColNameValue.put("id", (68));
-//        htblColNameValue.put("name", new String("Ahmed Noor"));
-//        htblColNameValue.put("gpa", (0.95));
-//        dbApp.insertIntoTable(strTableName, htblColNameValue);
-//        htblColNameValue.clear();
-//
-//        htblColNameValue.put("id", (5));
-//        htblColNameValue.put("name", new String("Dalia Noor"));
-//        htblColNameValue.put("gpa", (1.25));
-//        dbApp.insertIntoTable(strTableName, htblColNameValue);
-//        htblColNameValue.clear();
-//
-//        htblColNameValue.put("id", (6));
-//        htblColNameValue.put("name", new String("Slim Noor"));
-//        htblColNameValue.put("gpa", (0.88));
-//        dbApp.insertIntoTable(strTableName, htblColNameValue);
-//        htblColNameValue.clear();
-//
-//        htblColNameValue.put("id", (3));
-//        htblColNameValue.put("name", new String("John Noor"));
-//        htblColNameValue.put("gpa", (1.5));
-//        dbApp.insertIntoTable(strTableName, htblColNameValue);
-//        htblColNameValue.clear();
-//
-//        htblColNameValue.put("id", (2));
-//        htblColNameValue.put("name", new String("Zaky Noor"));
-//        htblColNameValue.put("gpa", (0.88));
-//        dbApp.insertIntoTable(strTableName, htblColNameValue);
-//        htblColNameValue.clear();
-//        htblColNameValue.put("id", (20));
-//        htblColNameValue.put("name", new String("Zaky Noor"));
-//        htblColNameValue.put("gpa", (0.88));
-//        dbApp.insertIntoTable(strTableName, htblColNameValue);
-//        htblColNameValue.clear();
-//
-//        htblColNameValue.put("id", (10));
-//        htblColNameValue.put("name", new String("Zaky Noor"));
-//        htblColNameValue.put("gpa", (0.88));
-//        dbApp.insertIntoTable(strTableName, htblColNameValue);
-//        htblColNameValue.clear();
-//
-//        htblColNameValue.put("id", (4));
-//        htblColNameValue.put("name", new String("Last row"));
-//        htblColNameValue.put("gpa", (0.88));
-//        dbApp.insertIntoTable(strTableName, htblColNameValue);
-//        htblColNameValue.clear();
-//        htblColNameValue.put("id", 1);
-//        htblColNameValue.put("name", new String("The Musketeers"));
-//        htblColNameValue.put("gpa", (0.88));
-//        dbApp.insertIntoTable(strTableName,htblColNameValue );
-        //1-5  //6 -6 // 68
-//      htblColNameValue.put("id", (3));
-//        dbApp.deleteFromTable(strTableName,htblColNameValue);
-//      dbApp.getAllrows(strTableName);
-
-//        String strTableName = "Student";
-//        DBApp dbApp = new DBApp( );
-//        dbApp.createIndex( strTableName, new String[] {"gpa"} );
-
-
-        // 46-3294 46-3547
-//        String id1 = "43-0000";
-//        String id2 = "99-9999";
-//
-        //Strings
-//
-//
-
-
-//
-//        Vector<Vector> rowsreturned --> sql1;
-//        while(op! empty)
-//            rowsreturned = rowsreturned op sql2
-
-
-        Object doo = parse("java.util.Date", "1999-01-20");
-        //System.out.println( (doo instanceof String)    );
-
-        System.out.println((new Date((2000 - 1900), 1 - 1, 15)).toString());
-        System.out.println((Date) doo);
-        System.out.println("Hello1".equals("Hello1"));
-
-        //        Vector<String > list = new Vector<String>();
-//        Vector<Integer> v1 = new Vector<Integer>();
-//        v1.add(1);
-//        Vector<Integer> v2 = new Vector<Integer>();
-//        v2.add(2);
-//
-//        list.add(v1.toString());
-//        list.add(v2.toString());
-//
-//
-//        System.out.println("\nList: ");
-//        Iterator<String> iterator = list.iterator();
-//        while(iterator.hasNext()){
-//            System.out.println(iterator.next() + " ");
-//        }
-
-
-    }
-
-
     public static long getdifferencedate(String d1, String d2) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        //DateTimeFormatter dtf = DateTimeFormatter.ofPattern("E MMM dd HH:mm:ss Z yyyy");
         LocalDate date1 = LocalDate.parse(d1, dtf);
         LocalDate date22 = LocalDate.parse(d2, dtf);
         long daysBetween = ChronoUnit.DAYS.between(date1, (Temporal) date22);
@@ -938,6 +763,44 @@ public class DBApp implements DBAppInterface {
         ZonedDateTime zdt = ZonedDateTime.parse(input, f);
         LocalDate ld = zdt.toLocalDate();
         return ld + "";
+
+    }
+
+    public static void serialize(Object e, String fileName) {
+        try {
+            FileOutputStream fileOut =
+                    new FileOutputStream("src/main/resources/data/" + fileName + ".class");
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(e);
+            out.close();
+            fileOut.close();
+            System.out.println("Serialized data is saved in " + fileName + ".class");
+
+        } catch (IOException i) {
+            i.printStackTrace();
+        }
+
+    }
+
+    public static Object deserialize(String fileName) {
+        try {
+            FileInputStream fileIn = new FileInputStream("src/main/resources/data/" + fileName + ".class");
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            Object e = in.readObject();
+            in.close();
+            fileIn.close();
+            System.out.println("deserialized data from " + fileName + ".class");
+
+            return e;
+        } catch (IOException i) {
+            i.printStackTrace();
+            return null;
+        } catch (ClassNotFoundException c) {
+            System.out.println("not found");
+            c.printStackTrace();
+            return null;
+        }
+
 
     }
 

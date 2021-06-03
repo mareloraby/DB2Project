@@ -14,14 +14,6 @@ public class Bucket implements java.io.Serializable {
     private Vector<Vector<Object>> overflowBucketsInfo;//
 
 
-    public String getBucketName() {
-        return BucketName;
-    }
-
-    public void setBucketName(String bucketName) {
-        BucketName = bucketName;
-    }
-
     Bucket(String name) {
         BucketName = name;
         count = 0;
@@ -149,7 +141,7 @@ public class Bucket implements java.io.Serializable {
         int last = this.addresses.size() - 1;
         int mid = (first + last) / 2;
         while (first <= last) {
-            //if ( arr[mid] < key )
+
             Object x = addresses.get(mid).get(0);
             if (Trial.compare(key, x) > 0) {
 
@@ -171,7 +163,7 @@ public class Bucket implements java.io.Serializable {
         int last = this.addresses.size() - 1;
         int mid = (first + last) / 2;
         while (first <= last) {
-            //if ( arr[mid] < key )
+
             Object x = addresses.get(mid).get(0);
             if (Trial.compare(key, x) > 0) {
 
@@ -205,5 +197,13 @@ public class Bucket implements java.io.Serializable {
         this.overflowBucketsInfo = overflowBucketsInfo;
     }
 
+
+    public String getBucketName() {
+        return BucketName;
+    }
+
+    public void setBucketName(String bucketName) {
+        BucketName = bucketName;
+    }
 
 }
