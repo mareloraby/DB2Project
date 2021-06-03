@@ -75,14 +75,14 @@ public class Bucket implements java.io.Serializable {
                     // get overflow bucket:
                     Vector<Object> v = overflowBucketsInfo.get(i); // name and num of entries
 
-                    if (Trial.compare(MaximumKeysCountinIndexBucket, v.get(1)) > 0) {
+                    if ((int)v.get(1)< MaximumKeysCountinIndexBucket) {
                         found = true;
                         Bucket o = (Bucket) DBApp.deserialize((String) v.get(0));
                         o.insertIntoOverflowBucket(value, pageName, columnNameValues, G);
                         DBApp.serialize(o, o.BucketName);
                         Vector<Object> info = new Vector<Object>();
                         info.add(v.get(0));
-                        info.add(1);
+                        info.add((int)v.get(1)+1);
                         overflowBucketsInfo.set(i, info);
                     }
                 }

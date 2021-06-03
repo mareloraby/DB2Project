@@ -544,11 +544,14 @@ public class DBApp implements DBAppInterface {
         }
 
         GridIndex GI = new GridIndex(tableName, columnNames, (t.getGridIndices().size()));
+        t.rehomeAlreadyMadeRows(GI);
         serialize(GI, tableName + "-GI" + (t.getGridIndices().size()));
         Vector<GridIndex> indices = t.getGridIndices();
         indices.add(GI);
         t.setGridIndices(indices);
         t.setHasGrid(true);
+        t.getGridIndices_colNames().add(columnNames);
+        t.setGridIndices_colNames(t.getGridIndices_colNames());
         serialize(t, tableName);
 
 
@@ -601,6 +604,7 @@ public class DBApp implements DBAppInterface {
             }
             index++;
         }
+
         Vector<String> v = new Vector<String>();
 
         Iterator<Vector<Object>> Itreturned = returnedrows.iterator();
@@ -612,6 +616,8 @@ public class DBApp implements DBAppInterface {
         while (IS.hasNext()) {
             System.out.println(IS.next());
         }
+
+        serialize(t, tablename);
         return IS;
     }
 

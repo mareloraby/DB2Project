@@ -274,11 +274,11 @@ public class GridIndex implements java.io.Serializable {
             }
             System.out.println(coordinates.size() + " " + i + "  print indices " + indices);
         }
-        String BucketName = tableName + "-B" + indices;
+        String BucketName = tableName + "-GI"+GridID+"B" +  indices;
         System.out.println(BucketName + " BNAME HERE");
         return BucketName;
     }
-
+// tablename-GI1B-0,1,2
     public Bucket addBucket(String bucketName) {
         Bucket B = new Bucket(bucketName);
         bucketsinTable.add(bucketName);

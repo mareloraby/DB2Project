@@ -14,8 +14,36 @@ public class Table implements java.io.Serializable {
     private Vector<Integer> pagesID;
     private int maxRows;
     private Vector<GridIndex> gridIndices;
+
+    public Vector<String[]> getGridIndices_colNames() {
+        return gridIndices_colNames;
+    }
+
+    public void setGridIndices_colNames(Vector<String[]> gridIndices_colNames) {
+        this.gridIndices_colNames = gridIndices_colNames;
+    }
+
+    private Vector<String[]> gridIndices_colNames;
     private boolean hasGrid;
 
+    public void printBucket() {
+//        Table t = (Table) DBApp.deserialize("students");
+        for (int i = 0; i < gridIndices_colNames.size(); i++) {
+            GridIndex GI = (GridIndex) DBApp.deserialize("students" + "-GI1");
+            for (int j = 0; j < GI.getBucketsinTable().size(); j++) {
+                Bucket B = (Bucket) DBApp.deserialize(GI.getBucketsinTable().get(j));
+                System.out.println(B.getBucketName() + " size here " + B.getAddresses().size());
+                for (int k = 0; k < B.getOverflowBucketsInfo().size(); k++) {
+                    System.out.println(B.getOverflowBucketsInfo().get(k).get(0) + " size here " + B.getOverflowBucketsInfo().get(k).get(1));
+                }
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        Table t = (Table) DBApp.deserialize("students");
+        t.printBucket();
+    }
 
     public Table(String name, int pk_index) {
         this.pk_index = pk_index;
@@ -26,6 +54,7 @@ public class Table implements java.io.Serializable {
         tableName = name;
         count = 0;
         gridIndices = new Vector<GridIndex>();
+        gridIndices_colNames = new Vector<String[]>();
         hasGrid = false;
         colNamesTable = new ArrayList<String>();
 
@@ -45,200 +74,412 @@ public class Table implements java.io.Serializable {
     }
 
 
+    public void rehomeAlreadyMadeRows(GridIndex GI){
+
+        for (int i = 0; i < (pagesID).size(); i++) {
+            Vector<Object> page = pagesInfo.get(i);
+            Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
+            Vector<Vector<Object>> rows = p.getRows();
+            // rows of page:
+            for (int j = 0; j < rows.size(); j++) { // rows in page
+                Vector<Object> row = rows.get(j);
+
+                Hashtable<String, Object>colNameValues = new Hashtable<>();
+
+                for (int k = 0; k < GI.getColNames().length; k++) {
+
+                    String key = GI.getColNames()[k];
+                    for(int e =0; e<colNamesTable.size();e++){
+
+                        if(key.equals(colNamesTable.get(e))){
+                            colNameValues.put(key,row.get(e));
+                            break;
+                        }
+                    }
+
+
+                }
+                String BucketName = GI.findCell(colNameValues);
+                Bucket B;
+                // check if the bucket already exists or not
+
+                if (GI.getBucketsinTable().contains(BucketName))
+                    B = (Bucket) DBApp.deserialize(BucketName);
+                else
+                    B = GI.addBucket(BucketName);
+
+                B.insertIntoBucket(row.get(pk_index), tableName + "-" + pagesID.get(i), colNameValues, GI);
+                DBApp.serialize(B, BucketName); // Bucket
+
+                DBApp.serialize(p,tableName + "-" + pagesID.get(i));
+
+
+
+
+            }
+
+            // check if this page has overflows:
+            if (p.getOverFlowInfo().size() != 0) {
+                Vector<Vector<Object>> overflowPagesInfo = p.getOverFlowInfo();
+                for (int k = 0; k < p.getOverFlowInfo().size(); k++) {
+                    Vector<Object> overflow = overflowPagesInfo.get(k);
+                    int ID = (int) overflow.get(0);
+                    Page o = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i) + "." + ID);
+                    Vector<Vector<Object>> rowsOverflow = o.getRows();
+
+                    for (int l = 0; l < o.getRows().size(); l++) {
+
+                        Vector<Object> row = o.getRows().get(l);
+
+                        Hashtable<String, Object>colNameValues = new Hashtable<>();
+
+                        for (int r = 0; r < GI.getColNames().length; r++) {
+
+                            String key = GI.getColNames()[r];
+                            for(int e =0; e<colNamesTable.size();e++){
+
+                                if(key.equals(colNamesTable.get(e))){
+                                    colNameValues.put(key,row.get(e));
+                                    break;
+                                }
+                            }
+
+
+                        }
+                        String BucketName = GI.findCell(colNameValues);
+                        Bucket B;
+                        // check if the bucket already exists or not
+
+                        if (GI.getBucketsinTable().contains(BucketName))
+                            B = (Bucket) DBApp.deserialize(BucketName);
+                        else
+                            B = GI.addBucket(BucketName);
+
+                        B.insertIntoBucket(row.get(pk_index), tableName + "-" + pagesID.get(i) + "." + ID, colNameValues, GI);
+                        DBApp.serialize(B, BucketName); // Bucket
+                        DBApp.serialize(o,tableName + "-" + pagesID.get(i) + "." + ID);
+
+                    }
+                }
+            }
+        }
+
+    }
+
     public Vector<Vector<Object>> selectfromTable(Hashtable<String, Object> colNameValue, Hashtable<String, String> colNameOperator) {
         GridIndex G = chooseIndex(tableName, colNameValue); // best index : age , name , gpa --> name , age
-
-        Vector<Vector<Object>> coordinates = new Vector<Vector<Object>>();
-
-
-        String OP = new String();
-        for (int i = 0; i < G.getDimVals().length; i++) { // name = ahmed ,age
-            if (colNameValue.containsKey(G.getColNames()[i])) {
-                String operator = colNameOperator.get(G.getColNames()[i]);
-                OP = operator;
-                Vector<Object> dimValCol = G.getDimVals()[i]; // ""
-                Vector<Object> temp = new Vector<Object>();
-
-                Object val = colNameValue.get(G.getColNames()[i]);
-                double rangeVal;
-                if (val instanceof Double) {
-                    rangeVal = (Double) val - (Double) G.getMinOfcols()[i];
-                } else if (val instanceof Date) {
-                    rangeVal = DBApp.getdifferencedate(DBApp.getLD(G.getMinOfcols()[i] + ""), DBApp.getLD(val + ""));
-                } else if (val instanceof String && ((String) val).contains("-")) {
-                    rangeVal = Integer.parseInt((val.toString()).replace("-", "")) - Integer.parseInt((G.getMinOfcols()[i].toString()).replace("-", ""));
-
-                } else {
-                    rangeVal = (Trial.compare(val, G.getMinOfcols()[i]));
-                }
-
-                switch (operator) {
-                    case ">":
-                        for (int j = 0; j < dimValCol.size() - 1; j++) {
-                            if (Trial.compare(dimValCol.get(j), rangeVal) > 0)
-                                temp.add(j);
-                        }
-                        break;
-                    case ">=":
-                        for (int j = 0; j < dimValCol.size() - 1; j++) {
-                            if (Trial.compare(dimValCol.get(j), rangeVal) >= 0)
-                                temp.add(j);
-                        }
-                        break;
-                    case "<":
-                        for (int j = 0; j < dimValCol.size() - 1; j++) {
-                            if (j < dimValCol.size() && Trial.compare(dimValCol.get(j), rangeVal) < 0) {
-                                temp.add(j);
-//                                temp.add(j + 1);
-                            }
-
-
-                        }
-                        break;
-                    case "<=":
-                        for (int j = 0; j < dimValCol.size() - 1; j++) {
-                            if (Trial.compare(dimValCol.get(j), rangeVal) <= 0)
-                                temp.add(j);
-                        }
-                        break;
-                    case "!=":
-                        for (int j = 0; j < dimValCol.size() - 1; j++) {
-                            if (Trial.compare(dimValCol.get(j), rangeVal) != 0)
-                                temp.add(j);
-                        }
-                        break;
-                    case "=":
-                        System.out.println("here plz");
-
-                        for (int j = 0; j < dimValCol.size() - 2; j++) { // name
-                            if (j==0 && (Trial.compare(dimValCol.get(j), rangeVal) >= 0) )
-                            {
-                                temp.add(j);
-                                System.out.println("here plz3");
-
-                            }
-                            else if ((Trial.compare(dimValCol.get(j), rangeVal) < 0) && (Trial.compare(dimValCol.get(j+1), rangeVal) >= 0))
-                            {
-                                System.out.println("here plz4");
-
-                                temp.add(j + 1);
-                            }
-
-                        }
-
-                        break;
-
-                }
-//                int index = bs_next(dimVals.get(i), dimVals.get(i).size() - 2, colNameValues.get(colNames[i]));
-                coordinates.add(temp);
-            } else {
-                Vector<Object> emptyDummy = new Vector<Object>();
-                coordinates.add(emptyDummy);
-            }
-        }
-
-        Vector<String> bucketNs = new Vector<String>();
-        Vector<String> bucketsinTable = G.getBucketsinTable();
-        for (int k = 0; k < coordinates.size(); k++) {
-            //   Vector<String> temp = new Vector<String>();
-            Vector<Object> cValue = coordinates.get(k);
-            for (int i = 0; i < bucketsinTable.size(); i++) {
-                String bName = bucketsinTable.get(i);
-                String[] split1 = bName.split("-");
-                String[] split2 = split1[2].split(",");
-                boolean found = true;
-                if (cValue.size() != 0 && !cValue.contains(Integer.parseInt(split2[k]))) {
-                    found = false;
-                    break;
-                }
-                if (found) {
-
-                    bucketNs.add(bName);
-                }
-            }
-        }
-        // <<Bname>,<>>
-        Vector<String> pname = new Vector<String>();
-
-        for (int i = 0; i < bucketNs.size(); i++) {
-            //   Vector<String> BN =  bucketNs.get(i);
-            // for(int j =0; j<BN.size(); j++){
-            String Bucket = bucketNs.get(i);
-            Bucket b1 = (Bucket) DBApp.deserialize(Bucket);
-            for (int k = 0; k < b1.getAddresses().size(); k++) {
-                String page = (String) b1.getAddresses().get(k).get(1);
-                if (!pname.contains(page))
-                    pname.add(page);
-            }
-            DBApp.serialize(b1, b1.getBucketName());
-            // }
-        }
-
-        int index = 0;
-        String key = new String();
-        for (int j = 0; j < colNamesTable.size(); j++) {
-            if ((colNameValue.containsKey(colNamesTable.get(j)))) {
-                index = j;
-                key = colNamesTable.get(j);
-            }
-        }
-
-
         Vector<Vector<Object>> rows = new Vector<Vector<Object>>();
 
+        if(G ==  null){
+            int index = 0;
+            String key = new String(); //
+            String OP = new String();
 
-        for (int i = 0; i < pname.size(); i++) {
-            //for(int i=0; i<pname.get(x).size(); i++){
-            Page p = (Page) DBApp.deserialize(pname.get(i));
-            for (int k = 0; k < p.getRows().size(); k++) {
+            for (int j = 0; j < colNamesTable.size(); j++) {
+                if ((colNameValue.containsKey(colNamesTable.get(j)))) {
+                    index = j;
+                    key = colNamesTable.get(j);
+                    OP = colNameOperator.get(colNamesTable.get(j));
+                }
+            }
 
-                Vector<Object> v = p.getRows().get(k);
-//                System.out.println("firstname string check "+OP+" "+ v.get(index)+" "+ colNameValue.get(key)+"  "+ key);
-                switch (OP) {
-                    case ">":
-                        if (Trial.compare(v.get(index), colNameValue.get(key)) > 0) {
-                            rows.add(v);
-                        }
-                        break;
-                    case ">=":
-                        if (Trial.compare(v.get(index), colNameValue.get(key)) >= 0) {
-                            rows.add(v);
-                        }
-                        break;
-                    case "<":
-                        if (Trial.compare(v.get(index), colNameValue.get(key)) < 0) {
-                            rows.add(v);
-                        }
-                        break;
-                    case "<=":
-                        if (Trial.compare(v.get(index), colNameValue.get(key)) <= 0) {
-                            rows.add(v);
-                        }
-                        break;
-                    case "!=":
-                        if (Trial.compare(v.get(index), colNameValue.get(key)) != 0) {
-                            rows.add(v);
-                        }
-                        break;
-                    case "=":
+            for(int i=0; i<pagesInfo.size(); i++) {
+                Vector<Object> page = pagesInfo.get(i);
+                Page p = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i));
+                for(int j=0; j<p.getRows().size(); j++){
+                    Vector<Object> v = p.getRows().get(j);
+                    System.out.println("firstname string check "+v.get(index)+" "+ key);
+                    switch (OP) {
+                        case ">":
+                            if (Trial.compare(v.get(index), colNameValue.get(key)) > 0) {
+                                rows.add(v);
+                            }
+                            break;
+                        case ">=":
+                            if (Trial.compare(v.get(index), colNameValue.get(key)) >= 0) {
+                                rows.add(v);
+                            }
+                            break;
+                        case "<":
+                            if (Trial.compare(v.get(index), colNameValue.get(key)) < 0) {
+                                rows.add(v);
+                            }
+                            break;
+                        case "<=":
+                            if (Trial.compare(v.get(index), colNameValue.get(key)) <= 0) {
+                                rows.add(v);
+                            }
+                            break;
+                        case "!=":
+                            if (Trial.compare(v.get(index), colNameValue.get(key)) != 0) {
+                                rows.add(v);
+                            }
+                            break;
+                        case "=":
 //                        System.out.println("firstname string check "+v.get(index)+" "+ colNameValue.get(key));
-                        if (Trial.compare(v.get(index), colNameValue.get(key)) == 0) {
-                            System.out.println("firstname string check "+v.get(index)+" "+ colNameValue.get(key));
-                            rows.add(v);
+                            if (Trial.compare(v.get(index), colNameValue.get(key)) == 0) {
+                                System.out.println("firstname string check " + v.get(index) + " " + key);
+                                rows.add(v);
+                            }
+                            break;
+
+                    }
+                }
+                if (p.getOverFlowInfo().size() != 0) {
+                    Vector<Vector<Object>> overflowPagesInfo = p.getOverFlowInfo();
+                    for (int k = 0; k < p.getOverFlowInfo().size(); k++) {
+                        Vector<Object> overflow = overflowPagesInfo.get(k);
+                        int ID = (int) overflow.get(0);
+                        Page o = (Page) DBApp.deserialize(tableName + "-" + pagesID.get(i) + "." + ID);
+                        Vector<Vector<Object>> rowsOverflow = o.getRows();
+                        System.out.println("PageOVERFLOW" + pagesID.get(i) + " " + ID + " " + "in " + tableName + " with pagesCount " + overflow.get(1));
+                        for (int l = 0; l < o.getRows().size(); l++) {
+                            Vector<Object> v = p.getRows().get(l);
+
+                            switch (OP) {
+                                case ">":
+                                    if (Trial.compare(v.get(index), colNameValue.get(key)) > 0) {
+                                        rows.add(v);
+                                    }
+                                    break;
+                                case ">=":
+                                    if (Trial.compare(v.get(index), colNameValue.get(key)) >= 0) {
+                                        rows.add(v);
+                                    }
+                                    break;
+                                case "<":
+                                    if (Trial.compare(v.get(index), colNameValue.get(key)) < 0) {
+                                        rows.add(v);
+                                    }
+                                    break;
+                                case "<=":
+                                    if (Trial.compare(v.get(index), colNameValue.get(key)) <= 0) {
+                                        rows.add(v);
+                                    }
+                                    break;
+                                case "!=":
+                                    if (Trial.compare(v.get(index), colNameValue.get(key)) != 0) {
+                                        rows.add(v);
+                                    }
+                                    break;
+                                case "=":
+//                        System.out.println("firstname string check "+v.get(index)+" "+ colNameValue.get(key));
+                                    if (Trial.compare(v.get(index), colNameValue.get(key)) == 0) {
+                                        System.out.println("firstname string check " + v.get(index) + " " + colNameValue.get(key));
+                                        rows.add(v);
+                                    }
+                                    break;
+
+                            }
                         }
+                        DBApp.serialize(o, tableName + "-" + pagesID.get(i) + "." + (ID + ""));
+                    }
+                }
+                DBApp.serialize(p, tableName + "-" + pagesID.get(i));
+            }
+        }
+
+
+
+        else {
+            Vector<Vector<Object>> coordinates = new Vector<Vector<Object>>();
+
+
+            String OP = new String();
+            for (int i = 0; i < G.getDimVals().length; i++) { // name = ahmed ,age
+                if (colNameValue.containsKey(G.getColNames()[i])) {
+                    String operator = colNameOperator.get(G.getColNames()[i]);
+                    OP = operator;
+                    Vector<Object> dimValCol = G.getDimVals()[i]; // ""
+                    Vector<Object> temp = new Vector<Object>();
+
+                    Object val = colNameValue.get(G.getColNames()[i]);
+                    double rangeVal;
+                    if (val instanceof Double) {
+                        rangeVal = (Double) val - (Double) G.getMinOfcols()[i];
+                    } else if (val instanceof Date) {
+                        rangeVal = DBApp.getdifferencedate(DBApp.getLD(G.getMinOfcols()[i] + ""), DBApp.getLD(val + ""));
+                    } else if (val instanceof String && ((String) val).contains("-")) {
+                        rangeVal = Integer.parseInt((val.toString()).replace("-", "")) - Integer.parseInt((G.getMinOfcols()[i].toString()).replace("-", ""));
+
+                    } else {
+                        rangeVal = (Trial.compare(val, G.getMinOfcols()[i]));
+                    }
+
+                    switch (operator) {
+                        case ">":
+                            for (int j = 0; j < dimValCol.size() - 1; j++) {
+                                if (Trial.compare(dimValCol.get(j), rangeVal) > 0)
+                                    temp.add(j);
+                            }
+                            break;
+                        case ">=":
+                            for (int j = 0; j < dimValCol.size() - 1; j++) {
+                                if (Trial.compare(dimValCol.get(j), rangeVal) >= 0)
+                                    temp.add(j);
+                            }
+                            break;
+                        case "<":
+                            for (int j = 0; j < dimValCol.size() - 1; j++) {
+                                if (j < dimValCol.size() && Trial.compare(dimValCol.get(j), rangeVal) < 0) {
+                                    temp.add(j);
+//                                temp.add(j + 1);
+                                }
+
+
+                            }
+                            break;
+                        case "<=":
+                            for (int j = 0; j < dimValCol.size() - 1; j++) {
+                                if (Trial.compare(dimValCol.get(j), rangeVal) <= 0)
+                                    temp.add(j);
+                            }
+                            break;
+                        case "!=":
+                            for (int j = 0; j < dimValCol.size() - 1; j++) {
+                                if (Trial.compare(dimValCol.get(j), rangeVal) != 0)
+                                    temp.add(j);
+                            }
+                            break;
+                        case "=":
+                            System.out.println("here plz");
+
+                            for (int j = 0; j < dimValCol.size() - 2; j++) { // name
+                                if (j == 0 && (Trial.compare(dimValCol.get(j), rangeVal) >= 0)) {
+                                    temp.add(j);
+                                    System.out.println("here plz3");
+
+                                } else if ((Trial.compare(dimValCol.get(j), rangeVal) < 0) && (Trial.compare(dimValCol.get(j + 1), rangeVal) >= 0)) {
+                                    System.out.println("here plz4");
+
+                                    temp.add(j + 1);
+                                }
+
+                            }
+
+                            break;
+
+                    }
+//                int index = bs_next(dimVals.get(i), dimVals.get(i).size() - 2, colNameValues.get(colNames[i]));
+                    coordinates.add(temp);
+                } else {
+                    Vector<Object> emptyDummy = new Vector<Object>();
+                    coordinates.add(emptyDummy);
+                }
+            }
+
+            Vector<String> bucketNs = new Vector<String>();
+            Vector<String> bucketsinTable = G.getBucketsinTable();
+            for (int k = 0; k < coordinates.size(); k++) {
+                //   Vector<String> temp = new Vector<String>();
+                Vector<Object> cValue = coordinates.get(k);
+                for (int i = 0; i < bucketsinTable.size(); i++) {
+                    String bName = bucketsinTable.get(i);
+                    String[] split1 = bName.split("-");
+                    String[] split2 = split1[2].split(",");
+                    boolean found = true;
+                    if (cValue.size() != 0 && !cValue.contains(Integer.parseInt(split2[k]))) {
+                        found = false;
                         break;
+                    }
+                    if (found) {
+
+                        bucketNs.add(bName);
+                    }
+                }
+            }
+            // <<Bname>,<>>
+            Vector<String> pname = new Vector<String>();
+
+            for (int i = 0; i < bucketNs.size(); i++) {
+                //   Vector<String> BN =  bucketNs.get(i);
+                // for(int j =0; j<BN.size(); j++){
+                String Bucket = bucketNs.get(i);
+                Bucket b1 = (Bucket) DBApp.deserialize(Bucket);
+                for (int k = 0; k < b1.getAddresses().size(); k++) {
+                    String page = (String) b1.getAddresses().get(k).get(1);
+                    if (!pname.contains(page))
+                        pname.add(page);
+                }
+                for (int x = 0; x < b1.getOverflowBucketsInfo().size(); x++) {
+                    // get overflow bucket:
+                    Vector<Object> v = b1.getOverflowBucketsInfo().get(i); // name and num of entries
+                    Bucket o = (Bucket) DBApp.deserialize((String) v.get(0));
+                    for (int m = 0; m < o.getAddresses().size(); m++) {
+                        String page = (String) o.getAddresses().get(m).get(1);
+                        if (!pname.contains(page))
+                            pname.add(page);
+                    }
+                    DBApp.serialize(o, o.getBucketName());
+                }
+                DBApp.serialize(b1, b1.getBucketName());
+                // }
+            }
+
+            int index = 0;
+            String key = new String();
+            for (int j = 0; j < colNamesTable.size(); j++) {
+                if ((colNameValue.containsKey(colNamesTable.get(j)))) {
+                    index = j;
+                    key = colNamesTable.get(j);
+                }
+            }
+
+            for (int i = 0; i < pname.size(); i++) {
+                //for(int i=0; i<pname.get(x).size(); i++){
+                Page p = (Page) DBApp.deserialize(pname.get(i));
+                for (int k = 0; k < p.getRows().size(); k++) {
+
+                    Vector<Object> v = p.getRows().get(k);
+//                System.out.println("firstname string check "+OP+" "+ v.get(index)+" "+ colNameValue.get(key)+"  "+ key);
+                    switch (OP) {
+                        case ">":
+                            if (Trial.compare(v.get(index), colNameValue.get(key)) > 0) {
+                                rows.add(v);
+                            }
+                            break;
+                        case ">=":
+                            if (Trial.compare(v.get(index), colNameValue.get(key)) >= 0) {
+                                rows.add(v);
+                            }
+                            break;
+                        case "<":
+                            if (Trial.compare(v.get(index), colNameValue.get(key)) < 0) {
+                                rows.add(v);
+                            }
+                            break;
+                        case "<=":
+                            if (Trial.compare(v.get(index), colNameValue.get(key)) <= 0) {
+                                rows.add(v);
+                            }
+                            break;
+                        case "!=":
+                            if (Trial.compare(v.get(index), colNameValue.get(key)) != 0) {
+                                rows.add(v);
+                            }
+                            break;
+                        case "=":
+//                        System.out.println("firstname string check "+v.get(index)+" "+ colNameValue.get(key));
+                            if (Trial.compare(v.get(index), colNameValue.get(key)) == 0) {
+                                System.out.println("firstname string check " + v.get(index) + " " + colNameValue.get(key));
+                                rows.add(v);
+                            }
+                            break;
+
+                    }
 
                 }
+                DBApp.serialize(p, pname.get(i));
 
             }
-            DBApp.serialize(p, pname.get(i));
-
+            DBApp.serialize(G, tableName + "-GI" + G.getGridID());
+            System.out.println(rows.size() + "   rows printed");
         }
-        DBApp.serialize(G, tableName+"-GI"+G.getGridID());
         System.out.println(rows.size() + "   rows printed");
         return rows;
 
     }
+
 
 
     //100-200, 300-400 (both are full and I want to insert 250)
@@ -987,14 +1228,16 @@ public class Table implements java.io.Serializable {
     }
 
     public GridIndex chooseIndex(String tableName, Hashtable<String, Object> colNameValue) {
-        GridIndex G = null;
+        int G = -1;
         int count = 0;
         int size = (int) 10e6; //1,000,000
-        for (int i = 0; i < gridIndices.size(); i++) {
-            GridIndex tempG = (GridIndex) DBApp.deserialize(tableName + "-GI" + i);
-            String[] colNames = tempG.getColNames(); //colName of the Grid
+        for (int i = 0; i < gridIndices_colNames.size(); i++) {
+// GridIndex tempG = (GridIndex) DBApp.deserialize(tableName + "-GI" + i);
 
-            int tempSize = tempG.getColNames().length;
+            String[] tempG = gridIndices_colNames.get(i);
+            String[] colNames = tempG; //colName of the Grid
+
+            int tempSize = tempG.length;
             int tempCount = 0;
             for (int j = 0; j < colNames.length; j++) {
                 if (colNameValue.containsKey(colNames[j])) {
@@ -1002,14 +1245,18 @@ public class Table implements java.io.Serializable {
                 }
             }
             if (tempCount > count || (tempCount == count && tempSize < size)) {
-                G = tempG;
+                G = i;
                 count = tempCount;
-                size = G.getColNames().length;
-            } else {
-                DBApp.serialize(tempG, tableName + "-GI" + i);
+                size = tempG.length;
             }
+//            } else {
+//                DBApp.serialize(tempG, tableName + "-GI" + i);
+//            }
         }
-        return G;
+        GridIndex idxFound = null;
+        if (G != -1)
+            idxFound = (GridIndex) DBApp.deserialize(tableName + "-GI" + G);
+        return idxFound;
     }
 
     public void deleteUsingIndex(Hashtable<String, Object> colNameValue, Object pk_value, int pk_found, Vector<Vector> index_value) throws DBAppException, IOException {
@@ -1052,12 +1299,13 @@ public class Table implements java.io.Serializable {
                         Vector<Object> v = B.getOverflowBucketsInfo().get(i); // name and num of entries
                         Bucket Overflow = (Bucket) DBApp.deserialize(v.get(0) + "");
                         int addressIdxInOv = Overflow.binarySearch(pk_value);
-
+                        System.out.println("get the fault idx " + addressIdxInOv + " size here " + Overflow.getAddresses().size());
                         if (addressIdxInOv != -1) {
-                            B.getAddresses().remove(addressIdxInBucket);
-                            B.setAddresses(B.getAddresses());
+
                             Vector<Object> address = Overflow.getAddresses().get(addressIdxInOv); //row in bucket to vector
                             String PageName = (String) address.get(1);
+                            Overflow.getAddresses().remove(addressIdxInOv);
+                            Overflow.setAddresses(Overflow.getAddresses());
                             Page p = (Page) DBApp.deserialize(PageName);
                             Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
                             updateTablePagesInfo(p, pk_value);
@@ -1450,6 +1698,7 @@ public class Table implements java.io.Serializable {
                     Vector<Object> v = B.getOverflowBucketsInfo().get(i); // name and num of entries
                     Bucket Overflow = (Bucket) DBApp.deserialize(v.get(0) + "");
                     int addressIdxInOv = Overflow.binarySearch(pk_value);
+
                     if (addressIdxInOv != -1) {
 
                         Vector<Object> address = Overflow.getAddresses().get(addressIdxInOv); //row in bucket to vector

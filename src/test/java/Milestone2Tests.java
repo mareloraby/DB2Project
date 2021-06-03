@@ -98,6 +98,7 @@ public class Milestone2Tests {
 
 
     @Test
+    @Order(2)
     public void testCreateStringStringIndex() throws Exception {
         DBApp dbApp = new DBApp();
         dbApp.init();
@@ -234,13 +235,13 @@ System.out.println("print tests :) "+ row.get("first_name"));
         arrSQLTerms[0]._strColumnName= "first_name";
         arrSQLTerms[0]._strOperator = "=";
         arrSQLTerms[0]._objValue =row.get("first_name");
-
+System.out.println(row.get("first_name"));
         arrSQLTerms[1] = new SQLTerm();
         arrSQLTerms[1]._strTableName = "students";
         arrSQLTerms[1]._strColumnName= "gpa";
         arrSQLTerms[1]._strOperator = "=";
         arrSQLTerms[1]._objValue = row.get("gpa");
-
+        System.out.println(row.get("gpa"));
         String[]strarrOperators = new String[1];
         strarrOperators[0] = "AND";
 // select * from Student where name = “John Noor” or gpa = 1.5;
@@ -354,7 +355,6 @@ System.out.println("print tests :) "+ row.get("first_name"));
 
 
     @Test
-
     public void testRecordInsertions() throws Exception {
         DBApp dbApp = new DBApp();
         dbApp.init();
