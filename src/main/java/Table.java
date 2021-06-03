@@ -310,7 +310,6 @@ public class Table implements java.io.Serializable {
                             break;
 
                     }
-//                int index = bs_next(dimVals.get(i), dimVals.get(i).size() - 2, colNameValues.get(colNames[i]));
                     coordinates.add(temp);
                 } else {
                     Vector<Object> emptyDummy = new Vector<Object>();
@@ -338,7 +337,7 @@ public class Table implements java.io.Serializable {
                     }
                 }
             }
-            // <<Bname>,<>>
+
             Vector<String> pname = new Vector<String>();
 
             for (int i = 0; i < bucketNs.size(); i++) {
@@ -353,7 +352,7 @@ public class Table implements java.io.Serializable {
                 }
                 for (int x = 0; x < b1.getOverflowBucketsInfo().size(); x++) {
                     // get overflow bucket:
-                    Vector<Object> v = b1.getOverflowBucketsInfo().get(i); // name and num of entries
+                    Vector<Object> v = b1.getOverflowBucketsInfo().get(x); // name and num of entries
                     Bucket o = (Bucket) DBApp.deserialize((String) v.get(0));
                     for (int m = 0; m < o.getAddresses().size(); m++) {
                         String page = (String) o.getAddresses().get(m).get(1);
@@ -1058,9 +1057,15 @@ public class Table implements java.io.Serializable {
                             Overflow.getAddresses().remove(addressIdxInOv);
                             Overflow.setAddresses(Overflow.getAddresses());
                             Page p = (Page) DBApp.deserialize(PageName);
-                            Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
+                          //  Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
                             updateTablePagesInfo(p, pk_value);
                             DBApp.serialize(p, PageName);
+
+
+                            Vector<Object> row= new Vector<Object>();
+                            for(int k=0; k<colNamesTable.size(); k++){
+                                row.add(colNameValue.get(colNamesTable.get(k)));
+                            }
 
                             deleteRowfromIndices(tableName, row, G, pk_value);
 
@@ -1080,11 +1085,16 @@ public class Table implements java.io.Serializable {
                 //get row from page
                 B.getAddresses().remove(addressIdxInBucket);
                 B.setAddresses(B.getAddresses());
-                Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
+               // Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
                 updateTablePagesInfo(p, pk_value);
 // This part is important to check rows in page
 
                 DBApp.serialize(p, PageName);
+
+                Vector<Object> row= new Vector<Object>();
+                for(int k=0; k<colNamesTable.size(); k++){
+                    row.add(colNameValue.get(colNamesTable.get(k)));
+                }
 
                 //delete from all indices
                 deleteRowfromIndices(tableName, row, G, pk_value);
@@ -1438,8 +1448,15 @@ public class Table implements java.io.Serializable {
                         Vector<Object> address = Overflow.getAddresses().get(addressIdxInOv); //row in bucket to vector
                         String PageName = (String) address.get(1);
                         Page p = (Page) DBApp.deserialize(PageName);
-                        Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
+                       // Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
                         updateTablePagesInfo(p, pk_value);
+
+
+                        Vector<Object> row= new Vector<Object>();
+                        for(int k=0; k<colNamesTable.size(); k++){
+                            row.add(colNameValue.get(colNamesTable.get(k)));
+                        }
+
                         deleteRowfromIndices(tableName, row, G, pk_value);
                         DBApp.serialize(p, PageName);
 
@@ -1476,11 +1493,18 @@ public class Table implements java.io.Serializable {
             String PageName = (String) address.get(1);
             Page p = (Page) DBApp.deserialize(PageName);
             //get row from page
-            Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
+            //Vector<Object> row = p.deleteRowFromPageUsingIdxB(pk_found, pk_value, index_value);
             updateTablePagesInfo(p, pk_value);
             DBApp.serialize(p, PageName);
             //delete from all indices
+
+            Vector<Object> row= new Vector<Object>();
+            for(int k=0; k<colNamesTable.size(); k++){
+                row.add(colNameValue.get(colNamesTable.get(k)));
+            }
+
             deleteRowfromIndices(tableName, row, G, pk_value);
+
 
             //update row
             for (int j = 0; j < index_value.size(); j++) { //<<1,Ahmad>,<2,16>>
